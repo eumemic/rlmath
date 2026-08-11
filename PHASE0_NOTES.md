@@ -15,11 +15,12 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   without it the rate would have been ~7%, above gate. Residual 3 failures are genuine
   current-Mathlib incompatibilities (binder-syntax oddities; `Complex.abs` renamed upstream).
   Elapsed at scale: p50 14 ms, mean 48 ms, max 8.9 s.
-- [x] environment publishable to Prime Intellect Environments Hub — wrapper built AND pinned
-  against installed verifiers 0.3.0 (58 env tests; v0 rollout loop validated end-to-end with a
-  live policy + real Lean kernel). Hub package at `environments/rlmath_decomp/` builds a clean
-  sdist+wheel. One push blocker: the package depends on `rlmath`, which is not on PyPI —
-  needs a packaging decision (PyPI publish vs git+URL), then `prime env push`.
+- [x] environment **PUBLISHED** to Prime Intellect Environments Hub — 2026-08-11, PUBLIC, v0.1.1:
+  https://app.primeintellect.ai/dashboard/environments/eumemic/rlmath-decomp (wrapper pinned
+  against installed verifiers 0.3.0, 58 env tests, v0 rollout loop validated live). Outside-in
+  verified in a clean venv: Hub wheel + SHA-pinned git-dep + verifiers all resolve (uv requires
+  the git-dep declared explicitly alongside — documented in envs_README §6). Library repo public
+  at https://github.com/eumemic/rlmath (MIT).
 - [ ] leaf pass-rate bank pipeline runs end-to-end — elaborate-only path smoked live (29 rows);
   the leaf-proving path is unit-tested but needs a live leaf model (Pending: leaf model choice).
 

@@ -303,11 +303,23 @@ must be reproducible). `tests/test_env.py` enforces the 40-hex pin.
 4. **Push.** `prime env push rlmath-decomp --visibility PRIVATE|PUBLIC` (defaults to
    `./environments/rlmath_decomp`). Visibility is **a user decision, never a default** — research
    §7.2: "Publishing is an external state change... Do not publish merely because local verification
-   passed."  ← *TODO: visibility decision*
-5. **Hosted eval.** `prime eval run rlmath-decomp --hosted --follow`.
-6. **Consume elsewhere.** `prime env install <owner>/rlmath-decomp`, `prime env info
-   <owner>/rlmath-decomp`, or in code `vf.load_environment("<owner>/rlmath-decomp")` (v0) /
-   `vf.load_taskset(...)` (v1).
+   passed."  ✓ **Pushed 2026-08-11, PUBLIC:**
+   https://app.primeintellect.ai/dashboard/environments/eumemic/rlmath-decomp
+5. **Hosted eval.** `prime eval run rlmath-decomp --hosted --follow` — will not work yet: rollouts
+   need a Lean toolchain + leaf prover, which are process-local (`set_resources`), not services.
+   Phase-3 item.
+6. **Consume elsewhere.** Because `rlmath` is a git-dependency, resolvers with transitive-URL
+   protection (uv, and pip against PyPI-style indexes) require it declared **explicitly alongside**
+   the wheel — this is the consumer-side mirror of the supply-chain pin, not a packaging bug:
+
+   ```bash
+   uv pip install rlmath_decomp \
+     "rlmath @ git+https://github.com/eumemic/rlmath@<pinned-sha-from-the-wheel-metadata>" \
+     --extra-index-url https://hub.primeintellect.ai/eumemic/simple/
+   ```
+
+   (verified 2026-08-11 in a clean venv). `prime env install eumemic/rlmath-decomp` works for
+   prime-managed contexts; `prime env info eumemic/rlmath-decomp` lists all install methods.
 
 Scaffolders, if a from-scratch package is ever preferred: `init <name>` emits a **v1** taskset
 package (`--v0` for the legacy stub); `prime env init <name>` / `vf-init <name>` emit the **v0**
