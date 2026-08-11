@@ -4,14 +4,15 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
 
 ## Gate criteria
 
-- [x] ≥ 2–3k verified leaf attempts/hour — **PASS 2026-08-11: 36,839/hr** (2 REPL workers, trivial
-  suite, 0/60 failures, p50 4.9 ms warm; `analysis/throughput.json`). Caveat: trivial one-liners;
-  realistic leaf proofs are slower — re-measure on bank statements during the leaf smoke. Headroom
-  is 12–18× the gate before pooling beyond 2 workers.
-- [x] statement-extraction/elaboration failure rate < 5% — **PASS 2026-08-11: 0.0%** (29/29
-  Lean-Workbook candidates; 1/30 rows had no extractable statement, counted separately). Required
-  two fixes: big-operator `in`→`∈` modernization (self-validating retry) and the standard prover
-  header in PREAMBLE (see Decisions).
+- [~] ≥ 2–3k verified leaf attempts/hour — **PROVISIONAL** (advisor review 2026-08-11: the 36,839/hr
+  measurement is *verification-only* throughput — 2 REPL workers, trivial suite, 0/60 failures,
+  p50 4.9 ms warm, `analysis/throughput.json`. A leaf *attempt* includes prover inference, which
+  will dominate once a live leaf is wired. Gate stays open until re-measured end-to-end with the
+  real leaf behind the adapter; verification is established as not-the-bottleneck.)
+- [~] statement-extraction/elaboration failure rate < 5% — **PROVISIONAL** (advisor review: 0/29
+  is consistent with up to ~10% true rate. n≈3000 elaborate-only sweep running 2026-08-11 evening —
+  also the first real stress of the syntax-rewrite retry. The two fixes that got 29/29: big-operator
+  `in`→`∈` modernization (self-validating retry) and the standard prover header in PREAMBLE.)
 - [x] environment publishable to Prime Intellect Environments Hub — wrapper built (v1-primary +
   v0 shim, both over one `score_plan`; `envs/envs_README.md` documents the publish steps). The
   actual push awaits the account decision (Pending).
@@ -44,9 +45,17 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   consumes only `verifiers.v1` (research/verifiers.md §6) and prime-rl is the Phase-3 trainer; the
   v0 shim (~40 lines over the same `score_plan`) buys `prime eval run`/`vf-eval` for Phase 2.
   Flagged unknowns to pin on first real install: v1 metric-attachment call, Taskset construction.
-- **2026-08-11 — Leaf stand-in for local smoke:** qwen3:30b via ollama (already pulled, from ../rl).
-  Real leaf (DeepSeek-Prover-V2-7B non-CoT / Goedel-Prover-V2-8B) per research findings; GGUF-on-ollama
-  viability TBD, else leaf runs on a rented GPU behind the same OpenAI-compatible adapter.
+- **2026-08-11 — Leaf oracle: bf16 on a rented GPU, never quantized-GGUF (advisor review).** The
+  bank's measured pass rates ARE the delegability oracle; quantized pass rates are a different
+  model's pass rates, and ../rl already ate one silent ollama pathology. Oracle runs use vLLM +
+  bf16 checkpoint behind the same OpenAI-compatible adapter. Stand-ins (qwen3:30b ollama) are for
+  pipeline plumbing only — enforced mechanically: bank rows carry `leaf_id`, and build_bank refuses
+  to append to a file whose leaf_id differs (tested).
+- **2026-08-11 — Leaf model selection = measured band-fit bake-off, not strongest-prover.** Serve
+  DSV2-7B non-CoT and Goedel-Prover-V2-8B against the SAME few hundred candidates (same --seed /
+  --limit slice, separate --out files), pick the one whose pass@8 distribution puts more mass in
+  the [0.25, 0.9] band (DIRECTION.md §5.4) — the oracle wants *discriminative* leaves, not maximal
+  ones. This resolves DIRECTION.md open decision #2's method; the pick itself happens on the GPU.
 
 ## Log
 

@@ -523,3 +523,30 @@ def test_modernize_bigops():
     assert f("∑ k in s, ∫ x in a..b, f k x") == "∑ k ∈ s, ∫ x in a..b, f k x"
     # already-modern statements are fixed points
     assert f("∑ k ∈ Finset.range m, k = 0") == "∑ k ∈ Finset.range m, k = 0"
+
+
+def test_leaf_provenance_guard(tmp_path, monkeypatch, fake_backend):
+    """Bank rows record leaf_id; appending with a different leaf model is a hard
+    refusal — stand-in pass rates must never silently mix into the oracle bank
+    (advisor review 2026-08-11; DIRECTION.md §5.4: the bank IS the delegability oracle)."""
+    out = tmp_path / "bank.jsonl"
+    _elaborating_backend(fake_backend)
+    monkeypatch.setattr(build_bank, "make_backend", lambda a: fake_backend)
+    monkeypatch.setattr(build_bank, "make_leaf", lambda a: StubLeaf(n_verified=1))
+    monkeypatch.setattr(build_bank, "_candidates", lambda a: [("2 + 2 = 4", "ds#0")])
+
+    args = ["--out", str(out), "--leaf-model", "prover-A", "--leaf-template", "plain"]
+    assert build_bank.main(args) == 0
+    rows = list(build_bank.read_rows(out))
+    assert rows and all(r["leaf_id"] == "prover-A|plain" for r in rows)
+
+    # same leaf: resume runs fine (nothing new to do, no refusal)
+    assert build_bank.main(args) == 0
+
+    # different leaf against the same file: hard refusal before any work
+    monkeypatch.setattr(build_bank, "_candidates", lambda a: [("1 + 1 = 2", "ds#1")])
+    with pytest.raises(SystemExit, match="refusing to mix leaf models"):
+        build_bank.main(["--out", str(out), "--leaf-model", "prover-B", "--leaf-template", "plain"])
+
+    # elaborate-only runs carry no leaf_id and are exempt from the guard
+    assert build_bank.main(["--out", str(out), "--elaborate-only"]) == 0

@@ -456,8 +456,12 @@ uninterpretable after the fact.
 
 1. **Repository:** own git repo for `rlmath/`, or shared history with `../rl/`? (Leaning own repo —
    different deliverable, and the environment is separately publishable.)
-2. **Leaf prover choice** — DeepSeek-Prover-V2-7B vs Goedel-Prover-V2-8B; decide empirically in
-   Phase 0 on the leaf bank, since the delegability oracle depends on it.
+2. **Leaf prover choice** — DeepSeek-Prover-V2-7B vs Goedel-Prover-V2-8B. **Method fixed
+   2026-08-11 (advisor review):** bake-off on the same candidate slice, bf16 via vLLM on a rented
+   GPU (never quantized — the bank is the delegability oracle and quantized pass rates are a
+   different model's), selecting on pass@8 mass in the [0.25, 0.9] band rather than raw strength.
+   The pick itself awaits the GPU session; provenance guard in build_bank prevents stand-in
+   contamination meanwhile.
 3. **Family A vs B first.** Bridge chains are the cleaner size axis; case trees may calibrate more
    easily. Phase 1 should probably attempt A and keep B as fallback.
 4. **Whether `r_plan` enters the v1 objective** or stays diagnostic-only. Recommend diagnostic-only

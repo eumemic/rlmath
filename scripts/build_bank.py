@@ -494,6 +494,20 @@ def main(argv=None) -> int:
     backend = make_backend(args)
     leaf = None if args.elaborate_only else make_leaf(args)
 
+    # Leaf provenance guard: bank pass rates ARE the delegability oracle
+    # (DIRECTION.md §5.4) — a file silently mixing leaf models would corrupt it
+    # invisibly. Every leaf row records its model; appending with a different
+    # model than the file already contains is a hard refusal, not a warning.
+    leaf_id = None if args.elaborate_only else f"{args.leaf_model}|{args.leaf_template}"
+    if leaf_id is not None:
+        prior = {r.get("leaf_id") for r in read_rows(out) if r.get("leaf_id")}
+        if prior and prior != {leaf_id}:
+            raise SystemExit(
+                f"refusing to mix leaf models in one bank file: {out} already has "
+                f"{sorted(prior)}, this run is {leaf_id!r}. Use a separate --out "
+                f"(stand-in numbers must never leak into the oracle bank)."
+            )
+
     counts: dict[str, int] = {}
     n_done = 0
     try:
@@ -503,6 +517,7 @@ def main(argv=None) -> int:
                 continue
             done.add(key)  # the dataset itself contains duplicate statements
             row = process_one(prop, src_id, backend, leaf, k=args.k, timeout_s=args.timeout_s)
+            row["leaf_id"] = leaf_id
             append_row(out, row)
             counts[row["status"]] = counts.get(row["status"], 0) + 1
             n_done += 1
