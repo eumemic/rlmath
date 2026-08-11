@@ -9,10 +9,12 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   p50 4.9 ms warm, `analysis/throughput.json`. A leaf *attempt* includes prover inference, which
   will dominate once a live leaf is wired. Gate stays open until re-measured end-to-end with the
   real leaf behind the adapter; verification is established as not-the-bottleneck.)
-- [~] statement-extraction/elaboration failure rate < 5% — **PROVISIONAL** (advisor review: 0/29
-  is consistent with up to ~10% true rate. n≈3000 elaborate-only sweep running 2026-08-11 evening —
-  also the first real stress of the syntax-rewrite retry. The two fixes that got 29/29: big-operator
-  `in`→`∈` modernization (self-validating retry) and the standard prover header in PREAMBLE.)
+- [x] statement-extraction/elaboration failure rate < 5% — **PASS 2026-08-11 at n=2975:**
+  elaboration failures 3/2975 = **0.10%** (Wilson 95% CI [0.03%, 0.30%]); extraction misses
+  counted separately: 12/2987 = 0.4%. The big-operator rewrite saved **202 statements (6.8%)** —
+  without it the rate would have been ~7%, above gate. Residual 3 failures are genuine
+  current-Mathlib incompatibilities (binder-syntax oddities; `Complex.abs` renamed upstream).
+  Elapsed at scale: p50 14 ms, mean 48 ms, max 8.9 s.
 - [x] environment publishable to Prime Intellect Environments Hub — wrapper built (v1-primary +
   v0 shim, both over one `score_plan`; `envs/envs_README.md` documents the publish steps). The
   actual push awaits the account decision (Pending).
