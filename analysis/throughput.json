@@ -1,0 +1,14 @@
+{
+  "n": 60,
+  "wall_s": 5.863,
+  "attempts_per_hr": 36838.9,
+  "verified_per_hr": 36838.9,
+  "p50_s": 0.004903291934169829,
+  "p95_s": 0.019444374949671328,
+  "mean_s": 0.1744,
+  "failures": 0,
+  "timestamp": null,
+  "backend": "repl",
+  "workers": 2,
+  "suite": "trivial"
+}

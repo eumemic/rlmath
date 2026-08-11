@@ -199,7 +199,8 @@ def test_preamble_sent_once_and_env_reused():
     w.check("a")
     w.check("b")
     reqs = procs[0].requests
-    assert reqs[0] == {"cmd": "import Mathlib"}    # stripped; no env -> fresh environment
+    from rlmath.core.leancode import PREAMBLE
+    assert reqs[0] == {"cmd": PREAMBLE.strip()}    # stripped; no env -> fresh environment
     assert procs[0].imports == 1
     assert w.env_id == 0
     assert reqs[1] == {"cmd": "a", "env": 0}       # both commands reuse the import

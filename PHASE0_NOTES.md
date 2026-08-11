@@ -4,10 +4,19 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
 
 ## Gate criteria
 
-- [ ] ≥ 2–3k verified leaf attempts/hour on available hardware (`scripts/bench_throughput.py` → `analysis/throughput.json`)
-- [ ] statement-extraction/elaboration failure rate < 5% on bank candidates
-- [ ] environment publishable to Prime Intellect Environments Hub (`verifiers` format)
-- [ ] leaf pass-rate bank pipeline runs end-to-end (full bank build may extend past Phase 0)
+- [x] ≥ 2–3k verified leaf attempts/hour — **PASS 2026-08-11: 36,839/hr** (2 REPL workers, trivial
+  suite, 0/60 failures, p50 4.9 ms warm; `analysis/throughput.json`). Caveat: trivial one-liners;
+  realistic leaf proofs are slower — re-measure on bank statements during the leaf smoke. Headroom
+  is 12–18× the gate before pooling beyond 2 workers.
+- [x] statement-extraction/elaboration failure rate < 5% — **PASS 2026-08-11: 0.0%** (29/29
+  Lean-Workbook candidates; 1/30 rows had no extractable statement, counted separately). Required
+  two fixes: big-operator `in`→`∈` modernization (self-validating retry) and the standard prover
+  header in PREAMBLE (see Decisions).
+- [x] environment publishable to Prime Intellect Environments Hub — wrapper built (v1-primary +
+  v0 shim, both over one `score_plan`; `envs/envs_README.md` documents the publish steps). The
+  actual push awaits the account decision (Pending).
+- [ ] leaf pass-rate bank pipeline runs end-to-end — elaborate-only path smoked live (29 rows);
+  the leaf-proving path is unit-tested but needs a live leaf model (Pending: leaf model choice).
 
 ## Decisions
 
@@ -23,6 +32,18 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   ../rl's silent-format-failure lesson.
 - **2026-08-11 — Status taxonomy fixed in core/types.py** (10 statuses). Feasibility evidence
   (context_window_exceeded) vs policy failure vs infrastructure error never share a bucket.
+- **2026-08-11 — PREAMBLE = standard prover header.** `import Mathlib` + `set_option maxHeartbeats
+  400000` + `open BigOperators Real Nat Topology Rat`. Measured cause: bare-env elaboration
+  misclassified provable Lean-Workbook statements (bare `sin`/`π`/`k!`) as ill-formed — 2/12 then
+  effectively ~7% of candidates; the opens are what DSV2/Goedel/miniF2F skeletons use, i.e. the env
+  leaf provers were trained against. Empirically validated on Mathlib @ v4.34.0-rc1.
+- **2026-08-11 — Lean-Workbook syntax drift handled by self-validating rewrite.** `∑ k in s` →
+  `∑ k ∈ s` (old big-operator binders, pre-migration Mathlib), applied only as a retry and kept
+  only if the kernel accepts the rewritten statement. Integrals (`∫ x in a..b`) untouched.
+- **2026-08-11 — verifiers wrapper targets v1 primarily, with a v0 shim.** prime-rl's orchestrator
+  consumes only `verifiers.v1` (research/verifiers.md §6) and prime-rl is the Phase-3 trainer; the
+  v0 shim (~40 lines over the same `score_plan`) buys `prime eval run`/`vf-eval` for Phase 2.
+  Flagged unknowns to pin on first real install: v1 metric-attachment call, Taskset construction.
 - **2026-08-11 — Leaf stand-in for local smoke:** qwen3:30b via ollama (already pulled, from ../rl).
   Real leaf (DeepSeek-Prover-V2-7B non-CoT / Goedel-Prover-V2-8B) per research findings; GGUF-on-ollama
   viability TBD, else leaf runs on a rented GPU behind the same OpenAI-compatible adapter.
@@ -54,6 +75,12 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   is confounded by miniF2F being non-decomposable; Goedel-Code-Prover v3 (2026-08-10!) self-reports
   RL delta at +1.1–3.2 pts, one seed. Net: surviving gap wider; §4 prior "in-distribution
   trainability" 70→65%; headline unchanged 35–45%.
+
+- 2026-08-11 ~17:15: integration suite 4/4 against real Lean (multiline preamble validated);
+  throughput gate PASS (36.8k/hr); bank smoke 29/29 elaborated after preamble + bigop fixes;
+  B6 verifiers wrapper landed (v1-primary + v0 shim; 41 tests). Full suite 395 passed, 6 skipped
+  (verifiers-absent guards), 8 deselected (integration, run separately). Three of four Phase-0
+  gates met; the fourth (live leaf pass@k) awaits the leaf-model decision.
 
 ## Pending / carried forward
 

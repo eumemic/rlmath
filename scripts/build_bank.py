@@ -278,6 +278,20 @@ def summarize_leaf(res: object, k: int) -> tuple[int, int, float | None, str | N
     return n, n_ok, (n_ok / n if n else None), first
 
 
+# Lean-Workbook predates Mathlib's big-operator binder migration: it writes
+# `∑ k in s, ...` where current Mathlib requires `∑ k ∈ s, ...` (measured on the
+# first smoke: 2/12 statements failed elaboration with exactly this error).
+# The rewrite is self-validating — it is only kept if the rewritten statement
+# actually elaborates, so a false rewrite can never enter the bank.
+# ∫ is deliberately absent from the operator class: integral syntax still uses `in`.
+_BIGOP_IN = re.compile(r"([∑∏⨆⨅⋃⋂][^,∫]*?)\s+in\s+")
+
+
+def modernize_bigops(prop: str) -> str:
+    """`∑ k in s` → `∑ k ∈ s` (and ∏/⨆/⨅/⋃/⋂), leaving integrals alone."""
+    return _BIGOP_IN.sub(r"\1 ∈ ", prop)
+
+
 def process_one(
     prop: str,
     src_id: str,
@@ -310,6 +324,21 @@ def process_one(
     try:
         res = backend.check(statement_check(prop), timeout_s=timeout_s)
         row["elaborates"] = bool(res.ok and res.sorries == 1)
+        if not row["elaborates"]:
+            # Retry once with modernized big-operator syntax; keep only if the
+            # kernel accepts the rewrite (self-validating, see modernize_bigops).
+            fixed = modernize_bigops(prop)
+            if fixed != prop:
+                res2 = backend.check(statement_check(fixed), timeout_s=timeout_s)
+                if res2.ok and res2.sorries == 1:
+                    prop = fixed
+                    row.update(
+                        prop=fixed,
+                        statement_key=statement_key(fixed),
+                        elaborates=True,
+                        detail="modernized big-operator binder (in -> ∈)",
+                    )
+                res = res2  # either way: res2's error is the actionable one post-rewrite
         if not row["elaborates"]:
             row["detail"] = "; ".join(m.text for m in res.errors)[:500] or f"sorries={res.sorries}"
         elif leaf is None:

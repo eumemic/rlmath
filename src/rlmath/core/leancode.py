@@ -13,7 +13,18 @@ import textwrap
 
 from .types import DecompositionPlan, GoalSpec
 
-PREAMBLE = "import Mathlib\n"
+# The de-facto standard prover header (DSV2/Goedel/miniF2F skeletons all use these
+# opens): leaf provers were trained against it, and Lean-Workbook statements assume
+# it (bare `sin`, `π`, `k!` — measured on the 2026-08-11 bank smoke, where a bare
+# `import Mathlib` env misclassified provable statements as ill-formed). Validated
+# against Mathlib @ lean v4.34.0-rc1: the open line elaborates cleanly.
+# maxHeartbeats 400000 (2× default): checks get headroom for heavy leaf proofs while
+# the REPL worker watchdog remains the real timeout authority.
+PREAMBLE = (
+    "import Mathlib\n"
+    "set_option maxHeartbeats 400000\n"
+    "open BigOperators Real Nat Topology Rat\n"
+)
 
 # Standard axioms any Mathlib proof may depend on. Everything else — sorryAx,
 # Lean.ofReduceBool/ofReduceNat (native_decide), user axioms — is rejected.

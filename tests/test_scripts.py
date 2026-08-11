@@ -509,3 +509,17 @@ def test_fake_factory_hooks_drive_both_clis(monkeypatch, fake_backend, tmp_path)
     assert bench.main(["--backend", "fake", "--n", "2", "--out", str(tmp_path / "t.json")]) == 0
     assert build_bank.main(["--backend", "fake", "--k", "1", "--out", str(tmp_path / "b.jsonl")]) == 0
     assert build_bank.read_rows(tmp_path / "b.jsonl")[0]["status"] == Status.VERIFIED
+
+
+def test_modernize_bigops():
+    """Lean-Workbook big-operator binders predate the Mathlib `in`→`∈` migration
+    (measured 2/12 elaboration failures on the first bank smoke, both this cause)."""
+    f = build_bank.modernize_bigops
+    assert f("∀ m, (∑ k in Finset.range m, k!) ≠ 0") == "∀ m, (∑ k ∈ Finset.range m, k!) ≠ 0"
+    assert f("∏ i in s, f i = ∑ j in t, g j") == "∏ i ∈ s, f i = ∑ j ∈ t, g j"
+    # integral syntax legitimately uses `in` and must survive untouched
+    assert f("∫ x in Set.Icc 0 1, f x = 1") == "∫ x in Set.Icc 0 1, f x = 1"
+    # mixed: sum rewritten, integral preserved
+    assert f("∑ k in s, ∫ x in a..b, f k x") == "∑ k ∈ s, ∫ x in a..b, f k x"
+    # already-modern statements are fixed points
+    assert f("∑ k ∈ Finset.range m, k = 0") == "∑ k ∈ Finset.range m, k = 0"
