@@ -4,10 +4,9 @@ description = "Lean 4 decomposition MDP: root states lemmas + assembly, frozen l
 tags = ["single-turn", "math", "lean", "formal-verification", "train", "eval"]
 version = "0.1.0"
 requires-python = ">=3.12"
-# `rlmath` is not on PyPI. It resolves for a local `prime env install -p .` inside
-# this repo, and MUST be repointed (published sdist, or `rlmath @ git+<url>`)
-# before `prime env push` — the Hub build installs dependencies by name.
-dependencies = ["verifiers>=0.3.0", "rlmath"]
+# `rlmath` is not on PyPI; it resolves from the public GitHub repo (decision
+# 2026-08-11: git-dep over PyPI while core contracts may still move).
+dependencies = ["verifiers>=0.3.0", "rlmath @ git+https://github.com/eumemic/rlmath"]
 
 [build-system]
 requires = ["hatchling"]

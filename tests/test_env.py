@@ -685,7 +685,11 @@ def test_hub_pyproject_declares_what_the_hub_build_needs():
     assert cfg["build-system"]["requires"] == ["hatchling"]
     assert cfg["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"] == ["rlmath_decomp"]
     assert "verifiers>=0.3.0" in cfg["project"]["dependencies"]
-    assert "rlmath" in cfg["project"]["dependencies"]
+    # rlmath is not on PyPI: a bare "rlmath" dep is unresolvable from the Hub
+    # build, so the dependency must carry a source (git+URL; decision 2026-08-11)
+    rlmath_deps = [d for d in cfg["project"]["dependencies"] if d.split("@")[0].strip() == "rlmath"]
+    assert rlmath_deps, "Hub package must depend on rlmath"
+    assert all("git+https://" in d for d in rlmath_deps), rlmath_deps
     assert cfg["project"]["tags"]  # non-standard field; verifiers' own tooling reads it
     assert set(cfg["tool"]["verifiers"]["eval"]) == {"num_examples", "rollouts_per_example"}
 
