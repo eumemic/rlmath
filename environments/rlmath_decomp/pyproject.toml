@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 license = "MIT"
 # `rlmath` is not on PyPI; it resolves from the public GitHub repo (decision
 # 2026-08-11: git-dep over PyPI while core contracts may still move).
-dependencies = ["verifiers>=0.3.0", "rlmath @ git+https://github.com/eumemic/rlmath@7c132cf9bf850e181248c622e41d64d3a0318ded"]
+dependencies = ["verifiers>=0.3.0", "rlmath @ git+https://github.com/eumemic/rlmath@f1324da97cf3f01a59739e01f15fab9ecbee0c84"]
 
 [build-system]
 requires = ["hatchling"]

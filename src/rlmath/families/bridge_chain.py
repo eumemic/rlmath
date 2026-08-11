@@ -90,6 +90,7 @@ OFFSET_RANGE = (1, 9)          # dᵢ
 DELTAS = (1, 2)                # exponent increment per step
 START_EXPONENTS = (1, 1, 1)
 _MAX_REJECTS = 512             # sampler safety valve; the constraint is always satisfiable
+_MAX_DISCARDS = 16             # offline regeneration attempts per problem slot
 
 _BINDER = f"∀ x y z : ℝ, {LOWER} ≤ x → {LOWER} ≤ y → {LOWER} ≤ z → "
 
