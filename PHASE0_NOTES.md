@@ -93,6 +93,20 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   (verifiers-absent guards), 8 deselected (integration, run separately). Three of four Phase-0
   gates met; the fourth (live leaf pass@k) awaits the leaf-model decision.
 
+- 2026-08-11 ~18:00: Prime Intellect account live (team Eumemic); Prime CLI 0.6.21 installed
+  (`uv tool install prime`, pulls verifiers 0.3.0). Surveyed what the account provides:
+  - **Prime Inference serves NO prover models** (no DeepSeek-Prover-V2, no Goedel-Prover, no
+    Kimina). The leaf oracle therefore still needs a rented GPU — task #9 stands unchanged.
+  - **Prime Inference is the right home for the ROOT policy**, though: it serves
+    `qwen/qwen3-30b-a3b-instruct-2507` — the exact ../rl base model — at $0.20/$0.80 per 1M
+    in/out, plus claude-haiku-4.5 ($1/$5) and claude-opus-5. Phase 2's zero-shot study needs **no
+    local GPU and no 10–15 min/sample prefills** (../rl's hardest operational constraint, gone).
+    `prime eval run` speaks to it natively.
+  - **H100 80GB on-demand ~$3.2/hr (PCIe) / ~$4.8/hr (SXM5)**, 1/2/8-GPU configs available.
+    Leaf bake-off ≈ a few hours ≈ $10–15; full bank build well inside DIRECTION.md §5.6's envelope.
+  - `prime tunnel` (expose local services) is a candidate answer to the envs/ flag about Lean and
+    the leaf being process-local rather than services — revisit at Phase 3 integration.
+
 ## Pending / carried forward
 
 - Environments Hub publish needs an account decision (end of phase).

@@ -334,7 +334,7 @@ Caveat: `r_plan` alone is hackable by restatement, hence the detectors and budge
 |---|---|
 | Leaf prover (frozen) | DeepSeek-Prover-V2-7B in non-CoT mode (cheap, strong) or Goedel-Prover-V2-8B, behind a cache keyed by α-normalized statement |
 | Root (trained) | Qwen3-4B or 8B instruct + LoRA |
-| Zero-shot reference roots | one 30B-class open model; optionally claude-haiku via the Anthropic backend already built in `../rl/eval/run_eval.py` |
+| Zero-shot reference roots | one 30B-class open model; optionally claude-haiku via the Anthropic backend already built in `../rl/eval/run_eval.py`. **2026-08-11:** both available through Prime Inference on one OpenAI-compatible endpoint (`qwen/qwen3-30b-a3b-instruct-2507` $0.20/$0.80 per 1M — the exact `../rl` base model — and `anthropic/claude-haiku-4.5`), so Phase 2 needs no local GPU and none of `../rl`'s 10–15 min/sample prefills. Prover models are **not** served: the leaf still needs a rented GPU (~$3.2/hr H100). |
 | Verification | Kimina Lean Server (warm Mathlib, batched) on a large-CPU box |
 | Training | environment in `verifiers` format → directly publishable to Prime Intellect's Environments Hub, trainable with prime-rl |
 
