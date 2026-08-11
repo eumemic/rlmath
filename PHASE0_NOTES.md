@@ -137,6 +137,18 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   teamname → switched CLI to personal; remaining step is the one-time public username prompt
   (user-only decision), then `prime env push` completes.
 
+- 2026-08-11 ~20:30: Hub integration-test failure root-caused (env failed at LOAD time — dataset
+  construction required registered resources) and fixed: bare load builds an inspectable env over
+  4 labeled demo goals; every scoring path gates on live_resources() and raises without a kernel
+  (no fabricated rewards; v1 leaves reward unscored via TaskError). **v0.1.2 pushed** against the
+  fixed library pin (f1324da). Awaiting Hub's integration verdict; if it still fails, their test
+  does a full rollout and the residual failure is the documented Phase-3 services item.
+- Ops lesson (cost a mislabeled commit): `pytest -q | tail` in a gating chain reports the PIPE's
+  exit status, so a red suite didn't stop a commit+push, and `git add -A` while workflow agents
+  share the tree swept their WIP family modules into the pushed commit (inert for installers, but
+  history is now mislabeled). Rules going forward: `set -o pipefail` or no pipe on gating pytest;
+  **scoped `git add` whenever background agents are editing the tree**.
+
 ## Pending / carried forward
 
 - Environments Hub publish needs an account decision (end of phase).
