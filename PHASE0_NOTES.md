@@ -127,6 +127,15 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   default resolves to `bash`, handing the policy a shell and reopening the free-REPL leak §5.1
   closed. Remaining unverified: full v1 agent rollout (needs Lean/leaf as services — Phase 3).
 
+- 2026-08-11 ~19:15: **repo public at https://github.com/eumemic/rlmath** (MIT). Pinned git-dep
+  verified from a clean venv against the public URL. Stand-in plumbing smoke (#10) passed:
+  generation→extract→kernel→cache→provenance all exercised; qwen-as-leaf 0/2 per statement as
+  expected (instruct model, not a prover — the bake-off exists for this); 46–106 s/statement
+  confirms inference dominates end-to-end throughput (advisor's point). Hub push: wheel builds
+  (needed `hatch.metadata.allow-direct-references` for the git-pin), team context lacked a
+  teamname → switched CLI to personal; remaining step is the one-time public username prompt
+  (user-only decision), then `prime env push` completes.
+
 ## Pending / carried forward
 
 - Environments Hub publish needs an account decision (end of phase).

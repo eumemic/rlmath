@@ -16,6 +16,10 @@ build-backend = "hatchling.build"
 # The v1 scaffolder's build config (verifiers/v1/cli/init.py::_pyproject), not the
 # older v0 `[tool.hatch.build] include = [...]` form: this is a package directory,
 # and `packages` is what puts `rlmath_decomp/` on the path post-install.
+# git+URL deps are "direct references"; hatchling requires explicit opt-in
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [tool.hatch.build.targets.wheel]
 packages = ["rlmath_decomp"]
 
