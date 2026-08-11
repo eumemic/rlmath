@@ -41,7 +41,7 @@ cp "$ROOT/lean/rlmathlib/lean-toolchain" .
 lake build
 test -x .lake/build/bin/repl
 
-# --- 4. smoke: one command through the REPL inside the project env
-cd "$ROOT/lean/rlmathlib"
-echo '{"cmd": "theorem _smoke : 1 + 1 = 2 := by norm_num"}' | head -c 0 >/dev/null # placeholder; real smoke needs import round-trip, done by pytest -m integration
+# Real end-to-end smoke (REPL round-trip with Mathlib import) is done separately:
+# printf '{"cmd": "import Mathlib\\ntheorem _smoke : 1 + 1 = 2 := by norm_num"}\n\n' \
+#   | (cd "$ROOT/lean/rlmathlib" && lake env "$ROOT/lean/repl/.lake/build/bin/repl")
 echo "SETUP_LEAN_DONE"

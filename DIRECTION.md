@@ -11,10 +11,11 @@
   Zhang & Khattab, "Language model harnesses are compositional generalizers"
   (alexzhang13.github.io/blog/2026/harness/). Numbers cited from it below are from
   `../rl/analysis/scores.csv` and `../rl/REPORT_NOTES.md`.
-- **Verification depth on cited literature:** only arXiv 2605.30914 was fetched and read directly.
-  All other papers are characterised from search-result summaries and abstracts. Before any of
-  §2's positioning claims go into a proposal or paper, read ProD-RL (2411.01829) and
-  Goedel-Code-Prover (2603.19329) in full — they are the two that determine what is novel here.
+- **Verification depth on cited literature:** arXiv 2605.30914 was fetched directly at first
+  writing. **Update 2026-08-11:** ProD-RL (2411.01829) and Goedel-Code-Prover (2603.19329) have now
+  been read in full (research/prod-rl.md, research/goedel-code-prover.md) and their corrections
+  integrated throughout — several original characterisations were wrong in both directions.
+  Remaining papers are still characterised from abstracts/search summaries.
 
 ---
 
@@ -23,20 +24,30 @@
 Worth pursuing, but **not for the reason the brief centres**.
 
 The brief's novelty claim — "nobody appears to have RL-trained the recursive decomposition policy
-itself over a proof-assistant environment" — is no longer true as of March 2026. ProD-RL (2024) did
-a version of it; Goedel-Code-Prover (2026-03) did it convincingly in Lean with GRPO over online
-verifier rewards.
+itself over a proof-assistant environment" — is no longer true as of March 2026. ProD-RL (2024)
+did a version of it in **Isabelle/HOL**; Goedel-Code-Prover (v1 2026-03) did a version for Lean
+**code verification** — GRPO on a dense decomposition score, with completion trained by supervised
+replay rather than RL, and its own v3 revision (2026-08-10, COLM 2026) puts the RL contribution at
+**+1.1–3.2 points over SFT-only** (one seed, authors declining significance, "a modest refinement").
 
 What survives, and is sharper than the original framing: **nobody has tested whether the RLM
 *generalization mechanism* holds in proving** — whether context isolation makes a trained
 decomposition policy *transfer* along a size/difficulty axis. The nearest prior result cuts mildly
-against the hypothesis: ProD-RL's own reported limitation is that its gains over
-SFT-without-lemma-proposal were significant *only when the test distribution was close to the
-training distribution*. That is exactly the transfer claim this direction needs, reported as a
-negative, by the closest prior work.
+against the hypothesis: ProD-RL's gains over SFT-without-lemma-proposal decayed with distribution
+shift — **+2.1** (AFP test) → **+0.1** (AFP 2023, a *temporal* split) → **−4.9/−1.3** (miniF2F).
+But the deep-read (research/prod-rl.md, C5) shows that negative is **confounded**: the paper itself
+attributes the miniF2F failure to miniF2F *not requiring hierarchical decomposition at all* —
+evidence that a decomposition policy is useless on non-decomposable problems (nearly tautological),
+much weaker evidence that decomposition policies fail to transfer. §5.4's constructed families are
+decomposable *by construction*, which designs out precisely this confound.
 
 That makes this a live, falsifiable, non-obvious question rather than a greenfield engineering
 claim — and a better project for it.
+
+*(2026-08-11, post deep-read: both near-neighbors verified against full texts —
+research/prod-rl.md, research/goedel-code-prover.md — discharging open decision #5. Net effect:
+the surviving gap is **wider** than this section originally assumed: neither system has context
+isolation as a trained interface, and neither ran a size-axis or compute-matched transfer test.)*
 
 ---
 
@@ -83,17 +94,21 @@ models. That dichotomy was accurate in early 2026 but has been broken on the tra
 
 | Work | Trains decomposition? | Context isolation? | Transfer/size-axis tested? |
 |---|---|---|---|
-| [ProD-RL](https://arxiv.org/abs/2411.01829) (Dong, Mahankali, Ma, 2024) | **Yes** — RL rewards proposing *and* proving lemmas; proof is a tree, theorem proven only if all tree proofs check; partial credit for correct novel lemmas even when the parent fails | Partial (tree-structured, lemmas proved separately) | **Reported negative:** gains significant only when test distribution ≈ train distribution |
-| [Goedel-Code-Prover](https://arxiv.org/abs/2603.19329) (2026-03, Lean 4 code verification) | **Yes** — SFT on 281K decomposition + 151K completion pairs, then GRPO with online Lean verification; decomposition *score* as dense reward, QuickCheck filtering; Qwen3-8B base | Recursive decomposition with independent leaf proving | No; reports inference-time scaling, not train-small/eval-large transfer |
+| [ProD-RL](https://arxiv.org/abs/2411.01829) (Dong, Mahankali, Ma, 2024; **Isabelle/HOL via PISA** — Sledgehammer closes low-level steps, no clean Lean 4 analog; Llemma-7B, 2k ctx) | **Yes** — REINFORCE-style reward-weighted CE (expert iteration + hindsight replay; separate learned 7B value function used *multiplicatively*; **not** GRPO/PPO); a correct novel lemma earns r=1 on the *child's* training example even when the parent fails | **Full proof-text isolation, fully open-loop** — parent never sees child proofs *or statuses*; children inherit the parent's file context | Domain/temporal shift only, **no size axis**: +2.1 AFP test → +0.1 AFP-2023 (temporal) → −4.9/−1.3 miniF2F; the paper attributes the miniF2F negative to miniF2F not requiring decomposition (confound — see §0) |
+| [Goedel-Code-Prover](https://arxiv.org/abs/2603.19329) (v1 2026-03; **v3 2026-08-10**, COLM 2026; Lean 4 **code verification**; Qwen3-8B) | **Yes, modestly** — GRPO's reward is the dense decomposition score *S only*; completion is supervised replay (λ=0.08), never RL-trained; v3 matched-budget ablation: SFT-only 66.1 → SFT+RL 68.8 pass@32 (+1.1–3.2 pts, one seed, authors decline significance) | **No** — sequential two-stage pipeline; the decomposer's prompt carries the whole Lean file incl. accumulated sorry-lemmas and it writes the parent proof itself; depth emergent (flat best-first worklist, no depth stat) | No; inference-time scaling only. v3 H.3: decomposition score r>0 on 9/14 CSLib theorems but **0/10 Mathlib** ("not a general-purpose measure of mathematical decomposition quality"); H.8: no OOD claim |
 | [DeepSeek-Prover-V2](https://arxiv.org/abs/2504.21801) | Uses recursive decomposition to synthesize **cold-start data**, then flattens subgoal proofs into a single CoT for RL | No (deliberately flattened) | No |
 | [MerLean-Prover](https://arxiv.org/pdf/2605.26959) (2026-05) | No — "no finetuning, no custom RL objective"; recursive outer loop over proof plans | Yes | No |
 | [RL + recursive inference for formal verification](https://arxiv.org/html/2605.30914) (2026-05, MSc thesis) | Dafny only (GRPO/RLVR); **Lean scaffold uses a fixed base model** | Unspecified in abstract | No transfer experiments |
 | [Hilbert](https://arxiv.org/pdf/2509.22819), DeltaProver, POETRY, [DreamProver](https://arxiv.org/pdf/2604.26311) | Inference-time scaffolds / lemma libraries | Varies | No |
 
-**What is actually unclaimed:** the *conjunction* of (a) RLM-style context isolation — the root never
-sees proof text, only statements and statuses — with (b) an explicit, constructed **size axis** and
-(c) a train-small / evaluate-large **transfer measurement** against a compute-matched flat control,
-(d) with the isomorphism mechanism measured as a *mediator* rather than assumed.
+**What is actually unclaimed:** the *conjunction* of (a) **closed-loop** RLM-style context
+isolation — the root never sees proof text but *does* see child statuses (ProD-RL has full
+proof-text isolation but is open-loop: no statuses either; Goedel-Code-Prover has none) — with
+(b) an explicit, constructed **size axis**, (c) a train-small / evaluate-large **transfer
+measurement** against a compute-matched flat control, and (d) the isomorphism mechanism measured
+as a *mediator* rather than assumed. Post deep-read, (b)–(d) are individually unclaimed by every
+system in this table; (a)'s delta over ProD-RL is the status feedback loop plus the frozen
+measured leaf (§5.1 honesty note).
 
 Note the implication for the brief's five arguments: arguments 1, 3, 4, 5 all support the
 *uncontested* half of the idea (recursive decomposition helps proving — known since DSP/POETRY/DSV2
@@ -110,7 +125,7 @@ isomorphism → RL that transfers). Argument 2 is the weakest of the five (§3.2
 |---|---|---|
 | 1 | Verifiable reward at every recursion level; unhackable and dense in the tree | True and genuinely special — **but** unhackable only *per node*; see objection 2 |
 | 2 | Proof strategy = small set of content-independent shapes → trajectory isomorphism | **The crux, and oversold** — §3.2 |
-| 3 | Unlimited recursion natural; policy self-similar; depth as generalization axis | True in principle; at this scale depth ≤ 2 is what matters. Depth is better used as a held-out *probe* than a training axis |
+| 3 | Unlimited recursion natural; policy self-similar; depth as generalization axis | True in principle; at this scale depth ≤ 2 is what matters. Depth is better used as a held-out *probe* than a training axis — now evidence-backed: ProD-RL trained at depth 3 with gains concentrated at ground-truth proof depth ≤ 2 (C10) |
 | 4 | Training sub-invocations is meaningful here (unlike frozen retrieval sub-calls) | True but **premature** — defer (objection 3) |
 | 5 | The composition is an unpicked gap | **Partly false** as of 2026-03; the surviving gap is the mechanism/transfer test, not the system (§2) |
 
@@ -152,13 +167,19 @@ is untested by anyone.** The whole project should be organised around (ii).
    Subtler and more important: because the policy chooses its own subgoals, any per-node reward is
    densified on a **policy-chosen distribution**. The brief's "essentially unhackable" is right
    per-node and wrong system-wide — a policy can farm trivial subgoals. Mitigations: terminal-only
-   reward, hard node/call budgets, explicit restatement detectors. But **"did it learn
-   decomposition, or did it learn to spend more compute?" must be a first-class measured
-   distinction**, or the headline result is uninterpretable.
+   reward, hard node/call budgets, explicit restatement detectors. Prior art on the detectors (C8):
+   ProD-RL ships two such controls — discarding proposals that directly imply the theorem (a
+   restatement filter) and stripping lemmas whose references can be deleted with the proof still
+   verifying; cite, don't reinvent. But **"did it learn decomposition, or did it learn to spend
+   more compute?" must be a first-class measured distinction**, or the headline result is
+   uninterpretable.
 
 3. **Reward density ≠ clean credit assignment.** A child that fails on a *false or
    unprovable-within-budget* lemma generates gradient noise for the child policy — the parent's
-   error, the child's punishment. ProD-RL hand-built partial credit for precisely this. Partially
+   error, the child's punishment. ProD-RL hand-built partial credit for precisely this — hindsight
+   augmentation on the *child's* example (a proved lemma scores 1 regardless of the parent's fate)
+   plus a learned value function absorbing child stochasticity out of the parent's weight; both
+   halves are directly reusable here (C9). Partially
    defused here by the two-stage check (§5.2), which is a real advantage retrieval-RLM never had.
    This is also the main reason to **defer joint/shared-policy training**: with a frozen leaf,
    delegation is calibration against a *fixed, measurable* oracle; with a learning leaf it chases a
@@ -196,9 +217,10 @@ Each phase gate in §5.5 is designed so that failing it kills one specific assum
 - **Phase 2 fails** (isolation buys nothing zero-shot at matched compute) → the isolation premise is
   dead at this scale and DSV2's flattening choice is vindicated. Write it up, stop, having spent
   ~6 weeks and <$1k.
-- **Phase 3 transfer fails** → ProD-RL's caveat confirmed under clean, controlled conditions with an
-  explicit size axis. A real scientific answer to a question the field currently has only a
-  side-remark on.
+- **Phase 3 transfer fails** → a **stronger and cleaner negative than ProD-RL's**: its transfer
+  negative was confounded by a non-decomposable OOD benchmark (C5); here the families are
+  decomposable by construction and the control is compute-matched, so a failure indicts the
+  mechanism itself. A real scientific answer either way.
 - **Degenerate autocurricula dominate** → a finding about verifiable-reward RL in general, of
   interest well beyond proving.
 
@@ -240,6 +262,12 @@ prover ships next month.
 The headline sitting near a coin flip is the argument *for* running it. If it were 85% it would be
 engineering; if it were 10% it would be a bad bet.
 
+**Prior updates (2026-08-11, post deep-read — original table left untouched per pre-registration
+discipline):** two opposing evidence shifts. Goedel-Code-Prover's v3 ablation weakens the
+"harness-RL improves in-distribution" evidence (its RL delta is +1.1–3.2 pts, one seed):
+70% → **65%**. ProD-RL's transfer negative turns out confounded (C5), slightly raising the
+headline's floor. Headline stays **35–45%**, the two updates roughly offsetting.
+
 ---
 
 ## 5. Experimental design
@@ -275,6 +303,14 @@ programmatically — at which point the experiment measures program synthesis, n
 policy. Constrain the action space to decomposition itself. A free-REPL "ecological" arm can be
 added later as a separate comparison.
 
+**Honesty note vs ProD-RL (C3).** Full proof-text isolation is *not* novel — ProD-RL already has
+it, in a stricter open-loop form (no child statuses either), and its single-shot lemma-proposal
+step is near-isomorphic to this v1 root. The honest deltas, in the order they matter: (a) a frozen,
+separately-measured leaf prover — a *measurable* delegation oracle — vs the same weights recursing;
+(b) a constructed size axis with compute-matched controls vs naturalistic AFP; (c) a structured
+action space vs inline invoke-tags in free proof text; (d) mechanism measurement (masked-trajectory
+isomorphism) vs none; (e) Lean 4/Mathlib vs Isabelle+Sledgehammer.
+
 ### 5.2 Two-stage verification — the design gift of this domain
 
 Check the **assembly** first, with the stated lemmas assumed as hypotheses (fast: does the plan even
@@ -285,8 +321,12 @@ r = r_plan × r_leaves
 ```
 
 This separates *bad plan* from *unlucky leaf* — per-decomposition binary feedback independent of
-leaf stochasticity. Retrieval-RLM had no analog, and it directly addresses objection 3. Caveat:
-`r_plan` alone is hackable by restatement, hence the detectors and budgets in §5.6.
+leaf stochasticity. Retrieval-RLM had no analog, and it directly addresses objection 3. Not novel
+in proving, though (C7): ProD-RL's training weight `w = 𝟙[locally correct] · ∏ᵢ V_φ(lᵢ) · γ^h` is
+essentially this factorization, with sorry-based local-correctness checking playing the role of the
+hypothesis-binder plan check. The claimable delta is the leaf term: ProD-RL *estimates* it with a
+learned 7B value function; a frozen leaf with a measured pass-rate bank lets us *measure* it.
+Caveat: `r_plan` alone is hackable by restatement, hence the detectors and budgets in §5.6.
 
 ### 5.3 Model roles and stack
 
@@ -343,14 +383,18 @@ movement only on the hard tail where flat pass@N ≈ 0. Do not stake the thesis 
 - **Hard budgets** (max lemmas, max leaf attempts) rather than cost *penalties* — penalties suppress
   decomposition before it has a chance to pay off. Goedel-Code-Prover's shaped decomposition-score
   is the alternative; note it is hackable in principle, which is presumably why they needed QuickCheck
-  filtering.
+  filtering. Counter-data-point worth carrying (C8): ProD-RL paired a *soft* length penalty
+  (`γ^h`, γ = exp(−0.0005)) with an explicit exploration subsidy for decomposing (forced
+  invoke-tokens on the top half of the batch) — penalty-plus-subsidy is the more informative
+  precedent if hard budgets alone stall decomposition.
 - Leaf calls **cached and deduped across the GRPO group**. Convenient side effect: degenerate
   restatement policies hit cache, so they cost almost nothing to observe.
 - **Envelope:** ~300 steps × 64 problems × G8 ≈ low-single-digit 10⁹ generated tokens before
   caching, ~1–2×10⁹ after → **2–4 rented H100s for 2–3 weeks including false starts, ≈$2–5k**.
   Phases 0–2 under $1k (mostly CPU plus one inference GPU). Fallback: 4B root on 1×H100, slower
   iteration. Publishing the environment may unlock Prime Intellect compute credits — worth asking
-  early.
+  early. Sanity anchor (C11): ProD-RL trained its 7B in ≈8 GPU-days SFT + ~30 GPU-hours RL on
+  A100s — comfortably inside this envelope.
 
 ### 5.7 Metrics and registered predictions
 
@@ -418,8 +462,9 @@ uninterpretable after the fact.
    easily. Phase 1 should probably attempt A and keep B as fallback.
 4. **Whether `r_plan` enters the v1 objective** or stays diagnostic-only. Recommend diagnostic-only
    in v1, ablate in Phase 3.
-5. Read ProD-RL and Goedel-Code-Prover in full before finalizing §2's positioning (see provenance
-   note at top).
+5. ~~Read ProD-RL and Goedel-Code-Prover in full before finalizing §2's positioning~~ **Done
+   2026-08-11** — research/prod-rl.md (corrections C1–C11) and research/goedel-code-prover.md
+   (§10, C1–C6); all corrections integrated throughout this document.
 
 ---
 
