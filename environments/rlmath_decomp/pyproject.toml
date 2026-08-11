@@ -1,0 +1,29 @@
+[project]
+name = "rlmath-decomp"
+description = "Lean 4 decomposition MDP: root states lemmas + assembly, frozen leaf prover closes them"
+tags = ["single-turn", "math", "lean", "formal-verification", "train", "eval"]
+version = "0.1.0"
+requires-python = ">=3.12"
+# `rlmath` is not on PyPI. It resolves for a local `prime env install -p .` inside
+# this repo, and MUST be repointed (published sdist, or `rlmath @ git+<url>`)
+# before `prime env push` — the Hub build installs dependencies by name.
+dependencies = ["verifiers>=0.3.0", "rlmath"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+# The v1 scaffolder's build config (verifiers/v1/cli/init.py::_pyproject), not the
+# older v0 `[tool.hatch.build] include = [...]` form: this is a package directory,
+# and `packages` is what puts `rlmath_decomp/` on the path post-install.
+[tool.hatch.build.targets.wheel]
+packages = ["rlmath_decomp"]
+
+[tool.hatch.build.targets.sdist]
+include = ["rlmath_decomp", "pyproject.toml", "README.md"]
+
+# Defaults for `prime eval run` / `vf-eval` when -n / -r are omitted. Deliberately
+# small: one rollout is a real Lean episode, not a string comparison.
+[tool.verifiers.eval]
+num_examples = 20
+rollouts_per_example = 5

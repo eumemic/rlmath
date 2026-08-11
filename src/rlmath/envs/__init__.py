@@ -4,7 +4,8 @@
 Import-safe without the optional `envhub` extra: `HAS_VERIFIERS` says whether it
 is present, and only the environment builders require it. The v1 taskset classes
 are re-exported when they exist because the v1 loader discovers a taskset from
-the package's `__all__` (research/verifiers.md §5.2).
+the package's `__all__` — and requires exactly one `Taskset` subclass there
+(`verifiers/v1/utils/loaders.py::_plugin_class`).
 """
 from .decomp_env import (
     ENV_ID,
@@ -12,8 +13,10 @@ from .decomp_env import (
     HAS_VERIFIERS_V0,
     HAS_VERIFIERS_V1,
     SYSTEM_PROMPT,
+    TRACE_INFO_KEY,
     EpisodeResources,
     EpisodeScore,
+    attach_diagnostics,
     build_dataset,
     build_prompt,
     build_taskset,
@@ -26,7 +29,6 @@ from .decomp_env import (
     load_goals,
     score_plan,
     set_resources,
-    single_prompt,
     user_message,
 )
 
@@ -36,8 +38,10 @@ __all__ = [
     "HAS_VERIFIERS_V0",
     "HAS_VERIFIERS_V1",
     "SYSTEM_PROMPT",
+    "TRACE_INFO_KEY",
     "EpisodeResources",
     "EpisodeScore",
+    "attach_diagnostics",
     "build_dataset",
     "build_prompt",
     "build_taskset",
@@ -50,17 +54,17 @@ __all__ = [
     "load_goals",
     "score_plan",
     "set_resources",
-    "single_prompt",
     "user_message",
 ]
 
-if HAS_VERIFIERS_V1:  # pragma: no cover - needs the envhub extra
+if HAS_VERIFIERS_V1:
     from .decomp_env import (
         DecompositionConfig,
         DecompositionData,
         DecompositionTask,
+        DecompositionTaskConfig,
         DecompositionTaskset,
     )
 
     __all__ += ["DecompositionConfig", "DecompositionData", "DecompositionTask",
-                "DecompositionTaskset"]
+                "DecompositionTaskConfig", "DecompositionTaskset"]

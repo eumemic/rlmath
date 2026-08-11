@@ -15,9 +15,11 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   without it the rate would have been ~7%, above gate. Residual 3 failures are genuine
   current-Mathlib incompatibilities (binder-syntax oddities; `Complex.abs` renamed upstream).
   Elapsed at scale: p50 14 ms, mean 48 ms, max 8.9 s.
-- [x] environment publishable to Prime Intellect Environments Hub — wrapper built (v1-primary +
-  v0 shim, both over one `score_plan`; `envs/envs_README.md` documents the publish steps). The
-  actual push awaits the account decision (Pending).
+- [x] environment publishable to Prime Intellect Environments Hub — wrapper built AND pinned
+  against installed verifiers 0.3.0 (58 env tests; v0 rollout loop validated end-to-end with a
+  live policy + real Lean kernel). Hub package at `environments/rlmath_decomp/` builds a clean
+  sdist+wheel. One push blocker: the package depends on `rlmath`, which is not on PyPI —
+  needs a packaging decision (PyPI publish vs git+URL), then `prime env push`.
 - [ ] leaf pass-rate bank pipeline runs end-to-end — elaborate-only path smoked live (29 rows);
   the leaf-proving path is unit-tested but needs a live leaf model (Pending: leaf model choice).
 
@@ -46,7 +48,14 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
 - **2026-08-11 — verifiers wrapper targets v1 primarily, with a v0 shim.** prime-rl's orchestrator
   consumes only `verifiers.v1` (research/verifiers.md §6) and prime-rl is the Phase-3 trainer; the
   v0 shim (~40 lines over the same `score_plan`) buys `prime eval run`/`vf-eval` for Phase 2.
-  Flagged unknowns to pin on first real install: v1 metric-attachment call, Taskset construction.
+  ~~Flagged unknowns to pin on first real install: v1 metric-attachment call, Taskset
+  construction.~~ **Resolved 2026-08-11 evening against installed verifiers 0.3.0:**
+  `trace.record_metrics()` + `trace.info` (the guessed ladder would have stuffed a dict into the
+  float-typed metrics dict — serialization corruption, not loss); `Taskset(config)` positional;
+  `TaskData.system_prompt` EXISTS (research notes flatly wrong — inlining removed). Bonus catch
+  nobody flagged: the v1 env server rebuilds tasks without calling `load()`, so budgets set as a
+  `load()` side effect would have silently reverted to defaults under prime-rl — §5.6's hard caps
+  now live in `DecompositionTaskConfig` (TOML: `[env.taskset.task]`).
 - **2026-08-11 — Leaf oracle: bf16 on a rented GPU, never quantized-GGUF (advisor review).** The
   bank's measured pass rates ARE the delegability oracle; quantized pass rates are a different
   model's pass rates, and ../rl already ate one silent ollama pathology. Oracle runs use vLLM +
@@ -106,6 +115,17 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
     Leaf bake-off ≈ a few hours ≈ $10–15; full bank build well inside DIRECTION.md §5.6's envelope.
   - `prime tunnel` (expose local services) is a candidate answer to the envs/ flag about Lean and
     the leaf being process-local rather than services — revisit at Phase 3 integration.
+
+- 2026-08-11 ~18:30: verifiers API pinning complete (all 3 guesses + 1 unflagged bug fixed; suite
+  402 passed). **First live eval smoke ran the full loop** — policy (qwen3-30b via ollama) →
+  verifiers rollout → wire-format parse → run_episode → real Lean kernel. Scientific note: all 3
+  zero-shot completions parsed the format correctly and then **restated the goal as a single lemma
+  and delegated it** (`plan_restatement_max=1.0`) rather than direct-closing — the §5.7 P4
+  degenerate-recursion pathology, visible on the literal first three rollouts, caught by the
+  instrument built for it. Two run-config landmines now in envs_README: `state_columns=["rlmath"]`
+  required or the diagnostics blob is dropped from saved rows; v1 harness must be `null` — the
+  default resolves to `bash`, handing the policy a shell and reopening the free-REPL leak §5.1
+  closed. Remaining unverified: full v1 agent rollout (needs Lean/leaf as services — Phase 3).
 
 ## Pending / carried forward
 

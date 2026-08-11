@@ -38,7 +38,14 @@ Diagnostics (§5.7 P4) ride out through the per-sample channel because a status
 that only exists inside the runner cannot be analysed later: `status`, `detail`,
 `plan_stats` and `leaf_attempts_used` are the instrument for "degenerate
 restatement rises under RL and hard budgets contain it", and they have to be in
-the training logs from the first run, not added after the plot looks wrong.
+the training logs from the first run, not added after the plot looks wrong. On
+v1 that is `Trace.record_metrics` (floats) plus `Trace.info["rlmath"]` (the JSON
+blob); on v0 it is `state["rlmath"]` plus weight-0 rubric functions.
+
+Every `verifiers` call below is pinned against the installed 0.3.0 source, not
+against research/verifiers.md — the notes were taken from a repo clone and got
+`TaskData.system_prompt` (it exists) and the metric channel (explicit `Trace`
+methods) wrong. See the comment above the v1 block.
 """
 from __future__ import annotations
 
@@ -152,34 +159,32 @@ def user_message(goal: GoalSpec) -> str:
 
 
 def build_prompt(goal: GoalSpec) -> list[dict[str, str]]:
-    """Chat messages for one goal (v0 dataset `prompt` column shape)."""
+    """Chat messages for one goal (v0 dataset `prompt` column shape).
+
+    Both surfaces keep the system text in a real system slot rather than inlining
+    it into the user turn: v0 through `SingleTurnEnv(system_prompt=...)`, v1
+    through `TaskData.system_prompt` (which `Harness.resolve_prompt` emits as a
+    separate system message when the harness sets `APPENDS_SYSTEM_PROMPT`, and
+    otherwise prepends itself, with a warning). One rendering of the format spec,
+    owned by the framework in both cases.
+    """
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": user_message(goal)},
     ]
 
 
-def single_prompt(goal: GoalSpec) -> str:
-    """System + user flattened into one string.
-
-    v1 `TaskData` carries a single `prompt` field and the *harness* owns the
-    system slot (research/verifiers.md §5.1), so a v1 task cannot rely on an
-    environment-level `system_prompt=` the way v0 can. Inlining keeps the format
-    spec attached to the row, which is also what makes a saved trace
-    self-describing.
-    """
-    return f"{SYSTEM_PROMPT}\n\n{user_message(goal)}"
-
-
 def completion_text(completion: Any) -> str:
-    """Last assistant turn as text, from either verifiers message mode.
+    """Last assistant turn as text, from either v0 message mode.
 
-    Chat mode hands back `list[ChatMessage]`, `message_type="completion"` a bare
-    `str` (research §3.1/§8). Single-shot means there is exactly one assistant
-    turn to read. Anything unrecognized becomes the empty string, which the
-    parser turns into a loud FORMAT_ERROR — never an exception, because an
-    unexpected completion shape is policy evidence, not infrastructure failure
-    (§6), and must be counted rather than crash the batch.
+    The v0 path only: chat mode hands the rubric a `list[ChatMessage]`,
+    `message_type="completion"` a bare `str`. (v1 needs none of this —
+    `Trace.last_reply` is already the last assistant turn as a stripped `str`.)
+    Single-shot means there is exactly one assistant turn to read. Anything
+    unrecognized becomes the empty string, which the parser turns into a loud
+    FORMAT_ERROR — never an exception, because an unexpected completion shape is
+    policy evidence, not infrastructure failure (§6), and must be counted rather
+    than crash the batch.
     """
     if isinstance(completion, str):
         return completion
@@ -354,11 +359,16 @@ class EpisodeResources:
     """The live handles a rollout needs: Lean backend, leaf prover, budgets, goals.
 
     A module-level registry exists because of a v1 constraint, not by taste:
-    a v1 `Taskset` is constructed by the loader from a serializable config and
-    "only `TaskData` is stored on the trace — never live clients/handles"
-    (research §5.1), so a REPL pool or an OpenAI-backed leaf cannot travel
-    through either. The task reaches them by process-global lookup instead. The
-    v0 surface captures the same objects in closures and never consults this.
+    a v1 `Taskset` is constructed by the loader from a serializable config
+    (`load_taskset` -> `taskset_class(config.id)(config)`) and `TaskData` is a
+    frozen pydantic model that travels over the env-server wire, so a REPL pool
+    or an OpenAI-backed leaf cannot ride through either. The task reaches them
+    by process-global lookup instead. The v0 surface captures the same objects
+    in closures and never consults this.
+
+    `budgets` is the v0 default and the `build_taskset` seed only; a v1 task
+    reads its budgets from `DecompositionTaskConfig`, which is the only copy the
+    scoring process is guaranteed to have.
     """
 
     backend: LeanBackend
@@ -397,75 +407,107 @@ def _require(available: bool, what: str) -> None:
 # v1 surface (primary) — Taskset / Task / TaskData
 # ---------------------------------------------------------------------------
 #
-# Shapes follow research/verifiers.md §5.2 and the bundled GSM8K taskset (§5.4).
-# The classes are defined under a flag rather than in a factory because the v1
-# loader discovers the taskset from the module's `__all__` (§5.2), which needs a
-# real class at module scope — while `import rlmath.envs.decomp_env` must still
-# succeed with the extra absent.
+# Verified against the installed `verifiers` 0.3.0 source (not the research
+# notes, which predate the wheel). What the real API turned out to be:
 #
-# ATTENTION (unverified — the extra is not installed in this venv, and
-# research/verifiers.md does not pin these two points):
-#   * the per-trace metric channel: `_attach_metrics` tries the plausible shapes
-#     in turn and reports which one took, rather than guessing one and losing
-#     the P4 diagnostics silently;
-#   * `Taskset.__init__`'s signature — `build_taskset` tries positional then
-#     keyword. Both should be collapsed to the real call on first install.
+#   * `Taskset.__init__(self, config)` takes the config positionally and is not
+#     meant to be overridden (`verifiers/v1/taskset.py`); `load_taskset` calls
+#     `taskset_class(config.id)(config)`. One construction, no fallback.
+#   * The per-trace channels are explicit methods on `Trace`
+#     (`verifiers/v1/trace.py`): `record_metric(name, float)` /
+#     `record_metrics(mapping)` write `trace.metrics: dict[str, float | None]`,
+#     and `trace.info: dict[str, Any]` is the declared "scratch space for
+#     task-specific metadata". Both survive `Trace.to_record()`.
+#   * `TaskData` *does* have a `system_prompt` slot, so the prompt is not
+#     inlined: `Harness.resolve_prompt` emits it as a real system message.
+#
+# The one structural adaptation: budgets moved from `TasksetConfig` to
+# `TaskConfig` (`config.task`). In a served run the client owns the taskset and
+# the server "never `load()`s data" — it rebuilds each task as
+# `task_cls(wire_data, env.config.taskset.task)` (`verifiers/v1/serve/server.py`
+# `_build_task`). Budgets applied as a side effect of `load()` would therefore
+# never reach the process that scores, and §5.6's hard caps would silently
+# revert to defaults under prime-rl. Read from `self.config` they arrive
+# wherever the task is executed, and stay sweepable from TOML as
+# `[env.taskset.task]`.
+#
+# The classes are defined under a flag rather than in a factory because the v1
+# loader discovers the taskset from the module's `__all__`
+# (`verifiers/v1/utils/loaders.py::_plugin_class`, which requires *exactly one*
+# `Taskset` subclass there) — that needs a real class at module scope, while
+# `import rlmath.envs.decomp_env` must still succeed with the extra absent.
 
-if HAS_VERIFIERS_V1:  # pragma: no cover - needs the envhub extra
+if HAS_VERIFIERS_V1:
 
     class DecompositionData(vf1.TaskData):
-        """Immutable per-goal row. Mirrors GoalSpec; carries no live handles."""
+        """Immutable per-goal row. Mirrors GoalSpec; carries no live handles.
+
+        `prompt` is the goal turn only and `system_prompt` the format spec — the
+        base `TaskData` fields, so the harness owns the system slot and the
+        saved trace stays self-describing without a hand-flattened string.
+
+        `decl_name`, not `name`: `TaskData.name` is the framework's display label
+        and overloading it with the goal's Lean declaration name would make an
+        eval listing read as a pile of theorem names with no goal ids.
+        """
 
         goal_id: str
         prop: str
-        name: str
+        decl_name: str
 
-    class DecompositionTask(vf1.Task[DecompositionData]):
-        """One goal, one plan, one kernel verdict.
+    class DecompositionTaskConfig(vf1.TaskConfig):
+        """Per-task knobs, reachable as `[env.taskset.task]` / `--env.taskset.task.*`.
 
-        A single `@vf.reward` method does all the work: the episode is real Lean
-        (and possibly real leaf-model) compute, so it must run exactly once per
-        trace. Splitting the diagnostics into their own reward methods would
-        either re-run it or need a cross-method cache; attaching them from here
-        is both cheaper and race-free.
+        §5.6's hard caps live here rather than on the taskset config because the
+        env server builds every task from *its* copy of this subtree without
+        ever calling `load()` (see the note above).
         """
 
-        @vf1.reward(weight=1.0)
-        async def verified(self, trace) -> float:
-            res = get_resources()
-            goal = GoalSpec(id=self.data.goal_id, prop=self.data.prop, name=self.data.name)
-            # to_thread: run_episode blocks on the Lean backend, and every
-            # concurrent rollout shares one event loop (research §8 gotcha a).
-            score = await asyncio.to_thread(
-                score_plan,
-                goal,
-                completion_text(getattr(trace, "last_reply", "")),
-                backend=res.backend,
-                leaf=res.leaf,
-                budgets=res.budgets,
-            )
-            _attach_metrics(trace, score)
-            return score.reward
-
-    class DecompositionConfig(vf1.TasksetConfig):
-        """Load-time knobs. Budgets live here so an RL run can sweep them from
-        TOML (`[env.taskset]`) — §5.6's hard caps are the intended dial."""
-
-        goals: str | None = None  # JSONL path; None = the registered resources' goals
         max_lemmas: int = _DEFAULTS.max_lemmas
         leaf_attempts_per_lemma: int = _DEFAULTS.leaf_attempts_per_lemma
         max_total_leaf_attempts: int = _DEFAULTS.max_total_leaf_attempts
         verify_timeout_s: float = _DEFAULTS.verify_timeout_s
 
+    class DecompositionTask(vf1.Task[DecompositionData, vf1.State, DecompositionTaskConfig]):
+        """One goal, one plan, one kernel verdict.
+
+        A single `@vf.reward` method does all the work: the episode is real Lean
+        (and possibly real leaf-model) compute, so it must run exactly once per
+        trace. `Task.score` runs every `@metric` concurrently with no shared
+        cache, so splitting the diagnostics out into their own methods would
+        re-run the episode; recording them from here is cheaper and race-free.
+        """
+
+        NEEDS_CONTAINER = False  # the Lean backend is the harness's, not the rollout's
+
+        @vf1.reward(weight=1.0)
+        async def verified(self, trace: vf1.Trace) -> float:
+            res = get_resources()
+            goal = GoalSpec(id=self.data.goal_id, prop=self.data.prop,
+                            name=self.data.decl_name)
+            # to_thread: run_episode blocks on the Lean backend, and every
+            # concurrent rollout shares one event loop (research §8 gotcha a).
+            score = await asyncio.to_thread(
+                score_plan,
+                goal,
+                trace.last_reply,  # already the last assistant turn as text
+                backend=res.backend,
+                leaf=res.leaf,
+                budgets=budgets_from_config(self.config),
+            )
+            attach_diagnostics(trace, score)
+            return score.reward
+
+    class DecompositionConfig(vf1.TasksetConfig):
+        """Load-time knobs (`[env.taskset]`): which goals, and the task subtree."""
+
+        goals: str | None = None  # JSONL path; None = the registered resources' goals
+        task: DecompositionTaskConfig = DecompositionTaskConfig()
+
     class DecompositionTaskset(vf1.Taskset[DecompositionTask, DecompositionConfig]):
         def load(self) -> list[DecompositionTask]:
             cfg = self.config
-            res = get_resources()
-            # Config wins over whatever was registered: the TOML is the run's
-            # own record of the §5.6 caps, and a sweep must not be overridden
-            # by a launcher's defaults.
-            res.budgets = budgets_from_config(cfg)
-            goals = load_goals(cfg.goals) if cfg.goals else res.goals
+            goals = load_goals(cfg.goals) if cfg.goals else get_resources().goals
             if not goals:
                 raise ValueError(
                     "taskset has no goals: set config.goals to a JSONL path or pass "
@@ -475,10 +517,12 @@ if HAS_VERIFIERS_V1:  # pragma: no cover - needs the envhub extra
                 DecompositionTask(
                     DecompositionData(
                         idx=i,
-                        prompt=single_prompt(g),
+                        name=g.id,
+                        prompt=user_message(g),
+                        system_prompt=SYSTEM_PROMPT,
                         goal_id=g.id,
                         prop=g.prop,
-                        name=g.name,
+                        decl_name=g.name,
                     ),
                     cfg.task,
                 )
@@ -487,7 +531,7 @@ if HAS_VERIFIERS_V1:  # pragma: no cover - needs the envhub extra
 
 
 def budgets_from_config(cfg: Any) -> Budgets:
-    """v1 config -> core Budgets (verifiers-free, so it is unit-testable)."""
+    """v1 task config -> core Budgets (verifiers-free, so it is unit-testable)."""
     return Budgets(
         max_lemmas=cfg.max_lemmas,
         leaf_attempts_per_lemma=cfg.leaf_attempts_per_lemma,
@@ -496,37 +540,23 @@ def budgets_from_config(cfg: Any) -> Budgets:
     )
 
 
-def _attach_metrics(trace: Any, score: EpisodeScore) -> str:
-    """Put the §5.7 diagnostics on the trace. Returns the channel used.
+TRACE_INFO_KEY = "rlmath"
 
-    Duck-typed on purpose: research/verifiers.md documents that a v1 `Trace`
-    carries "rewards + metrics + errors" but not the call that writes one, and
-    the extra is not installed here to check. Losing the diagnostics silently is
-    the one outcome that must not happen (they are the P4 instrument), so this
-    tries the plausible shapes and says which took; the caller can log `"none"`
-    as the signal to fix this against a real install.
+
+def attach_diagnostics(trace: Any, score: EpisodeScore) -> None:
+    """Put the §5.7 diagnostics on the trace, through the two real channels.
+
+    `Trace.record_metrics` coerces to float and writes `trace.metrics`, which is
+    typed `dict[str, float | None]` — the JSON blob must therefore *not* go
+    there (it would break the schema and the aggregate means). It goes to
+    `trace.info`, the declared scratch space for task-specific metadata; both
+    dicts are ordinary pydantic fields and both survive `Trace.to_record()` into
+    `traces.jsonl`. No fallback: if either call ever disappears this must fail
+    loudly, because losing the P4 instrument silently is the one outcome that
+    makes a whole training run uninterpretable after the fact.
     """
-    info = score.info
-    numbers = score.metrics
-    for name in ("add_metric", "metrics"):
-        target = getattr(trace, name, None)
-        if target is None:
-            continue
-        if callable(target):
-            for k, v in numbers.items():
-                target(k, v)
-            target("rlmath_info", json.dumps(info, ensure_ascii=False))
-            return "add_metric"
-        if hasattr(target, "__setitem__"):
-            for k, v in numbers.items():
-                target[k] = v
-            target["rlmath_info"] = info
-            return "metrics"
-    holder = getattr(trace, "info", None)
-    if hasattr(holder, "__setitem__"):
-        holder["rlmath"] = info
-        return "info"
-    return "none"
+    trace.record_metrics(score.metrics)
+    trace.info[TRACE_INFO_KEY] = score.info
 
 
 def build_taskset(
@@ -549,15 +579,15 @@ def build_taskset(
                                    goals=load_goals(goals)))
     if config is None:
         config = DecompositionConfig(
-            max_lemmas=budgets.max_lemmas,
-            leaf_attempts_per_lemma=budgets.leaf_attempts_per_lemma,
-            max_total_leaf_attempts=budgets.max_total_leaf_attempts,
-            verify_timeout_s=budgets.verify_timeout_s,
+            id=ENV_ID,
+            task=DecompositionTaskConfig(
+                max_lemmas=budgets.max_lemmas,
+                leaf_attempts_per_lemma=budgets.leaf_attempts_per_lemma,
+                max_total_leaf_attempts=budgets.max_total_leaf_attempts,
+                verify_timeout_s=budgets.verify_timeout_s,
+            ),
         )
-    try:
-        return DecompositionTaskset(config)
-    except TypeError:
-        return DecompositionTaskset(config=config)
+    return DecompositionTaskset(config)
 
 
 # ---------------------------------------------------------------------------
@@ -659,8 +689,10 @@ __all__ = [
     "HAS_VERIFIERS_V0",
     "HAS_VERIFIERS_V1",
     "SYSTEM_PROMPT",
+    "TRACE_INFO_KEY",
     "EpisodeResources",
     "EpisodeScore",
+    "attach_diagnostics",
     "build_dataset",
     "build_prompt",
     "build_taskset",
@@ -673,10 +705,12 @@ __all__ = [
     "load_goals",
     "score_plan",
     "set_resources",
-    "single_prompt",
     "user_message",
 ]
 
-if HAS_VERIFIERS_V1:  # the v1 loader resolves the taskset off __all__ (research §5.2)
+# The v1 loader resolves the taskset off `__all__` and requires *exactly one*
+# `Taskset` subclass there (`loaders._plugin_class`) — adding a second would
+# turn discovery into a hard error, so keep this list at one taskset.
+if HAS_VERIFIERS_V1:
     __all__ += ["DecompositionConfig", "DecompositionData", "DecompositionTask",
-                "DecompositionTaskset"]
+                "DecompositionTaskConfig", "DecompositionTaskset"]

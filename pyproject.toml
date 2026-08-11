@@ -12,8 +12,10 @@ dependencies = [
 
 [project.optional-dependencies]
 anthropic = ["anthropic>=0.34"]
-# verifiers is heavy (pulls training deps); only needed for the Environments Hub wrapper
-envhub = ["verifiers"]
+# verifiers is heavy (pulls training deps); only needed for the Environments Hub wrapper.
+# Floored at 0.3.0: that is the release the wrapper's API use is pinned against (v1
+# Taskset/Trace, TaskData.system_prompt), and Hub packages must declare a floor.
+envhub = ["verifiers>=0.3.0"]
 
 [dependency-groups]
 dev = ["pytest>=8", "pytest-timeout>=2.3"]
