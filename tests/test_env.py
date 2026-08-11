@@ -17,6 +17,7 @@ from __future__ import annotations
 import importlib
 import json
 import pathlib
+import re
 import tomllib
 from dataclasses import dataclass, field
 
@@ -687,9 +688,15 @@ def test_hub_pyproject_declares_what_the_hub_build_needs():
     assert "verifiers>=0.3.0" in cfg["project"]["dependencies"]
     # rlmath is not on PyPI: a bare "rlmath" dep is unresolvable from the Hub
     # build, so the dependency must carry a source (git+URL; decision 2026-08-11)
+    # AND an immutable ref — a floating branch would let two installs of the same
+    # published env version resolve to different rlmath code (supply-chain review
+    # 2026-08-11). Publish runbook: re-pin to the pushed HEAD before every
+    # `prime env push` (envs_README).
     rlmath_deps = [d for d in cfg["project"]["dependencies"] if d.split("@")[0].strip() == "rlmath"]
     assert rlmath_deps, "Hub package must depend on rlmath"
-    assert all("git+https://" in d for d in rlmath_deps), rlmath_deps
+    assert all(
+        re.search(r"git\+https://github\.com/eumemic/rlmath@[0-9a-f]{40}$", d) for d in rlmath_deps
+    ), rlmath_deps
     assert cfg["project"]["tags"]  # non-standard field; verifiers' own tooling reads it
     assert set(cfg["tool"]["verifiers"]["eval"]) == {"num_examples", "rollouts_per_example"}
 

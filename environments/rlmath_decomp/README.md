@@ -278,17 +278,20 @@ scaffolder's form) rather than the older v0 `[tool.hatch.build] include = [...]`
 `[tool.verifiers.eval]` are kept because the Hub pipeline reads them off the pyproject. Nothing in
 the installed `verifiers` reads either, so they are unverified locally.
 
-**Open blocker before any push:** `dependencies` lists `rlmath`, which is not on PyPI. It resolves
-for a local editable install inside this repo and will **fail on the Hub build**, which installs
-dependencies by name. Publish `rlmath` (or repoint to `rlmath @ git+<url>`) first.
+**Resolved 2026-08-11:** `rlmath` is not on PyPI, so the dependency is a git-dep on the public
+repo, **pinned to a full commit SHA** (supply-chain review: a floating branch ref would let two
+installs of the same published env version resolve to different `rlmath` code — the environment
+must be reproducible). `tests/test_env.py` enforces the 40-hex pin.
 
 ### Publishing steps
 
-**TODO (Phase-0 pending item, see PHASE0_NOTES.md): needs a Prime Intellect account — no push has
-been made yet.** Nothing below has been run.
-
-1. **Auth.** `uv tool install prime && prime login`  ← *TODO: account decision*
-2. **Fix the `rlmath` dependency** (above).
+1. **Auth.** `uv tool install prime && prime login`  ✓ done 2026-08-11 (team Eumemic).
+2. **Re-pin the `rlmath` dependency to the pushed HEAD.** Before *every* `prime env push`:
+   `git push` the library first, then set the dep in `environments/rlmath_decomp/pyproject.toml`
+   to `rlmath @ git+https://github.com/eumemic/rlmath@$(git rev-parse HEAD~0)` for the commit the
+   push made public, bump the package `version`, and commit the pin. (The pin commit itself need
+   not be inside the pinned tree — installers fetch the pinned SHA, which already contains the
+   whole library.)
 3. **Verify locally first.** `prime eval run rlmath-decomp -m <model> -n 5` (or `vf-eval`, or the v1
    `eval` script), with a live Lean backend and leaf registered via `set_resources` and a harness
    that does not need a container:

@@ -6,7 +6,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 # `rlmath` is not on PyPI; it resolves from the public GitHub repo (decision
 # 2026-08-11: git-dep over PyPI while core contracts may still move).
-dependencies = ["verifiers>=0.3.0", "rlmath @ git+https://github.com/eumemic/rlmath"]
+dependencies = ["verifiers>=0.3.0", "rlmath @ git+https://github.com/eumemic/rlmath@82c46e54ca4e0a6491867e41a32dd65ba50eb067"]
 
 [build-system]
 requires = ["hatchling"]
