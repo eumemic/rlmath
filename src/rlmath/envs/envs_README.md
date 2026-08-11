@@ -206,6 +206,43 @@ it rebuilds each task as `task_cls(wire_data, env.config.taskset.task)`
 be set in the wrong process and the caps would silently revert to defaults in the one place they
 matter most.
 
+### Loading works anywhere; running needs the resources
+
+`load_environment()` and `build_taskset()` take **no required arguments**, and
+`DecompositionTaskset(DecompositionConfig(id="rlmath-decomp"))` constructs off a default config.
+With nothing registered they build over `decomp_env.DEMO_GOALS` — four small true Lean props with
+ids `demo-00`…`demo-03`. That is not a convenience: the Hub's integration test imports and loads a
+published environment on infra that has **no Lean toolchain**, and `prime env info` / v1 discovery
+do the same, so an environment that can only be constructed next to a live kernel cannot be
+published at all. The demo set is deliberately tiny and `demo-`-labelled so no results table can
+mistake it for a run against the real bank.
+
+Goal resolution is one rule everywhere (`decomp_env.resolve_goals`): **explicit argument →
+registered `EpisodeResources` → demo set.** The demo set is a tail, not a repair — resources
+registered with an *empty* goal list still raise, so a misconfigured run cannot quietly become a
+four-sample green report.
+
+**Scoring gets no fallback of any kind.** Every rollout path goes through
+`decomp_env.live_resources()`, which raises a `RuntimeError` naming `set_resources` when a backend
+or leaf is missing. A missing kernel scored as `0.0` is indistinguishable from a policy failure in
+every downstream mean (§6, §5.7), and on a hosted eval it would read as a model that never proves
+anything. Handles are resolved per rollout, not captured at construction, so a launcher may build
+the environment first and register the backend afterwards — the shape the CLI paths force.
+(`EpisodeResources.backend` / `.leaf` are therefore optional *fields*: a process may register the
+goals it has without pretending to a kernel it does not. `get_resources()` answers "what is
+registered", `live_resources()` answers "can this process run an episode" — only the second one
+gates scoring.)
+
+One library caveat, on the **v0 surface only**: verifiers' `Rubric` catches an exception raised by a
+reward function and records `0.0` with a logged `ERROR`
+(`rubrics/rubric.py::_call_individual_reward_func`) — so a resource-less v0 eval yields an error log
+per rollout plus an all-zero column rather than a crash. That fallback is the framework's, and it is
+the same one a dead Lean server hits today. The v1 path — the one `prime-rl` trains on — propagates
+the failure as a `TaskError` and leaves the reward **unscored (`None`)** on the trace. Nothing in
+this repo ever *returns* a fabricated number on either path;
+`tests/test_env.py::test_v0_bare_environment_raises_at_score_time_instead_of_scoring_zero` and its
+v1 sibling pin both halves.
+
 ### Goals dataset
 
 `load_goals` takes a JSONL path or any iterable of `GoalSpec`/dict. Rows:
@@ -305,9 +342,12 @@ must be reproducible). `tests/test_env.py` enforces the 40-hex pin.
    §7.2: "Publishing is an external state change... Do not publish merely because local verification
    passed."  ✓ **Pushed 2026-08-11, PUBLIC:**
    https://app.primeintellect.ai/dashboard/environments/eumemic/rlmath-decomp
-5. **Hosted eval.** `prime eval run rlmath-decomp --hosted --follow` — will not work yet: rollouts
-   need a Lean toolchain + leaf prover, which are process-local (`set_resources`), not services.
-   Phase-3 item.
+5. **Hosted eval.** `prime eval run rlmath-decomp --hosted --follow` — will not produce rewards yet.
+   *Loading* the published environment works anywhere, with no Lean toolchain and nothing registered
+   (that is what the Hub's post-push integration test does, and what versions 0.1.0/0.1.1 failed
+   before the demo-goal fallback existed); *running* it needs a Lean toolchain + leaf prover, which
+   are process-local (`set_resources`), not services. A hosted rollout therefore raises at score
+   time instead of reporting zeros — deliberately, per "Loading works anywhere" above. Phase-3 item.
 6. **Consume elsewhere.** Because `rlmath` is a git-dependency, resolvers with transitive-URL
    protection (uv, and pip against PyPI-style indexes) require it declared **explicitly alongside**
    the wheel — this is the consumer-side mirror of the supply-chain pin, not a packaging bug:

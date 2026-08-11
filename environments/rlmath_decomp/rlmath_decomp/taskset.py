@@ -17,12 +17,21 @@ Both surfaces are re-exported:
 * `load_environment` — v0. `verifiers.load_environment("rlmath-decomp")` imports
   the module and calls this by name (`verifiers/utils/env_utils.py`).
 
-Both need live Lean/leaf handles, which neither a `TasksetConfig` nor
+Both **construct** with no arguments and nothing registered, over the built-in
+`DEMO_GOALS` set — importing, discovering and inspecting this package works on a
+machine with no Lean toolchain, which is what the Hub's post-push integration
+test does.
+
+Both **run** on live Lean/leaf handles, which neither a `TasksetConfig` nor
 `--env-args` can carry (they are serializable; a REPL pool is not). Register them
 process-globally before the run:
 
     from rlmath.envs import EpisodeResources, set_resources
     set_resources(EpisodeResources(backend=..., leaf=..., goals=[...]))
+
+A rollout scored without them raises instead of returning 0.0: an absent kernel
+reported as a zero reward is indistinguishable from a policy that never proves
+anything. See the README's "Loading works anywhere; running needs the resources".
 """
 
 from rlmath.envs.decomp_env import (

@@ -189,6 +189,23 @@ def test_goal_rows_shape_matches_the_v0_dataset_contract():
     assert env.load_goals([row["info"]]) == [GOAL]
 
 
+def test_demo_goals_are_a_small_clearly_labelled_set():
+    """The built-in dataset a resource-less load falls back to (Hub discovery).
+
+    Small and `demo-`-prefixed on purpose: it exists so the environment can be
+    *loaded* without a Lean toolchain, and no results table should ever be able
+    to mistake it for a run against the real bank.
+    """
+    assert 1 <= len(env.DEMO_GOALS) <= 8
+    assert [g.id for g in env.DEMO_GOALS] == ["demo-00", "demo-01", "demo-02", "demo-03"]
+    assert all(g.prop.strip() and "\n" not in g.prop for g in env.DEMO_GOALS)
+    # distinct declaration names, or the composed artifacts would collide
+    assert len({g.name for g in env.DEMO_GOALS}) == len(env.DEMO_GOALS)
+    assert all(g.name.startswith("demo_") for g in env.DEMO_GOALS)
+    # it is a real goal source, not a special case: it goes through load_goals
+    assert env.load_goals(env.DEMO_GOALS) == list(env.DEMO_GOALS)
+
+
 def test_build_dataset_needs_no_verifiers():
     """`datasets` is a core dependency, so dataset shape is testable without the extra."""
     ds = env.build_dataset([GOAL, GoalSpec(id="g2", prop="Q")])
@@ -350,6 +367,45 @@ def test_get_resources_error_names_the_fix():
         env.get_resources()
 
 
+def test_resolve_goals_prefers_explicit_then_registered_then_demo(fake_backend):
+    """The one goal rule. The demo tail is what makes a bare load work anywhere;
+    it must never shadow a source the caller actually named."""
+    assert env.resolve_goals() == list(env.DEMO_GOALS)          # nothing registered
+
+    env.set_resources(env.EpisodeResources(backend=fake_backend, leaf=leaf_ok(), goals=[GOAL]))
+    assert env.resolve_goals() == [GOAL]                        # registered wins over demo
+    assert env.resolve_goals([GoalSpec(id="g9", prop="Z")]) == [GoalSpec(id="g9", prop="Z")]
+
+
+def test_resolve_goals_raises_when_the_registered_goals_are_empty(fake_backend):
+    """A misconfigured run must not quietly become a four-goal demo report."""
+    env.set_resources(env.EpisodeResources(backend=fake_backend, leaf=leaf_ok()))
+    with pytest.raises(ValueError, match="no goals"):
+        env.resolve_goals()
+
+
+def test_live_resources_is_the_scoring_gate_and_never_yields_a_default(fake_backend):
+    """`get_resources` answers "what is registered"; `live_resources` answers "can
+    this process run an episode". Both raise rather than hand back a stand-in: a
+    0.0 produced by a missing kernel is indistinguishable from a policy failure."""
+    with pytest.raises(RuntimeError, match="set_resources"):
+        env.live_resources()
+
+    # goals-only registration: legal to construct from, never legal to score
+    env.set_resources(env.EpisodeResources(goals=[GOAL]))
+    assert env.get_resources().goals == [GOAL]
+    with pytest.raises(RuntimeError, match="backend and no leaf"):
+        env.live_resources()
+
+    env.set_resources(env.EpisodeResources(backend=fake_backend, goals=[GOAL]))
+    with pytest.raises(RuntimeError, match="no leaf"):
+        env.live_resources()
+
+    res = env.EpisodeResources(backend=fake_backend, leaf=leaf_ok(), goals=[GOAL])
+    env.set_resources(res)
+    assert env.live_resources() is res
+
+
 def test_budgets_from_config_maps_every_field():
     class Cfg:
         max_lemmas = 3
@@ -432,6 +488,73 @@ def test_v1_taskset_loads_one_task_per_goal(fake_backend):
     # rebuilds each task from — not on a `load()` side effect it never runs.
     assert tasks[0].config.max_lemmas == 3
     assert env.budgets_from_config(tasks[0].config) == Budgets(max_lemmas=3)
+
+
+@v1only
+def test_v1_taskset_builds_bare_over_the_demo_goals():
+    """Loadability with no live resources at all — the Hub's integration test
+    constructs a published environment on infra with no Lean toolchain, and both
+    v1 construction routes have to survive it: the helper, and the loader's own
+    `taskset_class(config)`."""
+    for ts in (env.build_taskset(),
+               env.DecompositionTaskset(env.DecompositionConfig(id=env.ENV_ID))):
+        tasks = list(ts.load())
+        assert [t.data.goal_id for t in tasks] == [g.id for g in env.DEMO_GOALS]
+        assert tasks[0].data.system_prompt == env.SYSTEM_PROMPT
+
+    # a bare build registers nothing: it must not clobber a launcher's handles,
+    # and "no resources" has to stay true so scoring raises (test below).
+    with pytest.raises(RuntimeError, match="set_resources"):
+        env.get_resources()
+
+
+@v1only
+def test_v1_taskset_reads_the_goals_path_off_its_config(tmp_path, fake_backend):
+    """`DecompositionConfig.goals` is the TOML knob (`[env.taskset] goals = ...`)
+    and it outranks both the registry and the demo set. Pinned by name: `load()`
+    reads it defensively (a base `TasksetConfig` has no such field), so nothing
+    else would notice if the field were renamed and every configured run quietly
+    fell back to the four demo goals."""
+    path = tmp_path / "goals.jsonl"
+    path.write_text(json.dumps({"id": "from_file", "prop": "P", "name": "thm"}) + "\n",
+                    encoding="utf-8")
+    env.set_resources(env.EpisodeResources(backend=fake_backend, leaf=leaf_ok(), goals=[GOAL]))
+
+    ts = env.DecompositionTaskset(env.DecompositionConfig(id=env.ENV_ID, goals=str(path)))
+
+    assert [t.data.goal_id for t in ts.load()] == ["from_file"]
+
+
+@v1only
+def test_v1_taskset_loads_from_a_base_taskset_config():
+    """`load_taskset` is `taskset_class(config.id)(config)`; a discovery path that
+    has not resolved our config specialization passes the base `TasksetConfig`.
+    That must load (over the demo goals), not die on a missing field."""
+    import verifiers.v1 as vf
+
+    ts = env.DecompositionTaskset(vf.TasksetConfig(id=env.ENV_ID))
+    assert [t.data.goal_id for t in ts.load()] == [g.id for g in env.DEMO_GOALS]
+
+
+@v1only
+def test_v1_bare_taskset_raises_at_score_time_and_records_no_reward():
+    """The line that must not move: loading without a kernel is fine, *scoring*
+    without one is an error, never a fabricated 0.0. `Task.score` attributes the
+    raise to a `TaskError` and leaves the reward unscored (`None`), so the trace
+    says "this signal should have run and did not" rather than "the policy
+    failed" — §6's evidence discipline, applied to the hosted path."""
+    import asyncio
+
+    from verifiers.v1.errors import TaskError
+
+    task = list(env.build_taskset().load())[0]
+    trace = make_trace(task)
+
+    with pytest.raises(TaskError, match="set_resources"):
+        asyncio.run(task.score(trace))
+
+    assert trace.rewards["verified"] is None  # seeded, never filled with a number
+    assert not trace.metrics
 
 
 @v1only
@@ -645,6 +768,79 @@ def test_v0_load_environment_falls_back_to_registered_resources(fake_backend):
     env.set_resources(env.EpisodeResources(backend=fake_backend, leaf=leaf_ok(), goals=[GOAL]))
     e = env.load_environment()
     assert len(e.get_dataset()) == 1
+
+
+@v0only
+def test_v0_load_environment_bare_builds_the_demo_dataset():
+    """`load_environment()` — no arguments, nothing registered — is the exact call
+    the Hub's integration test makes on infra with no Lean toolchain. It must
+    return a real, fully-formed environment."""
+    import verifiers as vf
+
+    e = env.load_environment()
+
+    assert isinstance(e, vf.SingleTurnEnv)
+    ds = e.get_dataset()
+    assert len(ds) == len(env.DEMO_GOALS)
+    assert [row["id"] for row in ds["info"]] == [g.id for g in env.DEMO_GOALS]
+    assert e.system_prompt == env.SYSTEM_PROMPT
+    assert list(our_rubric(e).weights).count(1.0) == 1  # the reward wiring is real too
+
+
+@v0only
+def test_v0_bare_environment_raises_at_score_time_instead_of_scoring_zero(caplog):
+    """Loading bare is free; scoring bare is an error. The weighted function
+    raises `RuntimeError` naming the fix rather than returning a number.
+
+    Pinned at the function boundary because verifiers' own `Rubric` catches any
+    reward-function exception and records `0.0` with a logged ERROR
+    (`rubrics/rubric.py::_call_individual_reward_func`) — that fallback is the
+    framework's, and the log is what keeps it visible; returning a number from
+    here would make the fabrication ours and silent. (v1, the training path,
+    propagates instead — see the v1 test above.)
+    """
+    import asyncio
+    import logging
+
+    rubric = our_rubric(env.load_environment())
+    (reward_func,) = [f for f, w in zip(rubric.funcs, rubric.weights) if w == 1.0]
+    state: dict = {
+        "prompt": [{"role": "user", "content": env.user_message(GOAL)}],
+        "completion": [{"role": "assistant", "content": PLAN_TEXT}],
+        "answer": GOAL.prop,
+        "info": {"id": "g1", "prop": "P", "name": "thm"},
+    }
+
+    with pytest.raises(RuntimeError, match="set_resources"):
+        asyncio.run(reward_func(completion=state["completion"], info=state["info"], state={}))
+
+    # ... and through the real entry point the failure is at least loud in the log.
+    with caplog.at_level(logging.ERROR):
+        asyncio.run(rubric.score_rollout(state))
+    assert any("set_resources" in r.getMessage() for r in caplog.records)
+
+
+@v0only
+def test_v0_bare_environment_scores_once_the_resources_are_registered(fake_backend):
+    """The handles are resolved per rollout, not captured at load time: a launcher
+    that builds the env first and registers the backend afterwards (the CLI shape,
+    where `load_environment` runs at import) still scores real episodes."""
+    import asyncio
+
+    wire(fake_backend)
+    e = env.load_environment(goals=[GOAL])  # built with no backend/leaf at all
+    env.set_resources(env.EpisodeResources(backend=fake_backend, leaf=leaf_ok(), goals=[GOAL]))
+    state: dict = {
+        "prompt": [{"role": "user", "content": env.user_message(GOAL)}],
+        "completion": [{"role": "assistant", "content": PLAN_TEXT}],
+        "answer": GOAL.prop,
+        "info": {"id": "g1", "prop": "P", "name": "thm"},
+    }
+
+    asyncio.run(our_rubric(e).score_rollout(state))
+
+    assert state["reward"] == 1.0
+    assert state["rlmath"]["status"] == "verified"
 
 
 # ---------------------------------------------------------------------------

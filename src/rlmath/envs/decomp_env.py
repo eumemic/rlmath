@@ -29,6 +29,20 @@ Nothing above the guarded imports touches verifiers: prompt building, goal
 loading and `score_plan` are importable and testable with the `envhub` extra
 absent (that is also what keeps the default test suite offline and fast).
 
+Loading vs running
+------------------
+Both entry points construct with **no arguments and nothing registered**, over
+the built-in `DEMO_GOALS` set. That is not a convenience: the Hub's integration
+test imports and loads a published environment on infra that has no Lean
+toolchain, and `prime env info` / v1 discovery do the same, so an environment
+that can only be *constructed* next to a live kernel cannot be published at all.
+
+What never gets a fallback is the reward. Every scoring path goes through
+`live_resources()`, which raises when a backend or leaf is missing, so a rollout
+run without a kernel fails loudly instead of scoring 0.0 — an absent kernel
+scored as a policy failure is exactly the confusion §6 forbids, and on a hosted
+eval it would read as a model that never proves anything.
+
 Context isolation (§5.1) is a property of the *prompt*, so it is stated here and
 nowhere else: the policy sees goal statements and child statuses only, never
 proof text. `EpisodeResult.artifact` and every leaf proof stay on the harness
@@ -202,6 +216,23 @@ def completion_text(completion: Any) -> str:
 
 _ID_FIELDS = ("id", "source_id", "statement_key")  # scripts/build_bank.py rows carry the latter two
 
+# The dataset an environment constructed with no goal source runs on. Four true,
+# one-line Mathlib-provable props, ids labelled `demo-` so no result table can
+# mistake a demo run for a bank run.
+#
+# It exists for *loadability*, not for evidence: the Hub's integration test loads
+# the published environment on a box with no Lean toolchain, and a `goals`-less
+# `load_environment()` / `build_taskset()` has to hand it a real dataset. Kept
+# tiny on purpose — a large built-in set would be a second, untracked goal bank
+# competing with `data/` — and deliberately easy, so that if one ever *is* run
+# against a live backend the interesting signal is the plumbing, not the math.
+DEMO_GOALS: tuple[GoalSpec, ...] = (
+    GoalSpec(id="demo-00", prop="2 ∣ 4", name="demo_two_dvd_four"),
+    GoalSpec(id="demo-01", prop="∀ n : ℕ, n + 0 = n", name="demo_add_zero"),
+    GoalSpec(id="demo-02", prop="∀ x : ℝ, 0 ≤ x ^ 2", name="demo_sq_nonneg"),
+    GoalSpec(id="demo-03", prop="1 + 1 = 2", name="demo_one_add_one"),
+)
+
 
 def load_goals(source: str | Path | Iterable[GoalSpec | dict]) -> list[GoalSpec]:
     """Normalize a goal source into `list[GoalSpec]`.
@@ -369,10 +400,17 @@ class EpisodeResources:
     `budgets` is the v0 default and the `build_taskset` seed only; a v1 task
     reads its budgets from `DecompositionTaskConfig`, which is the only copy the
     scoring process is guaranteed to have.
+
+    `backend` and `leaf` are optional *fields* so that a process which has goals
+    but no Lean toolchain can still register what it does have and construct an
+    inspectable environment (see the module docstring). They are not optional for
+    scoring: `live_resources()` is the gate every rollout path goes through, and
+    it raises when either is absent rather than letting a `None` backend surface
+    as an AttributeError halfway through an episode.
     """
 
-    backend: LeanBackend
-    leaf: LeafProver
+    backend: LeanBackend | None = None
+    leaf: LeafProver | None = None
     budgets: Budgets = field(default_factory=Budgets)
     goals: list[GoalSpec] = field(default_factory=list)
 
@@ -386,6 +424,8 @@ def set_resources(resources: EpisodeResources | None) -> None:
 
 
 def get_resources() -> EpisodeResources:
+    """Whatever is registered — the construction-time question ("is there a goal
+    source, a budget default?"). `live_resources` is the scoring-time one."""
     if _RESOURCES is None:
         raise RuntimeError(
             "no EpisodeResources registered: call rlmath.envs.set_resources("
@@ -393,6 +433,54 @@ def get_resources() -> EpisodeResources:
             "before the taskset/environment runs a rollout"
         )
     return _RESOURCES
+
+
+def live_resources() -> EpisodeResources:
+    """The registered resources, asserted to carry a live backend *and* leaf.
+
+    The one gate between every surface and `score_plan`. It raises — it does not
+    return a default, a null backend, or a reward — because the alternative is a
+    0.0 produced by a missing kernel, which is indistinguishable from a policy
+    failure in every downstream mean (§6, §5.7). A hosted eval with no Lean
+    toolchain must fail loudly; it must never publish fake numbers.
+    """
+    res = get_resources()
+    missing = [name for name in ("backend", "leaf") if getattr(res, name) is None]
+    if missing:
+        raise RuntimeError(
+            f"registered EpisodeResources carry no {' and no '.join(missing)}: an episode "
+            "cannot be scored without a live Lean backend and leaf prover. Call "
+            "rlmath.envs.set_resources(EpisodeResources(backend=..., leaf=..., "
+            "goals=[...])) in the process that scores"
+        )
+    return res
+
+
+def resolve_goals(
+    goals: str | Path | Iterable[GoalSpec | dict] | None = None,
+) -> list[GoalSpec]:
+    """The one goal-source rule, shared by every surface.
+
+    Explicit argument > registered `EpisodeResources` > `DEMO_GOALS`. The demo
+    tail is what makes a bare `load_environment()` / `build_taskset()` work where
+    no resources exist (Hub discovery and the Hub's integration test).
+
+    It is a tail, not a repair: resources registered with an *empty* goal list
+    still raise, because silently swapping in four demo goals would turn a
+    misconfigured run into a green four-sample report instead of an error — the
+    same discipline `load_goals` applies to a dropped row.
+    """
+    if goals is not None:
+        return load_goals(goals)
+    if _RESOURCES is None:
+        return list(DEMO_GOALS)
+    if not _RESOURCES.goals:
+        raise ValueError(
+            "the registered EpisodeResources carry no goals: register "
+            "EpisodeResources(..., goals=[...]), pass goals=..., or set the taskset "
+            "config's `goals` to a JSONL path"
+        )
+    return list(_RESOURCES.goals)
 
 
 def _require(available: bool, what: str) -> None:
@@ -482,7 +570,12 @@ if HAS_VERIFIERS_V1:
 
         @vf1.reward(weight=1.0)
         async def verified(self, trace: vf1.Trace) -> float:
-            res = get_resources()
+            # live_resources, not get_resources: the taskset may have been built
+            # for inspection over DEMO_GOALS with no kernel in the process. That
+            # is legal to *load*; scoring it must raise, and `Task.score` turns
+            # the raise into a TaskError with no reward recorded on the trace —
+            # never a 0.0 that would average in as a policy failure.
+            res = live_resources()
             goal = GoalSpec(id=self.data.goal_id, prop=self.data.prop,
                             name=self.data.decl_name)
             # to_thread: run_episode blocks on the Lean backend, and every
@@ -501,18 +594,32 @@ if HAS_VERIFIERS_V1:
     class DecompositionConfig(vf1.TasksetConfig):
         """Load-time knobs (`[env.taskset]`): which goals, and the task subtree."""
 
-        goals: str | None = None  # JSONL path; None = the registered resources' goals
+        # JSONL path; None = the registered resources' goals, else DEMO_GOALS
+        goals: str | None = None
         task: DecompositionTaskConfig = DecompositionTaskConfig()
 
     class DecompositionTaskset(vf1.Taskset[DecompositionTask, DecompositionConfig]):
         def load(self) -> list[DecompositionTask]:
-            cfg = self.config
-            goals = load_goals(cfg.goals) if cfg.goals else get_resources().goals
-            if not goals:
-                raise ValueError(
-                    "taskset has no goals: set config.goals to a JSONL path or pass "
-                    "goals=... to build_taskset()"
-                )
+            """Tasks for the configured goals.
+
+            `resolve_goals` is what makes `DecompositionTaskset(DecompositionConfig())`
+            — the default-config construction a v1 discovery/integration check
+            performs — succeed with no registered resources: it falls back to
+            DEMO_GOALS. It still raises when a *named* source is empty.
+
+            Both config fields are read with `getattr`, because `load_taskset` is
+            `taskset_class(id)(config)` and a discovery path that has not resolved
+            our config specialization (`loaders.taskset_config_type`) hands us a
+            *base* `TasksetConfig`, which carries neither field — an AttributeError
+            there would fail a load for a reason unrelated to what it was asking
+            for. Neither fallback can mask a real setting: the field *names* are
+            pinned by `test_v1_taskset_reads_the_goals_path_off_its_config` and
+            `test_v1_taskset_takes_its_config_positionally`, and the task fallback
+            is `DecompositionTaskConfig()` — the same §5.6 defaults a base config
+            implies anyway.
+            """
+            goals = resolve_goals(getattr(self.config, "goals", None) or None)
+            task_cfg = getattr(self.config, "task", None) or DecompositionTaskConfig()
             return [
                 DecompositionTask(
                     DecompositionData(
@@ -524,7 +631,7 @@ if HAS_VERIFIERS_V1:
                         prop=g.prop,
                         decl_name=g.name,
                     ),
-                    cfg.task,
+                    task_cfg,
                 )
                 for i, g in enumerate(goals)
             ]
@@ -561,9 +668,9 @@ def attach_diagnostics(trace: Any, score: EpisodeScore) -> None:
 
 def build_taskset(
     *,
-    goals: str | Path | Iterable[GoalSpec | dict],
-    backend: LeanBackend,
-    leaf: LeafProver,
+    goals: str | Path | Iterable[GoalSpec | dict] | None = None,
+    backend: LeanBackend | None = None,
+    leaf: LeafProver | None = None,
     budgets: Budgets | None = None,
     config: Any = None,
 ):
@@ -572,11 +679,19 @@ def build_taskset(
     A published Hub run never calls this — the v1 loader instantiates
     `DecompositionTaskset` from TOML — so this is the path that also registers
     the live handles the config cannot carry.
+
+    Every argument is optional so that `build_taskset()` is a valid no-argument
+    construction over `DEMO_GOALS`, which is what makes the module importable and
+    discoverable where there is no Lean toolchain. A call that names *nothing*
+    registers nothing: it must not clobber handles a launcher already registered,
+    and the taskset it returns raises at score time until some process registers
+    a backend and leaf.
     """
     _require(HAS_VERIFIERS_V1, "build_taskset")
     budgets = budgets or Budgets()
-    set_resources(EpisodeResources(backend=backend, leaf=leaf, budgets=budgets,
-                                   goals=load_goals(goals)))
+    if goals is not None or backend is not None or leaf is not None:
+        set_resources(EpisodeResources(backend=backend, leaf=leaf, budgets=budgets,
+                                       goals=resolve_goals(goals)))
     if config is None:
         config = DecompositionConfig(
             id=ENV_ID,
@@ -597,16 +712,31 @@ def build_taskset(
 _STATE_KEY = "rlmath"
 
 
-def _episode_reward(backend: LeanBackend, leaf: LeafProver, budgets: Budgets):
+def _episode_reward(backend: LeanBackend | None, leaf: LeafProver | None, budgets: Budgets):
     """The weighted reward function; also the only place the episode runs.
 
     v0 rubric functions execute in registration order over a shared `state`
     (research §3.3), so this one runs the episode, parks the diagnostics in
     `state` — where they survive into `RolloutOutput` and the saved results
     columns — and the weight-0 metric functions below just read them back.
+
+    The handles are resolved per call, not captured at load time: `load_environment()`
+    must build with nothing registered (Hub discovery), and a launcher is allowed
+    to `set_resources` after building the env. Absent at score time, the call
+    raises. Note that verifiers' own `Rubric` catches a reward-function exception
+    and records 0.0 with a logged error (`rubrics/rubric.py::_call_individual_reward_func`),
+    so on v0 that log is the loudest signal available — which is precisely why
+    this function must *raise* rather than return a number: the fabrication is
+    then the framework's and recoverable from its log, never ours and silent.
+    (v1, the training path, propagates it as a `TaskError` and records no reward.)
     """
 
     async def episode_reward(completion, info=None, state=None, **kwargs) -> float:
+        live_backend, live_leaf = backend, leaf
+        if live_backend is None or live_leaf is None:
+            res = live_resources()
+            live_backend = live_backend or res.backend
+            live_leaf = live_leaf or res.leaf
         info = info or {}
         goal = GoalSpec(
             id=str(info.get("id", "")),
@@ -617,8 +747,8 @@ def _episode_reward(backend: LeanBackend, leaf: LeafProver, budgets: Budgets):
             score_plan,
             goal,
             completion_text(completion),
-            backend=backend,
-            leaf=leaf,
+            backend=live_backend,
+            leaf=live_leaf,
             budgets=budgets,
         )
         if state is not None:
@@ -662,20 +792,28 @@ def load_environment(
     handles cannot come from `--env-args`, so an omitted `backend`/`leaf` falls
     back to the registered `EpisodeResources` — the CLI path is expected to
     register them from a launcher, the in-process path to pass them directly.
+
+    `load_environment()` with no arguments and nothing registered is a supported
+    call and returns a real `SingleTurnEnv` over `DEMO_GOALS`: the Hub's
+    integration test loads the published environment on infra with no Lean
+    toolchain, and a load-time failure there means the version cannot be
+    published at all. Only construction is served that way — the rubric resolves
+    the live handles at *score* time and raises when they are missing (see
+    `_episode_reward`), so no rollout is ever scored against an absent kernel.
     """
     _require(HAS_VERIFIERS_V0, "load_environment")
-    if backend is None or leaf is None or goals is None:
-        res = get_resources()
-        backend = backend or res.backend
-        leaf = leaf or res.leaf
-        budgets = budgets or res.budgets
-        goals = goals if goals is not None else res.goals
+    # Registered resources fill in whatever the caller omitted; `goals` is
+    # resolved by the shared rule (argument > resources > demo).
+    if _RESOURCES is not None:
+        backend = backend if backend is not None else _RESOURCES.backend
+        leaf = leaf if leaf is not None else _RESOURCES.leaf
+        budgets = budgets or _RESOURCES.budgets
     budgets = budgets or Budgets()
 
     funcs = [_episode_reward(backend, leaf, budgets)] + [_metric_func(k) for k in _metric_keys()]
     weights = [1.0] + [0.0] * (len(funcs) - 1)  # terminal reward only (§5.6)
     return vf0.SingleTurnEnv(
-        dataset=build_dataset(load_goals(goals)),
+        dataset=build_dataset(resolve_goals(goals)),
         eval_dataset=build_dataset(load_goals(eval_goals)) if eval_goals is not None else None,
         system_prompt=SYSTEM_PROMPT,
         rubric=vf0.Rubric(funcs=funcs, weights=weights),
@@ -684,6 +822,7 @@ def load_environment(
 
 
 __all__ = [
+    "DEMO_GOALS",
     "ENV_ID",
     "HAS_VERIFIERS",
     "HAS_VERIFIERS_V0",
@@ -701,8 +840,10 @@ __all__ = [
     "episode_info",
     "get_resources",
     "goal_rows",
+    "live_resources",
     "load_environment",
     "load_goals",
+    "resolve_goals",
     "score_plan",
     "set_resources",
     "user_message",

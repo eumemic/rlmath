@@ -8,6 +8,7 @@ the package's `__all__` — and requires exactly one `Taskset` subclass there
 (`verifiers/v1/utils/loaders.py::_plugin_class`).
 """
 from .decomp_env import (
+    DEMO_GOALS,
     ENV_ID,
     HAS_VERIFIERS,
     HAS_VERIFIERS_V0,
@@ -25,14 +26,17 @@ from .decomp_env import (
     episode_info,
     get_resources,
     goal_rows,
+    live_resources,
     load_environment,
     load_goals,
+    resolve_goals,
     score_plan,
     set_resources,
     user_message,
 )
 
 __all__ = [
+    "DEMO_GOALS",
     "ENV_ID",
     "HAS_VERIFIERS",
     "HAS_VERIFIERS_V0",
@@ -50,8 +54,10 @@ __all__ = [
     "episode_info",
     "get_resources",
     "goal_rows",
+    "live_resources",
     "load_environment",
     "load_goals",
+    "resolve_goals",
     "score_plan",
     "set_resources",
     "user_message",
