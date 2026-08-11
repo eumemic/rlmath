@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+logs/
+cache/
+nohup.out
+.pytest_cache/
+uv.lock
+
+# Lean build artifacts — the lake project files themselves are tracked
+lean/**/.lake/
+lean/repl/
+
+# large generated data; bank JSONL rows are tracked selectively
+data/bank/*.jsonl
+analysis/figs/

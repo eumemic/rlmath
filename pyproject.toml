@@ -1,0 +1,36 @@
+[project]
+name = "rlmath"
+version = "0.0.1"
+description = "RLM-style decomposition harness for Lean 4 theorem proving (see DIRECTION.md)"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+    "openai>=1.40",
+    "datasets>=2.20",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+anthropic = ["anthropic>=0.34"]
+# verifiers is heavy (pulls training deps); only needed for the Environments Hub wrapper
+envhub = ["verifiers"]
+
+[dependency-groups]
+dev = ["pytest>=8", "pytest-timeout>=2.3"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rlmath"]
+
+[tool.pytest.ini_options]
+# integration tests need a live Lean toolchain / model server; excluded by default.
+# Run them with: uv run pytest -m integration
+addopts = "-q -m 'not integration'"
+markers = [
+    "integration: requires live Lean backend, network, or a model server",
+]
+testpaths = ["tests"]
+timeout = 120

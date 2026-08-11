@@ -1,0 +1,437 @@
+# Recursive Language Models for Formal Theorem Proving
+
+**Direction assessment and experimental design.**
+
+- **Date:** 2026-08-11. Literature snapshot: same date (matters — see §2; the novelty position is time-sensitive).
+- **Provenance:** written by Claude (Opus 5) in response to a direction brief from the experimenter,
+  who deliberately withheld their own objections and design preferences in order to elicit an
+  independent assessment. Everything below is therefore *one* independent reading, not a consensus
+  view. The priors in §4 were fixed before seeing the experimenter's own.
+- **Evidence base:** `../rl/` — a completed reproduction of the *inference-side* findings of
+  Zhang & Khattab, "Language model harnesses are compositional generalizers"
+  (alexzhang13.github.io/blog/2026/harness/). Numbers cited from it below are from
+  `../rl/analysis/scores.csv` and `../rl/REPORT_NOTES.md`.
+- **Verification depth on cited literature:** only arXiv 2605.30914 was fetched and read directly.
+  All other papers are characterised from search-result summaries and abstracts. Before any of
+  §2's positioning claims go into a proposal or paper, read ProD-RL (2411.01829) and
+  Goedel-Code-Prover (2603.19329) in full — they are the two that determine what is novel here.
+
+---
+
+## 0. Summary verdict
+
+Worth pursuing, but **not for the reason the brief centres**.
+
+The brief's novelty claim — "nobody appears to have RL-trained the recursive decomposition policy
+itself over a proof-assistant environment" — is no longer true as of March 2026. ProD-RL (2024) did
+a version of it; Goedel-Code-Prover (2026-03) did it convincingly in Lean with GRPO over online
+verifier rewards.
+
+What survives, and is sharper than the original framing: **nobody has tested whether the RLM
+*generalization mechanism* holds in proving** — whether context isolation makes a trained
+decomposition policy *transfer* along a size/difficulty axis. The nearest prior result cuts mildly
+against the hypothesis: ProD-RL's own reported limitation is that its gains over
+SFT-without-lemma-proposal were significant *only when the test distribution was close to the
+training distribution*. That is exactly the transfer claim this direction needs, reported as a
+negative, by the closest prior work.
+
+That makes this a live, falsifiable, non-obvious question rather than a greenfield engineering
+claim — and a better project for it.
+
+---
+
+## 1. The premise
+
+**RLM architecture** (per the blog): a root LM operates a code REPL. Task context lives in REPL
+*variables*, not the root's context window. Sub-LM calls are REPL functions; their inputs and
+outputs route through variables and need never enter the root's context. Sub-calls may themselves be
+RLMs. Key empirical claim: RL-training **only the root** on short tasks generalized to held-out
+tasks 8–32× longer, far more efficiently than training on the tasks directly. Proposed mechanism:
+task content never enters the root's context, so root trajectories are near-isomorphic across tasks
+sharing a structure — the policy learns reusable *decomposition strategies* rather than task
+content ("keeping every LM call locally in-distribution").
+
+**The proposal:** port this to Lean 4. Root receives a theorem; its REPL contains a proof-assistant
+environment. It can attempt the goal directly or decompose it — state intermediate lemmas, delegate
+each to a sub-invocation, assemble returned sub-proofs into a proof of the parent. Then RL-train the
+system, potentially including sub-invocations, possibly as one shared self-similar policy playing
+every node conditioned on the goal rather than on depth.
+
+### What `../rl/` establishes, and what it does not
+
+Relevant because several arguments below lean on it.
+
+| Blog claim | Status after reproduction |
+|---|---|
+| Over-window task infeasible direct, fine under harness | **Emphatic yes.** `mrcr-xl` (1.14–1.26M chars): direct 4/4 `context_window_exceeded`, RLM mean **0.998**. `graphwalks-long` (~270k real tokens): direct 14/14 infeasible, RLM 0.714 |
+| Harness keeps long trajectories near short ones | **Yes.** Token-similarity 0.26–0.48 (RLM) vs 0.014–0.13 (direct) — a 4–20× gap; length-similarity 0.89–0.94 vs 0.11–0.17 |
+| Harness generalizes with length, direct degrades | **Partial.** MRCR RLM flat 0.718 → 0.721 while direct decays 0.729 → 0.637 → infeasible. But **OOLONG reversed** on haiku: RLM degraded *faster* (0.554 → 0.214) than direct (0.571 → 0.357) |
+| Emergent strategies + degenerate offload | Yes qualitatively. Degenerate single-subcall offload: **7–36%** of rollouts, zero-shot |
+| Harness costs more compute | 2.3–4.7× wall-clock at short lengths (retrieval tasks) |
+
+**Critical scope limit:** `../rl/` verified the *inference-side* mechanism claims only. The
+**training** claim — the one this entire direction leans on — is an unreplicated blog result from a
+single lab. See objection 5.
+
+---
+
+## 2. Literature position as of 2026-08-11
+
+The brief's gap claim was: those that *train* with RL flatten decomposition into a single CoT
+trajectory (no context isolation); those with genuinely recursive isolated structure use frozen
+models. That dichotomy was accurate in early 2026 but has been broken on the training side.
+
+| Work | Trains decomposition? | Context isolation? | Transfer/size-axis tested? |
+|---|---|---|---|
+| [ProD-RL](https://arxiv.org/abs/2411.01829) (Dong, Mahankali, Ma, 2024) | **Yes** — RL rewards proposing *and* proving lemmas; proof is a tree, theorem proven only if all tree proofs check; partial credit for correct novel lemmas even when the parent fails | Partial (tree-structured, lemmas proved separately) | **Reported negative:** gains significant only when test distribution ≈ train distribution |
+| [Goedel-Code-Prover](https://arxiv.org/abs/2603.19329) (2026-03, Lean 4 code verification) | **Yes** — SFT on 281K decomposition + 151K completion pairs, then GRPO with online Lean verification; decomposition *score* as dense reward, QuickCheck filtering; Qwen3-8B base | Recursive decomposition with independent leaf proving | No; reports inference-time scaling, not train-small/eval-large transfer |
+| [DeepSeek-Prover-V2](https://arxiv.org/abs/2504.21801) | Uses recursive decomposition to synthesize **cold-start data**, then flattens subgoal proofs into a single CoT for RL | No (deliberately flattened) | No |
+| [MerLean-Prover](https://arxiv.org/pdf/2605.26959) (2026-05) | No — "no finetuning, no custom RL objective"; recursive outer loop over proof plans | Yes | No |
+| [RL + recursive inference for formal verification](https://arxiv.org/html/2605.30914) (2026-05, MSc thesis) | Dafny only (GRPO/RLVR); **Lean scaffold uses a fixed base model** | Unspecified in abstract | No transfer experiments |
+| [Hilbert](https://arxiv.org/pdf/2509.22819), DeltaProver, POETRY, [DreamProver](https://arxiv.org/pdf/2604.26311) | Inference-time scaffolds / lemma libraries | Varies | No |
+
+**What is actually unclaimed:** the *conjunction* of (a) RLM-style context isolation — the root never
+sees proof text, only statements and statuses — with (b) an explicit, constructed **size axis** and
+(c) a train-small / evaluate-large **transfer measurement** against a compute-matched flat control,
+(d) with the isomorphism mechanism measured as a *mediator* rather than assumed.
+
+Note the implication for the brief's five arguments: arguments 1, 3, 4, 5 all support the
+*uncontested* half of the idea (recursive decomposition helps proving — known since DSP/POETRY/DSV2
+and now trained by Goedel-Code-Prover). Only argument 2 supports the *novel* half (isolation →
+isomorphism → RL that transfers). Argument 2 is the weakest of the five (§3.2).
+
+---
+
+## 3. Assessment
+
+### 3.1 The brief's five arguments, scored
+
+| # | Argument | Verdict |
+|---|---|---|
+| 1 | Verifiable reward at every recursion level; unhackable and dense in the tree | True and genuinely special — **but** unhackable only *per node*; see objection 2 |
+| 2 | Proof strategy = small set of content-independent shapes → trajectory isomorphism | **The crux, and oversold** — §3.2 |
+| 3 | Unlimited recursion natural; policy self-similar; depth as generalization axis | True in principle; at this scale depth ≤ 2 is what matters. Depth is better used as a held-out *probe* than a training axis |
+| 4 | Training sub-invocations is meaningful here (unlike frozen retrieval sub-calls) | True but **premature** — defer (objection 3) |
+| 5 | The composition is an unpicked gap | **Partly false** as of 2026-03; the surviving gap is the mechanism/transfer test, not the system (§2) |
+
+### 3.2 The central disanalogy
+
+In the retrieval RLM, **sub-call easiness is guaranteed by construction**. Chunking is
+content-oblivious: any 2M-token document splits into 4k-token chunks, each trivially
+in-distribution for the sub-model, *without the root understanding anything*. The root can be nearly
+blind to content and still win. `../rl/` shows this starkly — on GraphWalks the root wrote a
+pure-Python BFS and made **zero** sub-calls (`mean_subcalls = 0.000`, both splits) while scoring
+0.929 / 0.714.
+
+In theorem proving, **producing in-distribution subgoals is the mathematical work.** A hard theorem
+does not split into easy lemmas by any content-oblivious operation; knowing *which* intermediate
+lemma bridges A to C is the insight. "Induction, then cases" is a content-free shape, but *what to
+induct on* and *how to strengthen the hypothesis* is content — and it sits in the root's context,
+because the root must write the lemma statements.
+
+So the faithful transplant of the hypothesis is **not** "isolation keeps every call
+in-distribution" (in proving that is not architectural; it is contingent on decomposition quality).
+It is:
+
+> **(i)** RL can teach a policy to emit child goals that a fixed leaf prover reliably closes
+> (learnable *delegation calibration*), and
+> **(ii)** because the root's context excludes proof *content* — only statements and child statuses
+> enter — what it learns is invariant along decomposition-tree size, so training on small trees
+> transfers to large trees where flat-RL transfer does not.
+
+Part (i) is shared with ProD-RL and Goedel-Code-Prover. **Part (ii) is the RLM-specific payload and
+is untested by anyone.** The whole project should be organised around (ii).
+
+### 3.3 Objections, ranked
+
+1. **The disanalogy above** — §3.2. Fixable by reframing, not by engineering.
+
+2. **Degenerate recursion = structured resampling.** The trivially available "decomposition" is
+   restating the goal as its own single lemma: recursion as a retry button. `../rl/` measured
+   degenerate single-subcall offload at 7–36% *zero-shot*; RL will find it immediately if it pays.
+   Subtler and more important: because the policy chooses its own subgoals, any per-node reward is
+   densified on a **policy-chosen distribution**. The brief's "essentially unhackable" is right
+   per-node and wrong system-wide — a policy can farm trivial subgoals. Mitigations: terminal-only
+   reward, hard node/call budgets, explicit restatement detectors. But **"did it learn
+   decomposition, or did it learn to spend more compute?" must be a first-class measured
+   distinction**, or the headline result is uninterpretable.
+
+3. **Reward density ≠ clean credit assignment.** A child that fails on a *false or
+   unprovable-within-budget* lemma generates gradient noise for the child policy — the parent's
+   error, the child's punishment. ProD-RL hand-built partial credit for precisely this. Partially
+   defused here by the two-stage check (§5.2), which is a real advantage retrieval-RLM never had.
+   This is also the main reason to **defer joint/shared-policy training**: with a frozen leaf,
+   delegation is calibration against a *fixed, measurable* oracle; with a learning leaf it chases a
+   moving target, and hierarchical-RL non-stationarity is a poor first RL project.
+
+4. **Current benchmarks do not need context isolation.** miniF2F/PutnamBench proofs fit comfortably
+   in one window. The regime where isolation *must* win — proof artifact ≫ context window — barely
+   exists in public benchmarks and has to be constructed. Corollary: **the compute-matched baseline
+   is brutal.** Flat best-of-N with a strong open prover is very strong at benchmark scale, and
+   harness overhead was 2.3–4.7× wall-clock in `../rl/` *for retrieval* — it will be larger here. A
+   win at equal attempt-count but a loss at equal compute is a weak result. Note that DeepSeek
+   deliberately flattened recursion into single-context CoT for training; assume they had reasons.
+
+5. **Compound replication risk.** `../rl/` verified the blog's *inference-side* claims. The training
+   claim is unreplicated. This direction would test "does their training result replicate" and
+   "does it transfer to a new domain" *simultaneously*, as a first RL project. Mitigated in §5.5 by
+   (a) a zero-shot phase in front — if the inference-time signatures are absent in proving, training
+   will not rescue them — and (b) a **known-recipe flat-RL control trained first**, to validate the
+   trainer before the novel arm touches it.
+
+6. **The root must emit well-formed Lean.** Writing elaborable lemma statements is a
+   prover-adjacent skill that general instruct models are mediocre at. This is the analog of the
+   XML-vs-fences parser bug that silently zeroed Claude's RLM scores in `../rl/` (11/14 on
+   oolong-long) — except **better**: statement elaboration fails *loudly* and instantly, with no
+   proving required, so it is a bounded retry loop and a trainable signal rather than a silent
+   collapse. Still: measure ill-formed-statement rate from day one.
+
+### 3.4 What each failure would teach
+
+Each phase gate in §5.5 is designed so that failing it kills one specific assumption:
+
+- **Phase 1 fails** (cannot hold per-node difficulty flat while scaling k) → the size axis is not
+  constructible in mathematics the way it is in retrieval. That is itself a publishable finding
+  about the disanalogy in §3.2.
+- **Phase 2 fails** (isolation buys nothing zero-shot at matched compute) → the isolation premise is
+  dead at this scale and DSV2's flattening choice is vindicated. Write it up, stop, having spent
+  ~6 weeks and <$1k.
+- **Phase 3 transfer fails** → ProD-RL's caveat confirmed under clean, controlled conditions with an
+  explicit size axis. A real scientific answer to a question the field currently has only a
+  side-remark on.
+- **Degenerate autocurricula dominate** → a finding about verifiable-reward RL in general, of
+  interest well beyond proving.
+
+The only uninformative failure is "the trainer never worked," which the control-first sequencing
+exists to catch cheaply.
+
+---
+
+## 4. The sharpest testable question
+
+Not "can an RLM prove theorems" (MerLean-class scaffolds already do, frozen), and not "can RL
+improve decomposition" (Goedel-Code-Prover: yes, in code verification). It is the **transfer
+slope**:
+
+> Fix a frozen leaf prover. Build problem families with a controllable decomposition-size parameter
+> **k** and per-node difficulty **flat in k**. RL-train (a) a context-isolated decomposition root
+> and (b) a flat prover, on **k ≤ k₀ only**. At **k ≫ k₀** — including k beyond flat feasibility —
+> does (a)'s improvement transfer while (b)'s does not, with transfer **mediated by trajectory
+> isomorphism** (content-masked trajectory similarity across k) rather than by structured
+> resampling (compute-matched, restatement-audited)?
+
+This is the blog's money experiment (train 64k → eval 2M) transplanted, with the one ingredient
+mathematics does not natively supply — a structure-preserving scaling knob — supplied by
+construction. It contains the mechanism claim as a *measurement* (isomorphism as mediator), which is
+what makes it science rather than a systems demo, and what keeps it publishable even if a bigger
+prover ships next month.
+
+### Registered priors (fixed 2026-08-11, before any runs)
+
+| Claim | Prior |
+|---|---|
+| Environment is feasible to build solo at this budget | ~99% |
+| Zero-shot beyond-window feasibility asymmetry reproduces in proving | ~90% |
+| Zero-shot isomorphism signature present, but weaker than in retrieval | ~75% |
+| Harness-RL improves in-distribution (k ≤ k₀) | ~70% (Goedel-Code-Prover is evidence for) |
+| **Headline: harness transfer beats flat transfer at matched compute** | **~35–45%** |
+| Visible miniF2F/PutnamBench gains at this budget | ~15% |
+
+The headline sitting near a coin flip is the argument *for* running it. If it were 85% it would be
+engineering; if it were 10% it would be a bad bet.
+
+---
+
+## 5. Experimental design
+
+Scale assumption: solo practitioner, strong systems background, first serious RL project,
+single-to-few GPUs, open-source stacks. Every phase ships an independently valuable artifact.
+
+### 5.1 Architecture: a decomposition MDP, not a free REPL (v1)
+
+The RLM essence is **context isolation via external state**; the REPL was Zhang & Khattab's
+vehicle for it, not the point. For proving, be *more* faithful than the scaffolding literature: the
+harness holds all proof text in variables, and the root **never sees a proof** — only goal
+statements and child statuses.
+
+- **Environment state:** goal store (id → statement), proof store (id → proof text,
+  **root-invisible**), frozen leaf-prover adapter, composer, kernel checker, sanitizer (axiom audit,
+  no `sorry`, environment diff).
+- **Root action space (structured):** `decompose(goal, [lemma statements] + assembly tactic block)`
+  | `close(goal)` → leaf prover | `abandon`.
+- **v1 is single-shot:** the root emits the whole plan in one completion (~300–800 tokens). This
+  matters twice: it makes training a *vanilla* GRPO-on-completions problem — commodity recipe, no
+  multi-turn machinery, which is the right choice for a first RL project — and it makes root tokens
+  ~10× cheaper. Multi-turn adaptivity (react to failed children, restate, retry) is v1.5; the
+  zero-shot phase can measure what adaptivity is worth before paying for it.
+- **Depth:** v1 trains depth-1 (root states lemmas, leaves close them). **Depth-2 is a zero-shot
+  eval probe**: apply the trained policy recursively to its own failed children. Recursion becomes a
+  held-out generalization *measurement* instead of an upfront engineering burden.
+
+**Design note — why the action space is restricted.** A free REPL would leak the experiment. In
+`../rl/`, given a free REPL on GraphWalks, the root wrote a Python BFS and made zero sub-calls; the
+strategy detectors caught it. The analog here is a root that string-generates whole Lean proofs
+programmatically — at which point the experiment measures program synthesis, not decomposition
+policy. Constrain the action space to decomposition itself. A free-REPL "ecological" arm can be
+added later as a separate comparison.
+
+### 5.2 Two-stage verification — the design gift of this domain
+
+Check the **assembly** first, with the stated lemmas assumed as hypotheses (fast: does the plan even
+suffice?), then discharge the leaves. Reward factorizes:
+
+```
+r = r_plan × r_leaves
+```
+
+This separates *bad plan* from *unlucky leaf* — per-decomposition binary feedback independent of
+leaf stochasticity. Retrieval-RLM had no analog, and it directly addresses objection 3. Caveat:
+`r_plan` alone is hackable by restatement, hence the detectors and budgets in §5.6.
+
+### 5.3 Model roles and stack
+
+| Role | Choice |
+|---|---|
+| Leaf prover (frozen) | DeepSeek-Prover-V2-7B in non-CoT mode (cheap, strong) or Goedel-Prover-V2-8B, behind a cache keyed by α-normalized statement |
+| Root (trained) | Qwen3-4B or 8B instruct + LoRA |
+| Zero-shot reference roots | one 30B-class open model; optionally claude-haiku via the Anthropic backend already built in `../rl/eval/run_eval.py` |
+| Verification | Kimina Lean Server (warm Mathlib, batched) on a large-CPU box |
+| Training | environment in `verifiers` format → directly publishable to Prime Intellect's Environments Hub, trainable with prime-rl |
+
+### 5.4 Task design — where the scientific validity lives
+
+**Leaf bank.** Mine ~5–20k statements the frozen leaf closes at pass@8 ∈ [0.25, 0.9] from
+Lean-Workbook + Mathlib-derived exercises; store measured pass rates. Useful as an artifact in its
+own right, and it provides a ground-truth *delegability oracle* against which policy calibration can
+be measured.
+
+**Family A — bridge chains.** Prove `R(a, z)` (inequality / divisibility / inclusion) composed by
+the generator from k hidden intermediate steps, sampled as walks in a relation graph over bank
+facts. Only the endpoints appear in the statement, so the policy must *invent* the intermediates.
+
+**Family B — case trees.** Goals over sum / union / piecewise structure that split into k
+bank-adjacent leaves.
+
+**Validity requirements, checked at generation time:**
+
+| # | Requirement | Why |
+|---|---|---|
+| a | Per-node leaf pass-rate **flat in k** | *The* validity metric for the entire size axis. Without it, k confounds size with difficulty and the transfer plot means nothing |
+| b | Oracle-replay (generator's own decomposition) solves ≥70% at every k | Ceiling estimate; separates "policy failed" from "task impossible" |
+| c | Leaves resist automation (`aesop`/`omega`/`simp` run at gen time; auto-closable leaves discarded) | Otherwise the experiment measures tactic dispatch |
+| d | Flat-prover solve rate decays in k | The axis must actually stress the control |
+| e | A top tier where full proof text exceeds the window | The regime where isolation *must* win — the claim-2 analog |
+
+**Tier B (external validity):** miniF2F-test and a PutnamBench subset. Report honestly; expect
+movement only on the hard tail where flat pass@N ≈ 0. Do not stake the thesis here.
+
+### 5.5 Phases
+
+| Phase | Weeks | Content | Artifact | Gate (and lesson if failed) |
+|---|---|---|---|---|
+| **0** | 1.5–2 | Environment: goal extraction (`extract_goal`), harness, leaf adapter + cache, sanitizer, Kimina integration | **Environment published to Environments Hub** + leaf pass-rate bank | ≥2–3k verified leaf attempts/hr (fail ⇒ infra infeasible solo; low risk, all components exist) |
+| **1** | 2 | Family generators + calibration against §5.4 requirements | Datasets + datasheets + oracle ceilings | Leaf difficulty flat in k; oracle ≥70% (fail ⇒ **size axis unconstructible in math** — a finding) |
+| **2** | 2–3 | Zero-shot study: {flat 1-shot, flat best-of-N compute-matched, flat-CoT-decomposition, isolated-RLM} × roots × k-grid, plus tier B | Standalone report, publishable regardless of outcome | Isolated must beat flat-CoT somewhere real **at matched compute** (especially beyond-window), and the isomorphism signature must exist (fail ⇒ **isolation premise dead at this scale**; write up, stop) |
+| **3** | 4–6 | RL: **first** flat-GRPO control on the leaf prover (known recipe — validates the trainer), **then** harness-GRPO on the root, k ≤ 8. Eval k ∈ {8, 32, 64, 128} + tier B + cross-family + depth-2 probe throughout | Checkpoints + the transfer-slope figure (the money plot) | Control must train (fail ⇒ fix trainer, not science). Harness must improve at k ≤ 8 (fail ⇒ harness-trainability finding). Transfer then resolves empirically either way |
+| **4** | open | Only on Phase-3 signal: shared self-similar policy, joint leaf training, multi-turn adaptivity, hindsight relabeling for false-lemma noise | — | — |
+
+### 5.6 Training recipe and budget
+
+- Single-shot decomposition completions; **G = 8–16** samples per problem.
+- **Terminal reward** = sanitized, kernel-verified root closure. `r_plan` used for diagnosis and
+  ablation, not as the primary objective in v1.
+- **Hard budgets** (max lemmas, max leaf attempts) rather than cost *penalties* — penalties suppress
+  decomposition before it has a chance to pay off. Goedel-Code-Prover's shaped decomposition-score
+  is the alternative; note it is hackable in principle, which is presumably why they needed QuickCheck
+  filtering.
+- Leaf calls **cached and deduped across the GRPO group**. Convenient side effect: degenerate
+  restatement policies hit cache, so they cost almost nothing to observe.
+- **Envelope:** ~300 steps × 64 problems × G8 ≈ low-single-digit 10⁹ generated tokens before
+  caching, ~1–2×10⁹ after → **2–4 rented H100s for 2–3 weeks including false starts, ≈$2–5k**.
+  Phases 0–2 under $1k (mostly CPU plus one inference GPU). Fallback: 4B root on 1×H100, slower
+  iteration. Publishing the environment may unlock Prime Intellect compute credits — worth asking
+  early.
+
+### 5.7 Metrics and registered predictions
+
+Maintain a `REPORT_NOTES.md`-style claim table, **written before Phase 2 runs** (per §4 priors):
+
+| ID | Prediction |
+|---|---|
+| P1 | Beyond-window feasibility asymmetry: flat arm infeasible where harness succeeds (~90%) |
+| P2 | Zero-shot content-masked trajectory isomorphism: harness ≫ flat (~75%) |
+| P3 | **Transfer slope: harness-RL > flat-RL at matched compute (~35–45%) — the bet** |
+| P4 | Degenerate-restatement rate rises under RL; hard budgets control it (expect it appears) |
+| P5 | Tier-B hard-tail movement (~15%) |
+| P6 | Cross-family transfer: train bridge chains → eval case trees (stretch; the true content-independence probe) |
+
+**Key instrument:** extend `../rl/analysis/traj_metrics.py` with **content masking** — replace
+statement tokens with placeholders and compare the remaining scaffolds. Raw token similarity will
+understate isomorphism here, because roots legitimately see statements (unlike in retrieval, where
+they need not).
+
+**Status separation (non-negotiable).** Distinguish, in the result rows themselves:
+`plan_invalid` / `leaf_failed` / `budget_exhausted` / `context_window_exceeded` /
+`statement_ill_formed`. See §6.
+
+---
+
+## 6. Reuse from `../rl/`
+
+Direct lifts:
+
+- **`eval/run_eval.py` cell structure** — one JSONL per (family, k, arm, system), resumability that
+  skips ids *including error rows*, plus `repair_errors.py` for explicit retries.
+- **Analysis chain** — `summarize.py` → `score_figs.py` → `traj_metrics.py` (+ content masking) →
+  `strategy_stats.py`, extended with new detectors: restatement similarity, delegation rate,
+  plan-valid-but-leaf-failed attribution, ill-formed-statement rate.
+- **`report/build_report.py`** and the claim-table-first REPORT_NOTES discipline.
+- **Anthropic backend** for a frontier zero-shot reference arm.
+
+Operational lessons that transfer:
+
+- Single-writer concurrency discipline around the stateful environment (the `rlms` `LocalREPL` did
+  process-wide `os.chdir`; threaded instances raced. A Lean server session pool has the same shape
+  of hazard).
+- **Format compliance is a first-order failure surface**, not a detail — it silently zeroed whole
+  cells in `../rl/`. Here it fails loudly, which is a gift; instrument it anyway.
+- Never trust token estimates. `../rl/` used chars/3.5 and was wrong by ~2× on hash-dense text.
+  Measure statement and proof sizes directly.
+
+**The most important thing to copy is the evidence discipline.** `../rl/` recorded over-window runs
+as `context_window_exceeded` rather than score-0, which kept "the task was impossible for this arm"
+(feasibility evidence) from contaminating "this arm scored worse" (degradation evidence). The exact
+analog here: a flat arm failing at k=128 because the proof cannot fit is **feasibility** evidence
+and must not enter mean-score comparisons. Likewise `leaf_failed` vs `plan_invalid` vs
+`budget_exhausted` need that same status separation from day one, or Phase 3's transfer plot will be
+uninterpretable after the fact.
+
+---
+
+## 7. Decisions still open
+
+1. **Repository:** own git repo for `rlmath/`, or shared history with `../rl/`? (Leaning own repo —
+   different deliverable, and the environment is separately publishable.)
+2. **Leaf prover choice** — DeepSeek-Prover-V2-7B vs Goedel-Prover-V2-8B; decide empirically in
+   Phase 0 on the leaf bank, since the delegability oracle depends on it.
+3. **Family A vs B first.** Bridge chains are the cleaner size axis; case trees may calibrate more
+   easily. Phase 1 should probably attempt A and keep B as fallback.
+4. **Whether `r_plan` enters the v1 objective** or stays diagnostic-only. Recommend diagnostic-only
+   in v1, ablate in Phase 3.
+5. Read ProD-RL and Goedel-Code-Prover in full before finalizing §2's positioning (see provenance
+   note at top).
+
+---
+
+## 8. Sources
+
+- [ProD-RL — Formal Theorem Proving by Rewarding LLMs to Decompose Proofs Hierarchically (arXiv 2411.01829)](https://arxiv.org/abs/2411.01829)
+- [Goedel-Code-Prover — Hierarchical Proof Search for Open State-of-the-Art Code Verification (arXiv 2603.19329)](https://arxiv.org/abs/2603.19329) · [weights](https://huggingface.co/Goedel-LM/Goedel-Code-Prover-8B)
+- [DeepSeek-Prover-V2 (arXiv 2504.21801)](https://arxiv.org/abs/2504.21801)
+- [Hilbert (arXiv 2509.22819)](https://arxiv.org/pdf/2509.22819)
+- [MerLean-Prover — A Recursive Looping Harness for Lean 4 (arXiv 2605.26959)](https://arxiv.org/pdf/2605.26959)
+- [Automating Formal Verification with RL and Recursive Inference (arXiv 2605.30914)](https://arxiv.org/html/2605.30914)
+- [DreamProver (arXiv 2604.26311)](https://arxiv.org/pdf/2604.26311)
+- [Prime Intellect — Recursive Language Models: the paradigm of 2026](https://www.primeintellect.ai/blog/rlm)
+- Zhang & Khattab — Language model harnesses are compositional generalizers (alexzhang13.github.io/blog/2026/harness/)
+- `../rl/REPORT_NOTES.md`, `../rl/analysis/scores.csv` — reproduction of the above blog's inference-side findings
