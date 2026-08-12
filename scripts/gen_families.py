@@ -185,6 +185,8 @@ def parse_args(argv=None):
     p.add_argument("--k-grid", type=parse_k_grid, default=parse_k_grid(DEFAULT_K_GRID),
                    dest="k_grid", help=f"comma-separated leaf counts (default {DEFAULT_K_GRID})")
     p.add_argument("--n", type=int, default=DEFAULT_N, help="problems per (family, k)")
+    p.add_argument("--preset", default=None,
+                   help="difficulty preset for families that support one (e.g. bridge_chain e3_lowdeg)")
     p.add_argument("--seed", type=int, default=DEFAULT_SEED,
                    help="generator seed; output is a pure function of (k, seed)")
     p.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, dest="out_dir")
@@ -489,7 +491,14 @@ def datasheet(family: str, rows_by_k: dict[int, list[dict]], *, context: dict) -
 # Main
 # ---------------------------------------------------------------------------
 
-def _gen(registry, family: str, k: int, seed: int, n: int) -> list:
+def _gen(registry, family: str, k: int, seed: int, n: int, preset: str | None = None) -> list:
+    """Pass --preset through to generators that accept one (bridge_chain's
+    DifficultyPreset ladder); families without the kwarg get the plain call."""
+    if preset:
+        try:
+            return registry[family](k=k, seed=seed, n=n, preset=preset)
+        except TypeError:
+            raise SystemExit(f"family {family!r} does not accept a preset")
     return registry[family](k=k, seed=seed, n=n)
 
 
@@ -515,7 +524,7 @@ def main(argv=None) -> int:
                         print(f"revalidate: {family} k={k}: dropped {dropped} unvalidated rows",
                               file=sys.stderr)
                 done = existing_ids(path)
-                problems = _gen(registry, family, k, args.seed, args.n)
+                problems = _gen(registry, family, k, args.seed, args.n, preset=args.preset)
                 for p in problems:
                     if p.id in done:
                         totals["skipped"] += 1
