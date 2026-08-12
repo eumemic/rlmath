@@ -80,6 +80,29 @@ the bake-off's measured bank gives its ceiling. v2 directions, in preference ord
    steps / band claims so raw polynomial arithmetic doesn't suffice; re-measure.
 The red datasheets in data/families/ are kept as the measured record of the v1 state.
 
+## Leaf-disjointness contract (strategist review 2026-08-12 — binding before any v2 dataset)
+
+With a finite leaf bank, **train/eval leaf disjointness is what makes the transfer plot
+interpretable**: eval-k problems built from training-seen leaves cannot distinguish
+"decomposition structure transferred" from "the root memorized these statements" — a
+contamination channel the retrieval RLM never had (its content was inexhaustible).
+
+- Membership is decided by `families/leaf_split.py` — a pure function of `statement_key`
+  (last hex nibble; 25% eval). No manifest, stable under bank growth and re-sweeps;
+  mutation-bred variants get fresh keys and independent membership.
+- **TRAIN problems (any k) draw leaves exclusively from the train pool; EVAL problems
+  exclusively from the eval pool.** Datasets record the pool per problem; the gen CLI must
+  refuse mixed draws.
+- GRPO-correlation note: problems assembled from few distinct leaves have correlated content —
+  effective dataset size is closer to leaf count than problem count. Datasheets must report
+  distinct-leaf counts and leaf-reuse distribution, not just problem counts.
+
+**Corridor widening (v2 leaf sources, in order):** (1) the wide candidate sweep — 30–50k
+Lean-Workbook/exercise statements at pass@8 ≈ $35–45 of GPU, projecting 2–3k band statements
+(the current ~40 is a *sample*, not a bank); (2) mutation breeding — perturb constants/exponents/
+bounds of known in-band statements and **re-measure every mutant's pass@8** (mutants inherit the
+corridor's neighborhood, never membership; measurement is mandatory).
+
 ## Families
 
 - **A — bridge chains** (`bridge_chain`): prove `R(a₀, a_k)` composed through k hidden

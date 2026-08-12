@@ -157,3 +157,27 @@ def test_package_import_populates_registry():
     import rlmath.families as fam
 
     assert {"bridge_chain", "case_tree"} <= set(fam.REGISTRY)
+
+
+def test_leaf_split_is_deterministic_and_partitions():
+    """Anti-contamination contract (strategist review 2026-08-12): membership is
+    a pure function of the key — stable across bank growth, re-sweeps, machines."""
+    from rlmath.families.leaf_split import leaf_split, split_pools
+
+    keys = [f"{i:015x}{n}" for i in range(4) for n in "0123456789abcdef"]
+    assert all(leaf_split(k) == leaf_split(k) for k in keys)
+    train, ev = split_pools(keys)
+    assert set(train).isdisjoint(ev)
+    assert len(train) + len(ev) == len(keys)
+    assert len(ev) / len(keys) == 0.25  # 4/16 nibbles
+    assert leaf_split("0123456789abcdef") == "eval"
+    assert leaf_split("0123456789abcde0") == "train"
+
+
+def test_leaf_split_rejects_empty():
+    import pytest
+
+    from rlmath.families.leaf_split import leaf_split
+
+    with pytest.raises(ValueError):
+        leaf_split("")
