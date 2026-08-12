@@ -159,6 +159,19 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   named-function-hardened) is the next Phase-1 iteration. The corridor is now explicit: battery
   floor ≤ leaf difficulty ≤ frozen-leaf pass@8 band ceiling (the ceiling needs the bake-off).
 
+- 2026-08-12 ~04:00: **BAKE-OFF VERDICT: DeepSeek-Prover-V2-7B non-CoT.** Same-slice pass@8,
+  n=150 (DSV2) / n=26+13 (Goedel 16k/8k evidence): DSV2 mean 0.123, band-mass 5–8%, zero-heavy
+  with a 1.0 tail, **~4 s/attempt**. Goedel-Prover-V2-8B needs its long-CoT budget to function:
+  at 16k it showed the *richer* band shape (3/4 nonzero scores in-band) but ~29 s/attempt
+  (~232 s/statement — operationally incompatible with harness inner loops and ~7× bank cost);
+  capped at 8k its proofs still parse but quality collapses (matched statement: 4/8 verified →
+  0/8 — the reasoning is what got truncated, not the proof). Decision on operating-point
+  viability, not raw strength — exactly the band-fit-with-a-frac_zero-sanity rule as recorded.
+  Caveat kept: if leaf budgets ever tolerate ~30 s attempts, revisit Goedel.
+  Infra lessons all in scripts/bakeoff/pod_setup.sh (5 launch attempts: hf-CLI shim, torch/driver
+  ABI, wheel-metadata-vs-linkage, transformers era-pin, concurrent-launch memory race).
+  DSV2 bank extended to n=600 overnight; pod auto-terminates after. ~$8 spent through verdict.
+
 ## Pending / carried forward
 
 - Environments Hub publish needs an account decision (end of phase).

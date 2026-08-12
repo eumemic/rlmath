@@ -456,12 +456,13 @@ uninterpretable after the fact.
 
 1. **Repository:** own git repo for `rlmath/`, or shared history with `../rl/`? (Leaning own repo —
    different deliverable, and the environment is separately publishable.)
-2. **Leaf prover choice** — DeepSeek-Prover-V2-7B vs Goedel-Prover-V2-8B. **Method fixed
-   2026-08-11 (advisor review):** bake-off on the same candidate slice, bf16 via vLLM on a rented
-   GPU (never quantized — the bank is the delegability oracle and quantized pass rates are a
-   different model's), selecting on pass@8 mass in the [0.25, 0.9] band rather than raw strength.
-   The pick itself awaits the GPU session; provenance guard in build_bank prevents stand-in
-   contamination meanwhile.
+2. ~~Leaf prover choice~~ **RESOLVED 2026-08-12: DeepSeek-Prover-V2-7B non-CoT** (bake-off,
+   same-slice pass@8, bf16 vLLM). DSV2: band-mass 5–8%, ~4 s/attempt. Goedel-Prover-V2-8B's
+   quality is causally tied to its 16k+ CoT budget (capping to 8k: matched statement 4/8 → 0/8
+   verified while proofs still parse) and ~29 s/attempt at the working budget — operationally
+   incompatible with the harness inner loop. Selection was band-fit **at the operating profile**,
+   per the recorded method; revisit only if leaf budgets change. Full evidence:
+   PHASE0_NOTES 2026-08-12 entry, analysis/bakeoff_final.txt, data/bank/bakeoff_*.jsonl.
 3. **Family A vs B first.** Bridge chains are the cleaner size axis; case trees may calibrate more
    easily. Phase 1 should probably attempt A and keep B as fallback.
 4. **Whether `r_plan` enters the v1 objective** or stays diagnostic-only. Recommend diagnostic-only
