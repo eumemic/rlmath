@@ -326,6 +326,60 @@ class ArmOutcome:
 
 
 # ---------------------------------------------------------------------------
+# Few-shot exemplars (DIRECTION.md §5.5, escalation rung 1.5)
+# ---------------------------------------------------------------------------
+#
+# WHERE THE EXEMPLAR GOES, AND WHY HERE.
+#
+# The block is prepended to the arm's own **user turn**, between two plain-text
+# delimiters. The alternative — a prior user/assistant exchange — was considered
+# and rejected on three counts, none of them stylistic:
+#
+#   1. One string, no parsing seam. `run_arm(..., exemplar=<str>)` receives an
+#      opaque block built and provenance-recorded by the runner. Splitting it
+#      into a question turn and an answer turn would require an arm to parse the
+#      exemplar, i.e. a second wire format inside the prompt path, whose
+#      mis-splits would silently drop half the worked example. ../rl's whole
+#      accommodation-3 lesson is about formats that fail quietly.
+#   2. The token stream stays comparable across roots. A prior assistant turn is
+#      rendered by each model's chat template (special tokens, generation-prompt
+#      placement), so "the same exemplar" would be a different prompt on qwen,
+#      haiku and opus — and the rung-1.5 diagnostic is precisely a comparison
+#      ACROSS that four-root roster. One user turn renders the same everywhere.
+#   3. A few-shot cell differs from its zero-shot twin in exactly one place: the
+#      prefix of the user turn. Same message count, same roles, same system
+#      slot — so any difference in outcome is attributable to the example
+#      itself rather than to a changed conversation shape.
+#
+# SYSTEM_PROMPT IS NOT TOUCHED. `envs.decomp_env.SYSTEM_PROMPT` is the frozen
+# environment contract shared with the Phase-3 trainer: editing it would make
+# zero-shot cells, few-shot cells and training rollouts three different
+# environments. `DIRECT_SYSTEM` is left alone for the same reason (arm symmetry
+# is maintained by both arms receiving their exemplar through this one helper).
+EXEMPLAR_OPEN = "=== BEGIN WORKED EXAMPLE ==="
+EXEMPLAR_CLOSE = "=== END WORKED EXAMPLE ==="
+
+
+def with_exemplar(messages: Sequence[Message], exemplar: str | None) -> list[Message]:
+    """`messages` with the worked example prepended to the last user turn.
+
+    `None`/blank returns the messages unchanged (a copy), so the zero-shot path
+    through every arm is byte-identical to what it was before few-shot existed —
+    that equality is asserted in tests/test_zeroshot.py rather than assumed.
+    """
+    out = [dict(m) for m in messages]
+    if not exemplar or not exemplar.strip():
+        return out
+    for m in reversed(out):
+        if m.get("role") == "user":
+            m["content"] = (
+                f"{EXEMPLAR_OPEN}\n{exemplar.strip()}\n{EXEMPLAR_CLOSE}\n\n{m['content']}"
+            )
+            return out
+    raise ValueError("cannot attach an exemplar: the prompt has no user message")
+
+
+# ---------------------------------------------------------------------------
 # Arm 1: direct (flat 1-shot)
 # ---------------------------------------------------------------------------
 
@@ -449,12 +503,17 @@ def run_direct(
     backend: LeanBackend,
     leaf: Any = None,          # unused: in this arm the root IS the prover
     budgets: Budgets,
+    exemplar: str | None = None,
 ) -> ArmOutcome:
-    """Flat 1-shot: the root emits a whole proof; the kernel judges it."""
+    """Flat 1-shot: the root emits a whole proof; the kernel judges it.
+
+    `exemplar` (rung 1.5) is inserted by `with_exemplar`; the matched decomp-arm
+    example is built from the same problem (`eval.exemplars`).
+    """
     from rlmath import sanitize
     from rlmath.leaf.prompts import extract_proof
 
-    messages = direct_prompt(goal)
+    messages = with_exemplar(direct_prompt(goal), exemplar)
     completion = root.complete(messages)
     prompt_chars = sum(len(m["content"]) for m in messages)
 
@@ -528,6 +587,7 @@ def run_decomp(
     backend: LeanBackend,
     leaf: Any,
     budgets: Budgets,
+    exemplar: str | None = None,
 ) -> ArmOutcome:
     """One single-shot decomposition episode (§5.6: one completion, no retries).
 
@@ -535,11 +595,15 @@ def run_decomp(
     `envs.decomp_env.score_plan` — the identical pair the verifiers environment
     uses — so a zero-shot cell and a Phase-3 rollout differ in who calls them,
     not in what they measure.
+
+    `exemplar` (rung 1.5) rides on the user turn only: the environment's
+    SYSTEM_PROMPT is the frozen contract shared with the trainer and is never
+    edited here.
     """
     if leaf is None:
         raise ValueError("the decomp arm needs a leaf prover (it dispatches lemmas)")
 
-    messages = build_prompt(goal)
+    messages = with_exemplar(build_prompt(goal), exemplar)
     completion = root.complete(messages)
     prompt_chars = sum(len(m["content"]) for m in messages)
 
@@ -589,12 +653,14 @@ def run_arm(
     backend: LeanBackend,
     leaf: Any = None,
     budgets: Budgets,
+    exemplar: str | None = None,
 ) -> ArmOutcome:
     try:
         fn = ARMS[arm]
     except KeyError:
         raise KeyError(f"unknown arm {arm!r}; known: {sorted(ARMS)}") from None
-    return fn(goal, root=root, backend=backend, leaf=leaf, budgets=budgets)
+    return fn(goal, root=root, backend=backend, leaf=leaf, budgets=budgets,
+              exemplar=exemplar)
 
 
 _SLUG = re.compile(r"[^a-z0-9]+")
@@ -616,6 +682,8 @@ __all__ = [
     "CHARS_PER_TOKEN",
     "DIRECT_SYSTEM",
     "DIRECT_USER",
+    "EXEMPLAR_CLOSE",
+    "EXEMPLAR_OPEN",
     "ArmOutcome",
     "OpenAIRootClient",
     "RootClient",
@@ -631,4 +699,5 @@ __all__ = [
     "run_direct",
     "status_for_exception",
     "usage_from_response",
+    "with_exemplar",
 ]

@@ -15,7 +15,11 @@ same cell-per-file layout, same resume rule, same evidence discipline.
         --arm decomp --root-model claude-haiku-4.5 --leaf-model deepseek-ai/DeepSeek-Prover-V2-7B \\
         --leaf-base-url http://gpu:8000/v1 --max-usd 2 --price-in 1 --price-out 5
 
-Output: `results/zeroshot/<set>_k<k>_<arm>_<root-slug>.jsonl`, one row per
+    uv run python scripts/run_zeroshot.py --problems data/families/bridge_chain/k2.jsonl \\
+        --arm decomp --root-model qwen/qwen3-30b-a3b-instruct-2507 --few-shot \\
+        --leaf-model deepseek-ai/DeepSeek-Prover-V2-7B --max-usd 0.5 --price-in 0.2 --price-out 0.8
+
+Output: `results/zeroshot/<set>_k<k>_[fs-]<arm>_<root-slug>.jsonl`, one row per
 problem. Nothing else writes there, so a cell file is a complete, re-runnable
 unit of evidence.
 
@@ -58,6 +62,28 @@ get `families.leaf_split(statement_key)` computed. The pool histogram is printed
 at startup and `--leaf-pool` filters, so an eval cell contaminated with
 train-pool leaves is visible in the row data rather than discovered later.
 
+Few-shot (`--few-shot`, DIRECTION §5.5 escalation rung 1.5)
+-----------------------------------------------------------
+Off by default; a cell is zero-shot unless asked otherwise. When on, one worked
+example (`rlmath.eval.exemplars`) is prepended to every root prompt in the cell:
+the decomp arm sees an oracle plan in the wire format, the direct arm sees the
+same problem's composed oracle proof — matched, so the arms stay comparable.
+
+Three properties are enforced here rather than trusted:
+
+  * **Provenance.** Every row carries `few_shot` and an `exemplar` block
+    (family, k, seed, problem id, goal statement key, size). A few-shot cell is
+    regenerable from its own rows.
+  * **No contamination.** The exemplar is generated fresh from the family
+    REGISTRY at a dedicated seed — never read from a materialized dataset — and
+    a run whose exemplar goal matches ANY problem in the cell aborts loudly
+    (`assert_exemplar_is_not_an_eval_problem`). A worked example that is also an
+    eval item measures recall, and silently skipping the collision would hide
+    that a cell had been quietly reduced.
+  * **No collision with zero-shot cells.** The cell filename gains an `fs-`
+    marker on the arm segment (`..._k2_fs-decomp_<root>.jsonl`), so a few-shot
+    run can never resume into, or append to, its zero-shot twin.
+
 Seams: every heavy import (Lean backend, leaf prover, OpenAI SDK) lives inside
 `make_backend` / `make_leaf` / `make_root`, so this module imports — and its
 logic unit-tests — with no toolchain, no server and no network. Tests
@@ -86,6 +112,13 @@ from rlmath.eval.arms import (
     parse_extra_headers,
     run_arm,
     status_for_exception,
+)
+from rlmath.eval.exemplars import (
+    DEFAULT_EXEMPLAR_K,
+    DEFAULT_EXEMPLAR_SEED,
+    build_exemplar,
+    exemplar_provenance,
+    load_exemplar_problem,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -239,8 +272,97 @@ def derive_k(problems: Sequence[Problem]) -> str:
     return str(next(iter(ks))) if len(ks) == 1 else "mix"
 
 
-def cell_path(out_dir: Path, problem_set: str, k: str, arm: str, root_model: str) -> Path:
-    return out_dir / f"{problem_set}_k{k}_{arm}_{model_slug(root_model)}.jsonl"
+def cell_path(out_dir: Path, problem_set: str, k: str, arm: str, root_model: str,
+              *, few_shot: bool = False) -> Path:
+    """`<set>_k<k>_[fs-]<arm>_<root-slug>.jsonl`.
+
+    The `fs-` marker sits on the arm segment rather than becoming a fifth field,
+    so the four-field cell-name shape every analysis script splits on is
+    unchanged and the arm column simply reads `fs-decomp`. Without a marker a
+    few-shot run would resume into the zero-shot cell of the same coordinates
+    and produce one file containing two different experiments.
+    """
+    marker = "fs-" if few_shot else ""
+    return out_dir / f"{problem_set}_k{k}_{marker}{arm}_{model_slug(root_model)}.jsonl"
+
+
+# ---------------------------------------------------------------------------
+# Few-shot exemplar (DIRECTION §5.5 rung 1.5) — see the module docstring
+# ---------------------------------------------------------------------------
+
+@dataclass(frozen=True)
+class Exemplar:
+    """The worked example this cell prepends, plus what the rows must record."""
+
+    text: str
+    provenance: dict
+
+
+def resolve_exemplar_family(args, problems: Sequence[Problem]) -> str:
+    """`--exemplar-family`, else the family the cell's problems come from.
+
+    Defaulting to the cell's own family is the rung-1.5 design (the example is
+    "a different goal from the same task family"); a cross-family exemplar is
+    legal but must be asked for, since it changes what the cell measures. Rows
+    that carry no family (bank goals) have nothing to default to, and guessing
+    would silently pick one — so that is an error naming the fix.
+    """
+    if args.exemplar_family:
+        return str(args.exemplar_family)
+    families = sorted({p.family for p in problems if p.family})
+    if len(families) == 1:
+        return families[0]
+    what = (f"the rows carry {len(families)} families ({', '.join(families)})"
+            if families else "the rows carry no family (bank/goal rows)")
+    raise SystemExit(f"--few-shot cannot pick an exemplar family: {what}; "
+                     "pass --exemplar-family")
+
+
+def assert_exemplar_is_not_an_eval_problem(problem, problems: Sequence[Problem]) -> None:
+    """Refuse an exemplar that IS one of the cell's problems. Loud, never a skip.
+
+    Matching is by `core.types.statement_key` (normalized prop), not raw string
+    equality: an exemplar differing from an eval item only in whitespace is the
+    same contamination. The exemplar is generated fresh at a dedicated seed
+    precisely so this never fires — which is why, if it ever does, the right
+    response is to stop the run and look, not to quietly drop the example (the
+    cell would then be silently zero-shot while its filename and rows claimed
+    otherwise) and not to quietly drop the problem (a cell whose contents depend
+    on the exemplar is not comparable with anything).
+    """
+    key = statement_key(problem.goal.prop)
+    clashes = [p.id for p in problems if statement_key(p.goal.prop) == key]
+    if clashes:
+        shown = ", ".join(clashes[:5]) + (" ..." if len(clashes) > 5 else "")
+        raise SystemExit(
+            f"few-shot exemplar {problem.id} (family={problem.family}, k={problem.k}, "
+            f"seed={problem.seed}) has the same goal proposition as {len(clashes)} problem(s) "
+            f"in this cell [{shown}]. A worked example that is also an eval item makes the "
+            "cell measure recall, not decomposition. Move the exemplar (--exemplar-seed / "
+            "--exemplar-k / --exemplar-family) or drop --few-shot."
+        )
+
+
+def build_cell_exemplar(args, problems: Sequence[Problem]) -> Exemplar:
+    """Generate the exemplar, check it against the cell, package its provenance.
+
+    Pure Python: no network, no kernel, no dataset read — so `--dry-run` runs
+    this too and a contaminated or misconfigured exemplar is caught before a
+    single token is bought.
+    """
+    family = resolve_exemplar_family(args, problems)
+    try:
+        problem = load_exemplar_problem(family, k=args.exemplar_k, seed=args.exemplar_seed)
+    except ValueError as e:
+        raise SystemExit(f"--few-shot: {e}") from None
+    assert_exemplar_is_not_an_eval_problem(problem, problems)
+    try:
+        text = build_exemplar(problem, args.arm)
+    except KeyError as e:
+        # An arm with no matched exemplar must not run few-shot at all: the
+        # comparison it feeds is the whole point of building one.
+        raise SystemExit(f"--few-shot: {e}") from None
+    return Exemplar(text=text, provenance=exemplar_provenance(problem, args.arm, text))
 
 
 # ---------------------------------------------------------------------------
@@ -391,7 +513,8 @@ def make_root(args):
 # One row
 # ---------------------------------------------------------------------------
 
-def base_row(problem: Problem, args, *, problem_set: str, k_label: str) -> dict:
+def base_row(problem: Problem, args, *, problem_set: str, k_label: str,
+             exemplar: Exemplar | None = None) -> dict:
     return {
         "id": problem.id,
         "problem_set": problem_set,
@@ -405,6 +528,11 @@ def base_row(problem: Problem, args, *, problem_set: str, k_label: str) -> dict:
         "goal_id": problem.goal.id,
         "goal_name": problem.goal.name,
         "goal_prop": problem.goal.prop,
+        # Rung 1.5 provenance. Present on every row (as false/None when the cell
+        # is zero-shot) so a mixed results/ directory is analysable by column
+        # rather than by filename convention.
+        "few_shot": exemplar is not None,
+        "exemplar": exemplar.provenance if exemplar is not None else None,
         "ts": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
 
@@ -470,13 +598,16 @@ def error_row(exc: BaseException) -> dict:
 
 
 def run_one(problem: Problem, args, *, root, backend, leaf, budgets: Budgets,
-            guard: BudgetGuard, problem_set: str, k_label: str) -> dict:
+            guard: BudgetGuard, problem_set: str, k_label: str,
+            exemplar: Exemplar | None = None) -> dict:
     """Score one problem into a row. Never raises: infra failure becomes a row."""
-    row = base_row(problem, args, problem_set=problem_set, k_label=k_label)
+    row = base_row(problem, args, problem_set=problem_set, k_label=k_label,
+                   exemplar=exemplar)
     t0 = time.perf_counter()
     try:
         outcome = run_arm(
-            args.arm, problem.goal, root=root, backend=backend, leaf=leaf, budgets=budgets
+            args.arm, problem.goal, root=root, backend=backend, leaf=leaf, budgets=budgets,
+            exemplar=exemplar.text if exemplar is not None else None,
         )
         row.update(outcome_row(outcome, cost_usd=guard.cost_of(outcome.usage)))
     except Exception as e:
@@ -512,6 +643,21 @@ def parse_args(argv=None):
                    help="root output cap")
     p.add_argument("--root-timeout-s", type=float, default=DEFAULT_ROOT_TIMEOUT_S,
                    dest="root_timeout_s")
+
+    # --- few-shot exemplar (DIRECTION §5.5 rung 1.5) -----------------------
+    p.add_argument("--few-shot", action="store_true", dest="few_shot",
+                   help="prepend one worked example to every root prompt (default off). "
+                        "The example is generated fresh from the family registry, matched "
+                        "across arms, and recorded on every row")
+    p.add_argument("--exemplar-family", default=None, dest="exemplar_family",
+                   help="family to draw the worked example from (default: the family the "
+                        "--problems rows come from)")
+    p.add_argument("--exemplar-k", type=int, default=DEFAULT_EXEMPLAR_K, dest="exemplar_k",
+                   help=f"k of the worked example (default {DEFAULT_EXEMPLAR_K})")
+    p.add_argument("--exemplar-seed", type=int, default=DEFAULT_EXEMPLAR_SEED,
+                   dest="exemplar_seed",
+                   help=f"seed of the worked example (default {DEFAULT_EXEMPLAR_SEED}, "
+                        "reserved for exemplars; it is never a dataset seed)")
 
     # --- Lean backend ------------------------------------------------------
     p.add_argument("--backend", choices=["repl", "kimina"], default="repl")
@@ -577,6 +723,17 @@ def parse_args(argv=None):
         p.error("--max-usd must be > 0")
     if args.offset < 0:
         p.error("--offset must be >= 0")
+    # An --exemplar-* flag without --few-shot would be silently ignored, and the
+    # cell would come out zero-shot while its operator believed otherwise.
+    tuned = [
+        name for name, value, default in (
+            ("--exemplar-family", args.exemplar_family, None),
+            ("--exemplar-k", args.exemplar_k, DEFAULT_EXEMPLAR_K),
+            ("--exemplar-seed", args.exemplar_seed, DEFAULT_EXEMPLAR_SEED),
+        ) if value != default
+    ]
+    if tuned and not args.few_shot:
+        p.error(f"{', '.join(tuned)} has no effect without --few-shot")
     return args
 
 
@@ -633,6 +790,10 @@ def main(argv=None) -> int:
     # would append to a differently-named file.
     k_label = args.k_label or derive_k(problems)
 
+    # Before --offset/--n, for the same reason k_label is: the contamination
+    # check must see the whole cell, not the slice this invocation happens to run.
+    exemplar = build_cell_exemplar(args, problems) if args.few_shot else None
+
     problems = problems[args.offset:]
     if args.n is not None:
         problems = problems[: args.n]
@@ -640,7 +801,8 @@ def main(argv=None) -> int:
         raise SystemExit(f"no problems selected from {args.problems}")
 
     out_path: Path = args.out or cell_path(
-        args.out_dir, problem_set, k_label, args.arm, args.root_model
+        args.out_dir, problem_set, k_label, args.arm, args.root_model,
+        few_shot=args.few_shot,
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -656,7 +818,9 @@ def main(argv=None) -> int:
         f"cell: {problem_set}/k{k_label}/{args.arm}/{args.root_model} -> {out_path}\n"
         f"problems: {len(problems)} selected, {len(problems) - len(todo)} already done "
         f"(errors included), {len(todo)} to run\n"
-        f"leaf pools: {pool_histogram(problems)}"
+        f"leaf pools: {pool_histogram(problems)}\n"
+        + ("few-shot: off (zero-shot cell)" if exemplar is None else
+           "few-shot: " + ", ".join(f"{k}={v}" for k, v in exemplar.provenance.items()))
         + (f"\nskipped at load: {skipped}" if any(skipped.values()) else "")
         + (f"\nbudget: ${args.max_usd:.4f} cap at "
            f"${args.price_in}/${args.price_out} per Mtok in/out"
@@ -688,7 +852,7 @@ def main(argv=None) -> int:
                 break
             row = run_one(problem, args, root=root, backend=backend, leaf=leaf,
                           budgets=budgets, guard=guard, problem_set=problem_set,
-                          k_label=k_label)
+                          k_label=k_label, exemplar=exemplar)
             append_row(out_path, row)
             guard.charge(float(row.get("cost_usd") or 0.0))
             totals.add(row)

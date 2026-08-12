@@ -916,6 +916,218 @@ def test_arm_choices_come_from_the_registry():
 
 
 # ---------------------------------------------------------------------------
+# Few-shot exemplars (DIRECTION §5.5 rung 1.5) — insertion, marker, provenance
+#
+# What the exemplar *is* lives in tests/test_exemplars.py; this section is about
+# the two things the runner and the arms own: where the block goes in the prompt,
+# and that a few-shot cell can never be confused with its zero-shot twin.
+# ---------------------------------------------------------------------------
+
+EXEMPLAR = "Worked example.\n\n#lemma h1 : A\n#assembly\nexact f h1\n#end"
+
+
+def test_with_exemplar_is_a_no_op_when_there_is_none():
+    """The zero-shot path must be byte-identical to what it was before few-shot
+    existed, or every cell already run becomes incomparable."""
+    msgs = arms.direct_prompt(NAT_GOAL)
+    assert arms.with_exemplar(msgs, None) == msgs
+    assert arms.with_exemplar(msgs, "   ") == msgs
+
+
+def test_with_exemplar_prepends_a_delimited_block_to_the_last_user_turn():
+    msgs = arms.with_exemplar(arms.direct_prompt(NAT_GOAL), EXEMPLAR)
+    assert [m["role"] for m in msgs] == ["system", "user"]      # same shape, one user turn
+    user = msgs[1]["content"]
+    assert user.startswith(arms.EXEMPLAR_OPEN)
+    assert arms.EXEMPLAR_CLOSE in user
+    assert EXEMPLAR in user
+    # the zero-shot user turn survives verbatim, after the block
+    assert user.endswith(arms.direct_prompt(NAT_GOAL)[1]["content"])
+    # and the caller's messages are not mutated in place
+    assert arms.EXEMPLAR_OPEN not in arms.direct_prompt(NAT_GOAL)[1]["content"]
+
+
+def test_with_exemplar_never_touches_the_frozen_system_prompts():
+    """`envs.decomp_env.SYSTEM_PROMPT` is the contract shared with the Phase-3
+    trainer; DIRECT_SYSTEM is its flat-arm counterpart. Few-shot rides on the
+    user turn precisely so neither moves."""
+    from rlmath.envs.decomp_env import SYSTEM_PROMPT, build_prompt
+
+    decomp = arms.with_exemplar(build_prompt(GOAL), EXEMPLAR)
+    direct = arms.with_exemplar(arms.direct_prompt(NAT_GOAL), EXEMPLAR)
+    assert decomp[0]["content"] == SYSTEM_PROMPT
+    assert direct[0]["content"] == arms.DIRECT_SYSTEM
+
+
+def test_with_exemplar_refuses_a_prompt_with_no_user_turn():
+    with pytest.raises(ValueError, match="no user message"):
+        arms.with_exemplar([{"role": "system", "content": "s"}], EXEMPLAR)
+
+
+def test_both_arms_send_the_exemplar_and_run_unchanged_otherwise(fake_backend):
+    wire_direct(fake_backend)
+    root = StubRoot(fenced("by\n  simp"))
+    out = arms.run_direct(NAT_GOAL, root=root, backend=fake_backend, budgets=budgets(),
+                          exemplar=EXEMPLAR)
+    assert out.status is Status.VERIFIED
+    assert EXEMPLAR in root.calls[0][1]["content"]
+    assert out.prompt_chars > sum(len(m["content"]) for m in arms.direct_prompt(NAT_GOAL))
+
+    fb2 = fake_backend.__class__()
+    wire_decomp(fb2)
+    droot = StubRoot(PLAN_TEXT)
+    dout = arms.run_decomp(GOAL, root=droot, backend=fb2, leaf=FakeLeaf({"A": "pa"}),
+                           budgets=budgets(), exemplar=EXEMPLAR)
+    assert dout.status is Status.VERIFIED
+    assert EXEMPLAR in droot.calls[0][1]["content"]
+
+
+def test_run_arm_forwards_the_exemplar(fake_backend):
+    wire_direct(fake_backend)
+    root = StubRoot(fenced("by\n  simp"))
+    arms.run_arm("direct", NAT_GOAL, root=root, backend=fake_backend, budgets=budgets(),
+                 exemplar=EXEMPLAR)
+    assert EXEMPLAR in root.calls[0][1]["content"]
+
+
+def test_cell_filename_marks_a_few_shot_cell():
+    """A few-shot run must never resume into, or append to, the zero-shot cell
+    of the same coordinates."""
+    zero = zs.cell_path(Path("/r"), "bridge_chain", "2", "decomp", "qwen/qwen3-30b")
+    few = zs.cell_path(Path("/r"), "bridge_chain", "2", "decomp", "qwen/qwen3-30b",
+                       few_shot=True)
+    assert zero.name == "bridge_chain_k2_decomp_qwen-qwen3-30b.jsonl"
+    assert few.name == "bridge_chain_k2_fs-decomp_qwen-qwen3-30b.jsonl"
+    assert few != zero
+
+
+def test_zero_shot_rows_say_so(tmp_path, fake_backend, monkeypatch):
+    wire_direct(fake_backend)
+    probs = _write(tmp_path, _problem_rows(1))
+    _install_stubs(monkeypatch, fake_backend, _direct_root())
+    assert zs.main(_direct_argv(probs, tmp_path / "out")) == 0
+    row = _rows(tmp_path / "out" / "probs_k2_direct_stub-root.jsonl")[0]
+    assert row["few_shot"] is False and row["exemplar"] is None
+
+
+def test_main_few_shot_writes_the_fs_cell_and_records_provenance(tmp_path, fake_backend,
+                                                                 monkeypatch, capsys):
+    from rlmath.core.types import statement_key
+    from rlmath.eval.exemplars import build_exemplar, load_exemplar_problem
+
+    wire_direct(fake_backend)
+    probs = _write(tmp_path, _problem_rows(2))
+    root = _direct_root()
+    _install_stubs(monkeypatch, fake_backend, root)
+
+    assert zs.main(_direct_argv(probs, tmp_path / "out", "--few-shot")) == 0
+
+    out = tmp_path / "out" / "probs_k2_fs-direct_stub-root.jsonl"
+    assert out.exists()
+    assert not (tmp_path / "out" / "probs_k2_direct_stub-root.jsonl").exists()
+
+    # the exemplar family defaulted to the family the problems came from
+    exemplar_problem = load_exemplar_problem("bridge_chain")
+    text = build_exemplar(exemplar_problem, "direct")
+    rows = _rows(out)
+    assert len(rows) == 2
+    for r in rows:
+        assert r["few_shot"] is True
+        assert r["exemplar"] == {
+            "arm": "direct",
+            "family": "bridge_chain",
+            "k": 2,
+            "seed": 999,
+            "problem_id": exemplar_problem.id,
+            "goal_statement_key": statement_key(exemplar_problem.goal.prop),
+            "goal_name": exemplar_problem.goal.name,
+            "chars": len(text),
+        }
+    # and the example actually reached the model
+    assert text in root.calls[0][1]["content"]
+    assert "few-shot: arm=direct" in capsys.readouterr().err
+
+
+def test_main_few_shot_honours_the_exemplar_knobs(tmp_path, fake_backend, monkeypatch):
+    wire_direct(fake_backend)
+    probs = _write(tmp_path, _problem_rows(1))
+    _install_stubs(monkeypatch, fake_backend, _direct_root())
+    argv = _direct_argv(probs, tmp_path / "out", "--few-shot",
+                        "--exemplar-family", "case_tree", "--exemplar-k", "4",
+                        "--exemplar-seed", "1234")
+    assert zs.main(argv) == 0
+    prov = _rows(tmp_path / "out" / "probs_k2_fs-direct_stub-root.jsonl")[0]["exemplar"]
+    assert (prov["family"], prov["k"], prov["seed"]) == ("case_tree", 4, 1234)
+
+
+def test_main_refuses_an_exemplar_that_is_also_an_eval_problem(tmp_path, fake_backend,
+                                                               monkeypatch):
+    """Loud, not a silent skip: a worked example that IS an eval item turns the
+    cell into a recall measurement."""
+    from rlmath.eval.exemplars import load_exemplar_problem
+
+    contaminated = load_exemplar_problem("bridge_chain")
+    rows_in = _problem_rows(2)
+    rows_in[1]["goal"] = {"id": "prob-1", "prop": contaminated.goal.prop, "name": "thm_1"}
+    probs = _write(tmp_path, rows_in)
+    monkeypatch.setattr(zs, "make_root", lambda args: pytest.fail("ran despite contamination"))
+    monkeypatch.setattr(zs, "make_backend", lambda args: pytest.fail("ran despite contamination"))
+
+    with pytest.raises(SystemExit, match="same goal proposition"):
+        zs.main(_direct_argv(probs, tmp_path / "out", "--few-shot"))
+    assert not (tmp_path / "out").exists()
+
+
+def test_contamination_is_matched_modulo_whitespace(tmp_path):
+    """`statement_key` normalization, not raw equality: an exemplar differing
+    from an eval item only in spacing is the same contamination."""
+    from rlmath.eval.exemplars import load_exemplar_problem
+
+    problem = load_exemplar_problem("bridge_chain")
+    spaced = zs.Problem(id="p", goal=GoalSpec(id="p", prop=problem.goal.prop + "  ", name="t"))
+    with pytest.raises(SystemExit, match="same goal proposition"):
+        zs.assert_exemplar_is_not_an_eval_problem(problem, [spaced])
+    other = zs.Problem(id="q", goal=GoalSpec(id="q", prop="1 + 1 = 2", name="t"))
+    zs.assert_exemplar_is_not_an_eval_problem(problem, [other])   # no clash, no raise
+
+
+def test_dry_run_still_builds_and_checks_the_exemplar(tmp_path, capsys):
+    """Free and offline, so a misconfigured or contaminated exemplar is caught
+    before any token is bought."""
+    probs = _write(tmp_path, _problem_rows(1))
+    assert zs.main(_direct_argv(probs, tmp_path / "out", "--few-shot", "--dry-run")) == 0
+    assert "few-shot: arm=direct, family=bridge_chain" in capsys.readouterr().err
+
+
+def test_few_shot_needs_a_family_it_can_default_to(tmp_path):
+    """Bank/goal rows carry no family; guessing one would silently change what
+    the cell measures."""
+    probs = _write(tmp_path, [BANK_ROW])
+    with pytest.raises(SystemExit, match="--exemplar-family"):
+        zs.main(_direct_argv(probs, tmp_path / "out", "--few-shot", "--dry-run"))
+
+
+def test_few_shot_rejects_an_unknown_family(tmp_path):
+    probs = _write(tmp_path, _problem_rows(1))
+    with pytest.raises(SystemExit, match="unknown family"):
+        zs.main(_direct_argv(probs, tmp_path / "out", "--few-shot", "--dry-run",
+                             "--exemplar-family", "nope"))
+
+
+def test_exemplar_flags_without_few_shot_are_refused():
+    """Silently ignoring them would leave an operator believing a cell was
+    few-shot when it was not."""
+    for flag, value in (("--exemplar-family", "case_tree"), ("--exemplar-k", "4"),
+                        ("--exemplar-seed", "7")):
+        with pytest.raises(SystemExit):
+            _args(flag, value)
+    a = _args("--few-shot", "--exemplar-k", "4")
+    assert a.few_shot is True and a.exemplar_k == 4
+    assert _args().few_shot is False
+    assert (_args().exemplar_k, _args().exemplar_seed) == (2, 999)
+
+
+# ---------------------------------------------------------------------------
 # integration — needs scripts/setup_lean.sh to have completed
 # ---------------------------------------------------------------------------
 

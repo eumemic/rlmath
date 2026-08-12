@@ -71,13 +71,46 @@ domain are collapsible in principle (`≤` is transitive **and** total), so what
 stresses here is plan length and intermediate invention. DIRECTION §5.4(d) (flat-prover
 decay) is a Phase-2 measurement, not a schema property.
 
-Determinism: output is a pure function of `(k, seed)`; problem i, attempt a uses the
-derived seed string `bridge_chain|{k}|{seed}|{i}|{a}`.
+Difficulty presets (2026-08-12 retune — the level, not the shape)
+-----------------------------------------------------------------
+The overnight calibration measured this schema against the frozen DSV2-7B leaf
+(58 leaves × 8 attempts, `data/bank/family_leaf_calibration.jsonl`): per-leaf
+pass@8 of **0.225 / 0.125 / 0.129 at k = 2 / 4 / 8**. Flatness passes (k4 vs k8
+within 0.004 — the size axis is sound); the *level* fails, sitting below the
+[0.25, 0.9] corridor floor. The fix is a knob retune, not a schema change, so
+every difficulty-relevant knob now lives in a `DifficultyPreset` and `generate`
+takes `preset=`. The shipped values are preset **"v2"** and remain the default;
+its output is byte-identical to the pre-preset generator (golden tests pin it).
+
+The candidate easier presets were chosen from the *measured* correlates in that
+same calibration file, not from taste (`research/retune-notes.md` §2):
+
+| lever | measured mean pass@8 | mechanism |
+|---|---|---|
+| right-hand `Real.sqrt` vs `Real.log` | 0.206 (n=31) vs 0.074 (n=27) | `Real.sqrt_nonneg` is unconditional; `Real.log_nonneg` re-requires `1 ≤ M'` |
+| δ=1 vs δ=2 | 0.210 (n=25) vs 0.095 (n=33) | smaller ring step, and exponents grow half as fast along the chain |
+| left exponent sum ≤ 4 | 0.233 (n=22) vs ~0.09 | `1 ≤ M` is the measured blocker (§4.5 of the v2 log): fewer factors, fewer products |
+| offset non-decreasing | 0.194 (n=27) vs 0.101 (n=31) | the step no longer has to pay `o₁ − o₂` out of the multiplicative gain |
+
+**Two invariants are NOT knobs and cannot be turned off by a preset**: the
+per-step congruence gate (`step_resists_congruence`, applied unconditionally in
+`_sample_chain`) and named-function content on every term (`funcs` must be a
+non-empty subset of `FUNCS`, and `render_term` always emits `d * F(M)`). Those
+two are what defeat the automation battery; a preset that relaxed either would
+be measuring tactic dispatch again (FAMILIES.md V0/V5). `LOWER` is likewise
+fixed: `3` is what makes `M' ≥ 3^δ M` and `1 ≤ M` true at all.
+
+Determinism: output is a pure function of `(k, seed, preset)`; problem i,
+attempt a uses the derived seed string `bridge_chain|{k}|{seed}|{i}|{a}` for the
+default preset and `bridge_chain|{preset}|{k}|{seed}|{i}|{a}` otherwise (the
+default's string is unchanged so v2 datasets regenerate byte-identically).
 """
 from __future__ import annotations
 
 import random
 from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from functools import lru_cache
 
 from rlmath.core.types import DecompositionPlan, GoalSpec, LemmaSpec, normalize_statement
 from rlmath.families import register
@@ -108,6 +141,110 @@ BINDER = f"∀ x y z : ℝ, {LOWER} ≤ x → {LOWER} ≤ y → {LOWER} ≤ z �
 
 Term = tuple[int, tuple[int, int, int], int, int, str]   # (c, exponents, d, o, func)
 Step = tuple[int, int]                                   # (variable index, δ)
+Knobs = tuple[int, int, int]                             # (c, d, o)
+
+
+# --------------------------------------------------------------------------
+# difficulty presets
+# --------------------------------------------------------------------------
+
+DEFAULT_PRESET = "v2"
+_NAME_OK = frozenset("abcdefghijklmnopqrstuvwxyz0123456789_")
+
+
+@dataclass(frozen=True)
+class DifficultyPreset:
+    """The difficulty-relevant knobs of one draw distribution over the *same* schema.
+
+    A preset changes the term distribution only. The step form, the witness
+    template, the three gates, the balanced fold and the rendered shape
+    `c·M + d·F(M) + o` are schema and are identical across presets — that is
+    what makes a retune a retune rather than a new family (and what keeps the
+    measured V0–V6 tables in research/family-v2-hardening.md applicable).
+
+    `name` doubles as a Lean identifier fragment (goal names) and an id
+    fragment, so it is restricted to `[a-z0-9_]`.
+    """
+
+    name: str
+    rationale: str
+    coef_range: tuple[int, int] = COEF_RANGE
+    fcoef_range: tuple[int, int] = FCOEF_RANGE
+    offset_range: tuple[int, int] = OFFSET_RANGE
+    deltas: tuple[int, ...] = DELTAS
+    funcs: tuple[str, ...] = FUNCS
+    start_exponents: tuple[int, int, int] = START_EXPONENTS
+    max_discards: int = _MAX_DISCARDS
+
+    def __post_init__(self) -> None:
+        if not self.name or set(self.name) - _NAME_OK or self.name[0].isdigit():
+            raise ValueError(f"preset name must match [a-z_][a-z0-9_]*: {self.name!r}")
+        for label, rng in (("coef_range", self.coef_range), ("fcoef_range", self.fcoef_range),
+                           ("offset_range", self.offset_range)):
+            if len(rng) != 2 or rng[0] > rng[1] or rng[0] < 1:
+                raise ValueError(f"{self.name}: {label}={rng} must be a 1-based (lo <= hi) pair")
+        if not self.deltas or any(d < 1 for d in self.deltas):
+            raise ValueError(f"{self.name}: deltas must be non-empty and >= 1; got {self.deltas}")
+        # NOT a knob: named-function content is what defeats the battery (module
+        # docstring), so a preset may narrow the mixture but never empty it, and
+        # only the two functions `_fn_bounds` knows how to witness are allowed.
+        if not self.funcs or set(self.funcs) - set(FUNCS):
+            raise ValueError(f"{self.name}: funcs must be a non-empty subset of {FUNCS}")
+        if len(self.start_exponents) != len(VARS) or any(e < 0 for e in self.start_exponents):
+            raise ValueError(f"{self.name}: start_exponents must be {len(VARS)} non-negative ints")
+        if not live_states(self):
+            raise ValueError(f"{self.name}: no (c,d,o) state survives both gates")
+
+    @property
+    def is_default(self) -> bool:
+        return self.name == DEFAULT_PRESET
+
+    def knobs(self) -> dict:
+        """Recorded in `meta['preset_knobs']` so a dataset row says which
+        distribution produced it without a lookup against this file."""
+        return {
+            "coef_range": list(self.coef_range), "fcoef_range": list(self.fcoef_range),
+            "offset_range": list(self.offset_range), "deltas": list(self.deltas),
+            "funcs": list(self.funcs), "start_exponents": list(self.start_exponents),
+            "lower_bound": LOWER,
+        }
+
+
+def _grid(preset: DifficultyPreset) -> list[Knobs]:
+    return [(c, d, o)
+            for c in range(preset.coef_range[0], preset.coef_range[1] + 1)
+            for d in range(preset.fcoef_range[0], preset.fcoef_range[1] + 1)
+            for o in range(preset.offset_range[0], preset.offset_range[1] + 1)]
+
+
+@lru_cache(maxsize=None)
+def live_states(preset: DifficultyPreset) -> frozenset[Knobs]:
+    """The `(c,d,o)` states the sampler may occupy: the greatest set in which
+    **every** δ has a legal successor **inside the set**.
+
+    v2 gets this for free from one excluded corner (`_CORNER`), which is why the
+    shipped sampler could just compare against it. A narrower preset can strand
+    more states — e.g. with a fixed offset, every `(c_min, d_min, o)` is a dead
+    end because nothing is left to decrease — and a state whose only successors
+    are dead ends is itself a dead end, so this is a greatest-fixed-point, not
+    one filtering pass. Computed once per preset (≤ 648 states) and cached.
+    """
+    live = set(_grid(preset))
+    while True:
+        stranded = {
+            s for s in live
+            if not all(any(t != s and _valid(s, t, delta) and step_resists_congruence(s, t)
+                           for t in live)
+                       for delta in preset.deltas)
+        }
+        if not stranded:
+            return frozenset(live)
+        live -= stranded
+
+
+def dead_end_states(preset: DifficultyPreset) -> frozenset[Knobs]:
+    """Complement of `live_states` — the states excluded from the sample space."""
+    return frozenset(_grid(preset)) - live_states(preset)
 
 
 # --------------------------------------------------------------------------
@@ -195,35 +332,95 @@ def endpoints_resist_naive_collapse(first: Term, last: Term) -> bool:
     return ck < c0 and ok <= o0 and dk <= d0
 
 
-def _sample_knobs(rng: random.Random) -> tuple[int, int, int]:
-    return (rng.randint(*COEF_RANGE), rng.randint(*FCOEF_RANGE), rng.randint(*OFFSET_RANGE))
+# The retune candidates (2026-08-12). v2 is the shipped distribution and the
+# measured control; every other preset is EASIER by one more measured lever than
+# the one above it, so the GPU session reads a ladder rather than four unrelated
+# points and a null result localizes to a lever.
+PRESETS: dict[str, DifficultyPreset] = {
+    p.name: p for p in (
+        DifficultyPreset(
+            name="v2",
+            rationale="shipped distribution; measured pass@8 0.225/0.125/0.129 at k=2/4/8 "
+                      "(mean ~0.13, below the 0.25 corridor floor) — the control",
+        ),
+        DifficultyPreset(
+            name="e1_sqrt", funcs=("sqrt",),
+            rationale="√ only: the right-hand function's non-negativity becomes unconditional "
+                      "(Real.sqrt_nonneg) instead of re-requiring 1 ≤ M' — measured 0.206 vs "
+                      "0.074 for log-on-the-right",
+        ),
+        DifficultyPreset(
+            name="e2_flatstep", funcs=("sqrt",), deltas=(1,),
+            rationale="e1 + δ=1 only: one ring step per leaf and exponents grow half as fast, "
+                      "so late leaves stay near the measured-easy small-monomial end "
+                      "(δ=1 measured 0.210 vs 0.095)",
+        ),
+        DifficultyPreset(
+            name="e3_lowdeg", funcs=("sqrt",), deltas=(1,), start_exponents=(1, 0, 0),
+            rationale="e2 + total degree 1 at the start: keeps `1 ≤ M` — the single blocker the "
+                      "v2 log measured (§4.5) — a one-variable fact for most of the chain "
+                      "(exponent-sum ≤ 4 measured 0.233 vs ~0.09)",
+        ),
+        DifficultyPreset(
+            name="e4_slack", funcs=("sqrt",), deltas=(1,), coef_range=(2, 6),
+            fcoef_range=(1, 4), offset_range=(5, 5),
+            rationale="e2 + fixed offset and narrower coefficient spans: the step never has to "
+                      "pay an offset drop out of the multiplicative gain (o non-decreasing "
+                      "measured 0.194 vs 0.101) and the opaque √ atom carries less weight",
+        ),
+    )
+}
 
 
-def _sample_chain(rng: random.Random, k: int) -> tuple[list[Term], list[Step], int]:
-    exps = list(START_EXPONENTS)
+def resolve_preset(preset: str | DifficultyPreset) -> DifficultyPreset:
+    if isinstance(preset, DifficultyPreset):
+        return preset
+    try:
+        return PRESETS[preset]
+    except KeyError:
+        raise ValueError(f"unknown bridge_chain preset {preset!r}; have {sorted(PRESETS)}") from None
+
+
+def _sample_knobs(rng: random.Random, preset: DifficultyPreset) -> Knobs:
+    return (rng.randint(*preset.coef_range), rng.randint(*preset.fcoef_range),
+            rng.randint(*preset.offset_range))
+
+
+def _sample_chain(rng: random.Random, k: int,
+                  preset: DifficultyPreset) -> tuple[list[Term], list[Step], int]:
+    """Rejection sampler over `preset`'s knob grid, gates unchanged.
+
+    The draw ORDER is preset-independent and must stay that way: initial knobs,
+    initial func, then per step (variable, δ, knob retries…, func). v2's stream
+    is therefore the pre-preset generator's stream call for call — `live_states`
+    reduces to `{_CORNER}` there — which is what keeps the golden tests green.
+    """
+    live = live_states(preset)
+    exps = list(preset.start_exponents)
     rejects = 0
-    knobs = _sample_knobs(rng)
-    while knobs == _CORNER:
-        knobs = _sample_knobs(rng)
+    knobs = _sample_knobs(rng, preset)
+    while knobs not in live:
+        knobs = _sample_knobs(rng, preset)
         rejects += 1
-    func = rng.choice(FUNCS)
+    func = rng.choice(preset.funcs)
     terms: list[Term] = [(knobs[0], tuple(exps), knobs[1], knobs[2], func)]  # type: ignore[arg-type]
     steps: list[Step] = []
     for _ in range(k):
         j = rng.randrange(len(VARS))
-        delta = rng.choice(DELTAS)
+        delta = rng.choice(preset.deltas)
         for _attempt in range(_MAX_REJECTS):
-            new = _sample_knobs(rng)
-            if new != _CORNER and _valid(knobs, new, delta) and step_resists_congruence(knobs, new):
+            new = _sample_knobs(rng, preset)
+            if new in live and _valid(knobs, new, delta) and step_resists_congruence(knobs, new):
                 break
             rejects += 1
-        else:  # pragma: no cover - unreachable: the corner is excluded, so a legal
-               # successor always exists (see _CORNER and the gate's docstring)
-            raise RuntimeError("bridge_chain: step constraints unsatisfiable")
+        else:  # pragma: no cover - unreachable: dead ends are excluded from the
+               # sample space, so every live state has a legal successor for every δ
+            raise RuntimeError(f"bridge_chain[{preset.name}]: step constraints unsatisfiable")
         exps[j] += delta
         steps.append((j, delta))
         knobs = new
-        terms.append((knobs[0], tuple(exps), knobs[1], knobs[2], rng.choice(FUNCS)))  # type: ignore[arg-type]
+        terms.append((knobs[0], tuple(exps), knobs[1], knobs[2],  # type: ignore[arg-type]
+                      rng.choice(preset.funcs)))
     return terms, steps, rejects
 
 
@@ -338,20 +535,81 @@ def hidden_intermediate_violations(problem: GeneratedProblem) -> list[str]:
     return out
 
 
+def check_preset_invariants(problem: GeneratedProblem) -> list[str]:
+    """Every offline gate a problem must satisfy, whatever preset produced it.
+
+    Composed here rather than in each caller because a retune has to be able to
+    say "this candidate distribution still satisfies the invariants v2 was
+    measured under" in one call, per preset, with no Lean in the loop
+    (scripts/stage_retune_candidates.py; FAMILIES.md V5/V6 pre-checks). Returns
+    a list of human-readable violations; empty means clean.
+
+    The two battery-facing invariants (the congruence gate and named-function
+    content on every term) are checked on the *emitted text and knobs*, not on
+    the preset's declaration, so a sampler bug cannot pass by declaration.
+    """
+    out: list[str] = []
+    preset = resolve_preset(problem.meta.get("preset", DEFAULT_PRESET))
+    knobs = [(kb["c"], kb["d"], kb["o"]) for kb in problem.meta["knobs"]]
+    for i, (prev, new) in enumerate(zip(knobs, knobs[1:]), start=1):
+        if not step_resists_congruence(prev, new):
+            out.append(f"step {i}: congruence gate violated ({prev} -> {new})")
+    for i, ((_, delta), (prev, new)) in enumerate(
+            zip(problem.meta["step_kinds"], zip(knobs, knobs[1:])), start=1):
+        if not _valid(prev, new, delta):
+            out.append(f"step {i}: sampling constraint violated ({prev} -> {new}, δ={delta})")
+        if delta not in preset.deltas:
+            out.append(f"step {i}: δ={delta} outside preset support {preset.deltas}")
+    first, last = problem.meta["knobs"][0], problem.meta["knobs"][-1]
+    if not endpoints_resist_naive_collapse(
+            (first["c"], (0, 0, 0), first["d"], first["o"], first["func"]),
+            (last["c"], (0, 0, 0), last["d"], last["o"], last["func"])):
+        out.append("endpoint gate violated (the naive flat route is open)")
+    for prop in [problem.goal.prop] + [l.prop for l in problem.oracle_plan.lemmas]:
+        if prop.count("Real.sqrt (") + prop.count("Real.log (") != 2:
+            out.append(f"named-function content missing: {prop}")
+        if "\n" in prop or prop != prop.strip():
+            out.append(f"prop is not a single trimmed line: {prop!r}")
+    for kb in problem.meta["knobs"]:
+        if kb["func"] not in preset.funcs:
+            out.append(f"func {kb['func']!r} outside preset support {preset.funcs}")
+        if not (preset.coef_range[0] <= kb["c"] <= preset.coef_range[1]
+                and preset.fcoef_range[0] <= kb["d"] <= preset.fcoef_range[1]
+                and preset.offset_range[0] <= kb["o"] <= preset.offset_range[1]):
+            out.append(f"knobs {kb} outside preset ranges")
+    sums = problem.meta["exponent_sums"]
+    if any(b <= a for a, b in zip(sums, sums[1:])):
+        out.append(f"exponent sums are not strictly increasing: {sums}")
+    return out + hidden_intermediate_violations(problem)
+
+
 def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
     """Structural flatness evidence for the datasheet: leaf prop length distribution,
     step-kind mix and named-function mix, grouped by k (FAMILIES.md 'Scaling
-    requirements')."""
+    requirements').
+
+    The mix histograms are keyed on the *declared support* of whichever presets
+    produced the input (union), not on the module constants: a δ=1-only preset
+    must report `{1: n}`, not `{1: n, 2: 0}` with a phantom column. For v2-only
+    input the support is `DELTAS`/`FUNCS` and the output is unchanged.
+    """
     by_k: dict[int, dict] = {}
+    presets: set[DifficultyPreset] = set()   # filled in the single pass below
     for p in problems:
         s = by_k.setdefault(p.k, {"n_problems": 0, "leaf_chars": [], "deltas": [],
-                                  "vars": [], "funcs": [], "fn_pairs": []})
+                                  "vars": [], "funcs": [], "fn_pairs": [], "exp_sums": []})
+        presets.add(resolve_preset(p.meta.get("preset", DEFAULT_PRESET)))
         s["n_problems"] += 1
         s["leaf_chars"].extend(len(l.prop) for l in p.oracle_plan.lemmas)
         s["deltas"].extend(d for _, d in p.meta["step_kinds"])
         s["vars"].extend(VARS[j] for j, _ in p.meta["step_kinds"])
         s["funcs"].extend(p.meta["funcs"])
         s["fn_pairs"].extend(p.meta["fn_pairs"])
+        # the dominant measured pass-rate correlate (module docstring): a leaf's
+        # LEFT exponent sum, i.e. every term but the last one in the chain
+        s["exp_sums"].extend(p.meta["exponent_sums"][:-1])
+    deltas = tuple(sorted({d for p in presets for d in p.deltas})) or DELTAS
+    funcs = tuple(f for f in FUNCS if any(f in p.funcs for p in presets)) or FUNCS
     out = {}
     for k, s in sorted(by_k.items()):
         chars = sorted(s["leaf_chars"])
@@ -362,11 +620,13 @@ def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
                 "min": chars[0], "median": chars[len(chars) // 2], "max": chars[-1],
                 "mean": round(sum(chars) / len(chars), 1),
             },
-            "delta_mix": {d: s["deltas"].count(d) for d in DELTAS},
+            "delta_mix": {d: s["deltas"].count(d) for d in deltas},
             "var_mix": {v: s["vars"].count(v) for v in VARS},
-            "func_mix": {f: s["funcs"].count(f) for f in FUNCS},
+            "func_mix": {f: s["funcs"].count(f) for f in funcs},
             "fn_pair_mix": {f"{a}|{b}": s["fn_pairs"].count(f"{a}|{b}")
-                            for a in FUNCS for b in FUNCS},
+                            for a in funcs for b in funcs},
+            "exponent_sums": {"min": min(s["exp_sums"]), "max": max(s["exp_sums"]),
+                              "mean": round(sum(s["exp_sums"]) / len(s["exp_sums"]), 1)},
         }
     return out
 
@@ -375,20 +635,27 @@ def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
 # generator
 # --------------------------------------------------------------------------
 
-def generate(k: int, seed: int, n: int = 1) -> list[GeneratedProblem]:
-    """`k` bridge steps, `n` problems, deterministic in `(k, seed)`."""
+def generate(k: int, seed: int, n: int = 1,
+             preset: str | DifficultyPreset = DEFAULT_PRESET) -> list[GeneratedProblem]:
+    """`k` bridge steps, `n` problems, deterministic in `(k, seed, preset)`.
+
+    `preset` selects the difficulty knobs (see `PRESETS` and the module
+    docstring); the default is the shipped v2 distribution and its output is
+    byte-identical to the pre-preset generator.
+    """
     if k < 2:
         raise ValueError(f"bridge_chain needs k >= 2 (k=1 makes the lemma the goal); got {k}")
     if n < 0:
         raise ValueError(f"n must be >= 0; got {n}")
 
+    p = resolve_preset(preset)
     problems: list[GeneratedProblem] = []
     for idx in range(n):
-        problems.append(_one(k, seed, idx))
+        problems.append(_one(k, seed, idx, p))
     return problems
 
 
-def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
+def _one(k: int, seed: int, idx: int, preset: DifficultyPreset) -> GeneratedProblem:
     """Discard/regenerate loop, on two offline gates:
 
     * `endpoints_resist_naive_collapse` — the binding one;
@@ -396,15 +663,23 @@ def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
       exponent sums already make an intermediate/endpoint collision impossible).
 
     The realised count lands in `meta["discards"]`, so the datasheet reports a measured
-    discard rate rather than an assumed one."""
-    for attempt in range(_MAX_DISCARDS + 1):
-        rng = random.Random(f"{FAMILY}|{k}|{seed}|{idx}|{attempt}")
-        terms, steps, rejects = _sample_chain(rng, k)
+    discard rate rather than an assumed one.
+
+    Non-default presets are tagged in the seed string, the problem id and the
+    Lean declaration name, so two presets can be materialized side by side
+    without id collisions; the default's three strings are unchanged."""
+    tag = "" if preset.is_default else f"{preset.name}|"
+    idtag = "" if preset.is_default else f"{preset.name}-"
+    nametag = "" if preset.is_default else f"{preset.name}_"
+    for attempt in range(preset.max_discards + 1):
+        rng = random.Random(f"{FAMILY}|{tag}{k}|{seed}|{idx}|{attempt}")
+        terms, steps, rejects = _sample_chain(rng, k, preset)
         if not endpoints_resist_naive_collapse(terms[0], terms[-1]):
             continue
-        pid = f"{FAMILY}-k{k}-s{seed}-{idx}"
+        pid = f"{FAMILY}-{idtag}k{k}-s{seed}-{idx}"
 
-        goal = GoalSpec(id=pid, prop=_prop(terms[0], terms[-1]), name=f"bridge_k{k}_s{seed}_{idx}")
+        goal = GoalSpec(id=pid, prop=_prop(terms[0], terms[-1]),
+                        name=f"bridge_{nametag}k{k}_s{seed}_{idx}")
         lemmas, witnesses = [], {}
         for i in range(1, k + 1):
             prop = _prop(terms[i - 1], terms[i])
@@ -420,6 +695,8 @@ def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
             meta={
                 "visible_lemmas": [],
                 "schema": SCHEMA,
+                "preset": preset.name,
+                "preset_knobs": preset.knobs(),
                 "lower_bound": LOWER,
                 "vars": list(VARS),
                 "step_kinds": steps,
@@ -440,7 +717,8 @@ def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
         if not hidden_intermediate_violations(problem):
             return problem
     raise RuntimeError(  # pragma: no cover - unreachable with distinct exponent sums
-        f"{FAMILY}-k{k}-s{seed}-{idx}: no candidate passed the hidden-intermediate pre-check"
+        f"{FAMILY}-{idtag}k{k}-s{seed}-{idx}: no candidate passed the hidden-intermediate "
+        f"pre-check in {preset.max_discards} attempts"
     )
 
 

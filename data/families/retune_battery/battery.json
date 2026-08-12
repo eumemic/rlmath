@@ -1,0 +1,364 @@
+{
+  "_control": {
+    "probes": [
+      {
+        "kind": "control",
+        "id": "rising-step-control",
+        "k": 0,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 3 ≤ 9 * x ^ 2 * y ^ 1 * z ^ 1 + 7 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5",
+        "killers": [
+          "by intros; gcongr <;> linarith"
+        ],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  },
+  "v2": {
+    "probes": [
+      {
+        "kind": "leaf",
+        "id": "v2-k2-p1",
+        "k": 2,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 1 * z ^ 1 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 8 * x ^ 1 * y ^ 1 * z ^ 2 + 3 * Real.log (x ^ 1 * y ^ 1 * z ^ 2) + 6",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "v2-k2-p2",
+        "k": 2,
+        "position": 2,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 1 * z ^ 3 + 8 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 6 ≤ 4 * x ^ 2 * y ^ 1 * z ^ 3 + 2 * Real.log (x ^ 2 * y ^ 1 * z ^ 3) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "v2-k4-p1",
+        "k": 4,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 2 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 6 * x ^ 1 * y ^ 3 * z ^ 1 + 2 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 6",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "v2-k4-p4",
+        "k": 4,
+        "position": 4,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 3 * y ^ 1 * z ^ 5 + 2 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 5) + 7 ≤ 3 * x ^ 3 * y ^ 3 * z ^ 5 + 3 * Real.log (x ^ 3 * y ^ 3 * z ^ 5) + 4",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "v2-k8-p1",
+        "k": 8,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 1 + 4 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 6 ≤ 2 * x ^ 1 * y ^ 1 * z ^ 3 + 8 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 1",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "v2-k8-p8",
+        "k": 8,
+        "position": 8,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 3 * z ^ 8 + 5 * Real.sqrt (x ^ 3 * y ^ 3 * z ^ 8) + 1 ≤ 5 * x ^ 5 * y ^ 3 * z ^ 8 + 2 * Real.sqrt (x ^ 5 * y ^ 3 * z ^ 8) + 2",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "goal",
+        "id": "v2-k8-goal",
+        "k": 8,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 1 + 4 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 6 ≤ 5 * x ^ 5 * y ^ 3 * z ^ 8 + 2 * Real.sqrt (x ^ 5 * y ^ 3 * z ^ 8) + 2",
+        "killers": [],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  },
+  "e1_sqrt": {
+    "probes": [
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k2-p1",
+        "k": 2,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 9 ≤ 9 * x ^ 1 * y ^ 1 * z ^ 2 + 3 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 4",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k2-p2",
+        "k": 2,
+        "position": 2,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 3 + 7 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 3) + 9 ≤ 2 * x ^ 3 * y ^ 1 * z ^ 3 + 1 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 3) + 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k4-p1",
+        "k": 4,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 5 * x ^ 1 * y ^ 3 * z ^ 1 + 8 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 1) + 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k4-p4",
+        "k": 4,
+        "position": 4,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 4 * z ^ 2 + 3 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 2) + 4 ≤ 6 * x ^ 2 * y ^ 4 * z ^ 2 + 1 * Real.sqrt (x ^ 2 * y ^ 4 * z ^ 2) + 1",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k8-p1",
+        "k": 8,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 9 ≤ 9 * x ^ 1 * y ^ 3 * z ^ 1 + 7 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 1) + 2",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e1_sqrt-k8-p8",
+        "k": 8,
+        "position": 8,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 4 * z ^ 9 + 1 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 9) + 6 ≤ 2 * x ^ 2 * y ^ 4 * z ^ 9 + 1 * Real.sqrt (x ^ 2 * y ^ 4 * z ^ 9) + 7",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "goal",
+        "id": "e1_sqrt-k8-goal",
+        "k": 8,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 9 ≤ 2 * x ^ 2 * y ^ 4 * z ^ 9 + 1 * Real.sqrt (x ^ 2 * y ^ 4 * z ^ 9) + 7",
+        "killers": [],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  },
+  "e2_flatstep": {
+    "probes": [
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k2-p1",
+        "k": 2,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 8 ≤ 7 * x ^ 1 * y ^ 2 * z ^ 1 + 4 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k2-p2",
+        "k": 2,
+        "position": 2,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 2 + 2 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 6 ≤ 8 * x ^ 1 * y ^ 1 * z ^ 3 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 3) + 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k4-p1",
+        "k": 4,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 1 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 2 ≤ 7 * x ^ 1 * y ^ 2 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 4",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k4-p4",
+        "k": 4,
+        "position": 4,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 2 * y ^ 2 * z ^ 2 + 6 * Real.sqrt (x ^ 2 * y ^ 2 * z ^ 2) + 7 ≤ 6 * x ^ 3 * y ^ 2 * z ^ 2 + 4 * Real.sqrt (x ^ 3 * y ^ 2 * z ^ 2) + 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k8-p1",
+        "k": 8,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 7 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 8 ≤ 9 * x ^ 1 * y ^ 2 * z ^ 1 + 2 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 9",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e2_flatstep-k8-p8",
+        "k": 8,
+        "position": 8,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 3 * y ^ 4 * z ^ 3 + 4 * Real.sqrt (x ^ 3 * y ^ 4 * z ^ 3) + 7 ≤ 6 * x ^ 4 * y ^ 4 * z ^ 3 + 5 * Real.sqrt (x ^ 4 * y ^ 4 * z ^ 3) + 7",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "goal",
+        "id": "e2_flatstep-k8-goal",
+        "k": 8,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 7 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 8 ≤ 6 * x ^ 4 * y ^ 4 * z ^ 3 + 5 * Real.sqrt (x ^ 4 * y ^ 4 * z ^ 3) + 7",
+        "killers": [],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  },
+  "e3_lowdeg": {
+    "probes": [
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k2-p1",
+        "k": 2,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 0 * z ^ 0 + 7 * Real.sqrt (x ^ 1 * y ^ 0 * z ^ 0) + 8 ≤ 7 * x ^ 1 * y ^ 1 * z ^ 0 + 8 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 0) + 7",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k2-p2",
+        "k": 2,
+        "position": 2,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 0 + 5 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 0) + 8 ≤ 6 * x ^ 2 * y ^ 1 * z ^ 0 + 9 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 0) + 7",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k4-p1",
+        "k": 4,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 0 * z ^ 0 + 6 * Real.sqrt (x ^ 1 * y ^ 0 * z ^ 0) + 6 ≤ 8 * x ^ 2 * y ^ 0 * z ^ 0 + 6 * Real.sqrt (x ^ 2 * y ^ 0 * z ^ 0) + 6",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k4-p4",
+        "k": 4,
+        "position": 4,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 2 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 4 ≤ 6 * x ^ 3 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 1) + 6",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k8-p1",
+        "k": 8,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 0 * z ^ 0 + 9 * Real.sqrt (x ^ 1 * y ^ 0 * z ^ 0) + 3 ≤ 7 * x ^ 2 * y ^ 0 * z ^ 0 + 4 * Real.sqrt (x ^ 2 * y ^ 0 * z ^ 0) + 1",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e3_lowdeg-k8-p8",
+        "k": 8,
+        "position": 8,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 4 * y ^ 3 * z ^ 1 + 2 * Real.sqrt (x ^ 4 * y ^ 3 * z ^ 1) + 1 ≤ 5 * x ^ 5 * y ^ 3 * z ^ 1 + 9 * Real.sqrt (x ^ 5 * y ^ 3 * z ^ 1) + 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "goal",
+        "id": "e3_lowdeg-k8-goal",
+        "k": 8,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 0 * z ^ 0 + 9 * Real.sqrt (x ^ 1 * y ^ 0 * z ^ 0) + 3 ≤ 5 * x ^ 5 * y ^ 3 * z ^ 1 + 9 * Real.sqrt (x ^ 5 * y ^ 3 * z ^ 1) + 3",
+        "killers": [],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  },
+  "e4_slack": {
+    "probes": [
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k2-p1",
+        "k": 2,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 3 * x ^ 1 * y ^ 2 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k2-p2",
+        "k": 2,
+        "position": 2,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 1 * z ^ 2 + 1 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 5 ≤ 3 * x ^ 2 * y ^ 1 * z ^ 2 + 2 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 2) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k4-p1",
+        "k": 4,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 1 * z ^ 1 + 4 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 4 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k4-p4",
+        "k": 4,
+        "position": 4,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 2 * y ^ 2 * z ^ 2 + 4 * Real.sqrt (x ^ 2 * y ^ 2 * z ^ 2) + 5 ≤ 4 * x ^ 2 * y ^ 3 * z ^ 2 + 3 * Real.sqrt (x ^ 2 * y ^ 3 * z ^ 2) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k8-p1",
+        "k": 8,
+        "position": 1,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 1 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 2 * x ^ 1 * y ^ 1 * z ^ 2 + 4 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
+        "id": "e4_slack-k8-p8",
+        "k": 8,
+        "position": 8,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 5 * y ^ 3 * z ^ 2 + 1 * Real.sqrt (x ^ 5 * y ^ 3 * z ^ 2) + 5 ≤ 2 * x ^ 6 * y ^ 3 * z ^ 2 + 3 * Real.sqrt (x ^ 6 * y ^ 3 * z ^ 2) + 5",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "goal",
+        "id": "e4_slack-k8-goal",
+        "k": 8,
+        "position": 0,
+        "prop": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 1 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 2 * x ^ 6 * y ^ 3 * z ^ 2 + 3 * Real.sqrt (x ^ 6 * y ^ 3 * z ^ 2) + 5",
+        "killers": [],
+        "witness_ok": null
+      }
+    ],
+    "kills": [],
+    "witness_failures": []
+  }
+}
