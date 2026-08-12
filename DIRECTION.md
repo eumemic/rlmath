@@ -375,6 +375,22 @@ movement only on the hard tail where flat pass@N ≈ 0. Do not stake the thesis 
 | **3** | 4–6 | RL: **first** flat-GRPO control on the leaf prover (known recipe — validates the trainer), **then** harness-GRPO on the root, k ≤ 8. Eval k ∈ {8, 32, 64, 128} + tier B + cross-family + depth-2 probe throughout | Checkpoints + the transfer-slope figure (the money plot) | Control must train (fail ⇒ fix trainer, not science). Harness must improve at k ≤ 8 (fail ⇒ harness-trainability finding). Transfer then resolves empirically either way |
 | **4** | open | Only on Phase-3 signal: shared self-similar policy, joint leaf training, multi-turn adaptivity, hindsight relabeling for false-lemma noise | — | — |
 
+**Stack updates (2026-08-12, from Prime's July/Aug releases — verifiers 0.3.0 multi-agent layer +
+prime-rl 0.8.0 algorithms layer; we already sit on the enabling substrate):**
+- **Phase 3, services gap:** before building tunnel plumbing, spike modeling the frozen leaf as a
+  verifiers `Agent` with its own `Runtime` (the `UserSimEnv` frozen+trainable pattern) — if the
+  framework manages leaf execution, hosted rollouts may need no side-channel services at all.
+- **Phase 3, cold start:** OPD (on-policy distillation, per-env teacher endpoint) is now a config
+  option, not a project — warming the root against a frontier teacher on format+decomposition
+  before GRPO directly addresses the measured zero-shot P4 pathology (first 3 live rollouts: 100%
+  restatement-delegation). Named option; decide on Phase-2 zero-shot data. Fallback algorithm if
+  GRPO group advantages degenerate in the early near-zero-success regime: MaxRL.
+- **Phase 4:** Hierarchical GRPO (role-aware credit in multi-agent episodes) removes the
+  infrastructure argument for deferring joint root+leaf training; the attribution argument for
+  root-only-first stands unchanged. Far-future note: their proposer-solver learnability reward
+  `4·rate·(1−rate)` is the [0.25, 0.9] band as a *trained objective* — a trained family proposer
+  is the Phase-4+ version of Phase 1, with §3.3(2)'s degenerate-autocurriculum caution attached.
+
 ### 5.6 Training recipe and budget
 
 - Single-shot decomposition completions; **G = 8–16** samples per problem.
