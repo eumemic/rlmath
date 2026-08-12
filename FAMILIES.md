@@ -71,8 +71,12 @@ every leaf is nlinarith-adjacent by construction). **V0 held everywhere** — go
 battery at every k, so the skeletons and the k-axis are sound; only leaf content is too soft.
 
 What V5 now actually demands is a corridor: leaves too hard for any single battery call, yet
-closable by the frozen 7B leaf at pass@8 ∈ [0.25, 0.9]. The battery gives the corridor's floor;
-the bake-off's measured bank gives its ceiling. v2 directions, in preference order:
+closable by the frozen 7B leaf in the [0.25, 0.9] band. The battery gives the corridor's floor;
+the bake-off's measured bank gives its ceiling. **The band is a distributional target, not a
+per-leaf hard constraint** (retune agent, 2026-08-12): at n=8 attempts a leaf whose true rate is
+0.5 still lands outside the band ~4% of the time, so "every leaf in band" rejects correct presets
+most of the time. Operational criterion: **band-fit fraction ≥ 0.60 with zero-rate ≤ 0.20** at
+pass@8, mean targeted near 0.45; tighten only by raising attempts (~32 for per-leaf claims). v2 directions, in preference order:
 1. **Semi-synthetic leaves** (the original §5.4 design): draw leaf content from the calibrated
    bank — competition-style statements are battery-resistant by nature and arrive with measured
    pass rates. Needs the bake-off (leaf pass-rate bank).
