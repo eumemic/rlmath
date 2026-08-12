@@ -394,6 +394,16 @@ prime-rl 0.8.0 algorithms layer; we already sit on the enabling substrate):**
   large k could be teacher priors surviving, not RL-under-isolation). Escalation ladder, in order:
   (1) primary defense is **curriculum, not estimator or warm-up** — start at small k with leaves
   from the high-pass-rate end of the band, where group degeneracy mostly doesn't arise;
+  (1.5) **few-shot exemplars in the root prompt** (strategist, 2026-08-12, after first light):
+  one complete worked decomposition (statements + assembly) as inference-time context — none of
+  OPD's symmetry/attribution costs since it is trivially matched across arms and roots. Motivated
+  by the data: 12/12 zero-shot failures were `plan_invalid` at *stage-1* — lemma statements
+  elaborated clean, assemblies failed — which localizes to a missing affordance (what a working
+  assembly block looks like), not necessarily a capability wall. Root-roster diagnostic before
+  any escalation past this rung: qwen3-30b few-shot re-run, haiku few-shot, one 100B-class open
+  model, opus as ceiling — a handful of episodes each. If NO root decomposes few-shot at k=2,
+  that is registered evidence rung 3 is unavoidable; if qwen few-shot assembles, the cold-start
+  problem was a prompt gap and priors barely move;
   (2) format-compliance-only warm-up (wire format + well-formed statements, no strategy content);
   (3) strategy distillation only if GRPO still flatlines on in-band tasks at small k. MaxRL stays
   a fallback estimator, not a substitute for (1). **Scope is decided by Phase-2 data** — the 100%
