@@ -430,7 +430,9 @@ def test_script_emits_gated_rows(tmp_path, stub_backend):
         assert r["source_id"] == f"mutant:{r['parent_key']}"
         assert r["statement_key"] == statement_key(r["prop"])
         assert r["parent_split"] == leaf_split(r["parent_key"])
-        assert r["split"] == leaf_split(r["statement_key"])
+        # membership is INHERITED (strategist catch 2026-08-12); own-key rolls are gone
+        assert r["leaf_pool"] == r["parent_split"]
+        assert "split" not in r
         assert 0.25 <= r["parent_pass_rate"] <= 0.9
         assert r["mutation_ops"] and all(o["kind"] in OP_KINDS for o in r["mutation_ops"])
     assert len({r["statement_key"] for r in rows}) == len(rows)
@@ -579,13 +581,16 @@ def test_parent_pool_filter_refuses_mixed_draws(tmp_path, stub_backend):
         assert {r["parent_split"] for r in rows} == {pool}
 
 
-def test_coherent_split_drops_cross_pool_mutants(tmp_path, stub_backend):
+def test_membership_is_inherited_unconditionally(tmp_path, stub_backend):
+    """Inheritance replaced the old optional --coherent-split drop: every mutant
+    carries its PARENT's pool, and no mutant is discarded for its own key's roll.
+    The sample must contain at least one mutant whose own-key roll differs from
+    its inherited pool — proof the inheritance actually did something."""
     stub_backend()
-    _rc, loose = _run(tmp_path / "a", "--per-parent", "4", "--seed", "42")
-    stub_backend()
-    _rc, tight = _run(tmp_path / "b", "--per-parent", "4", "--seed", "42", "--coherent-split")
-    assert any(r["parent_split"] != r["split"] for r in loose), "no cross-pool row to drop"
-    assert all(r["parent_split"] == r["split"] for r in tight)
+    _rc, rows = _run(tmp_path / "a", "--per-parent", "4", "--seed", "42")
+    assert all(r["leaf_pool"] == r["parent_split"] for r in rows)
+    assert any(leaf_split(r["statement_key"]) != r["leaf_pool"] for r in rows), \
+        "no own-roll disagreement in sample; inheritance untested"
 
 
 def test_resume_does_not_duplicate(tmp_path, stub_backend):

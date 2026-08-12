@@ -11,8 +11,15 @@ The split is a pure function of the statement_key (sha256-derived hex), NOT a
 stored manifest: membership is decided the moment a statement exists, is stable
 across bank growth (40 leaves today, thousands after the wide sweep), across
 re-sweeps, and across machines. Nobody can leak a leaf by re-rolling a split
-file, and mutation-bred variants get their own key and therefore their own
-independently-drawn membership.
+file.
+
+**Mutants INHERIT their parent's membership** (`pool_for`, strategist catch
+2026-08-12): a mutant is an ε-perturbation — a near-twin — of its parent, so
+independently-drawn membership would place train-twins in the eval pool and
+recreate the exact contamination channel this module exists to close. Fresh
+*keys* are correct (mutants are distinct statements with their own measured
+pass rates); fresh *membership* was the bug. An earlier revision of this
+docstring stated independent membership as a feature; it was not.
 
 Rule (FAMILIES.md): TRAIN problems (any k) draw leaves exclusively from the
 train pool; EVAL problems exclusively from the eval pool. Datasets record the
@@ -33,8 +40,17 @@ def leaf_split(statement_key: str) -> str:
     return "eval" if statement_key[-1].lower() in _EVAL_NIBBLES else "train"
 
 
+def pool_for(statement_key: str, parent_key: str | None = None) -> str:
+    """The authoritative membership call: a leaf's own split, unless it is a
+    mutant — then the PARENT's split (inheritance; see module docstring).
+    Consumers drawing bank/mutant leaves must use this, never bare leaf_split,
+    whenever a parent_key is present on the row."""
+    return leaf_split(parent_key) if parent_key else leaf_split(statement_key)
+
+
 def split_pools(keys: list[str]) -> tuple[list[str], list[str]]:
-    """(train_keys, eval_keys), order-preserving."""
+    """(train_keys, eval_keys), order-preserving. Raw keys only — mutant rows
+    must go through pool_for with their parent_key instead."""
     train = [k for k in keys if leaf_split(k) == "train"]
     ev = [k for k in keys if leaf_split(k) == "eval"]
     return train, ev

@@ -16,7 +16,7 @@ pass rate, and no row it writes may be treated as an in-band statement.
 
 Usage:
   uv run python scripts/breed_mutants.py --per-parent 4 --seed 42
-  uv run python scripts/breed_mutants.py --parent-pool train --coherent-split
+  uv run python scripts/breed_mutants.py --parent-pool train
   uv run python scripts/breed_mutants.py --limit-parents 3 --workers 2   # smoke
 
 Then measure (this is the whole point — mutants are candidates, not leaves):
@@ -65,14 +65,13 @@ their reasons go to `<out>.rejects.jsonl` (FAMILIES.md: rejection reasons
 logged, not just counted).
 
 Leaf-split contract (FAMILIES.md "Leaf-disjointness contract", BINDING): every
-pool decision in this file goes through `families.leaf_split.leaf_split`, never
-a manifest. Mutants get fresh `statement_key`s and therefore *independent*
-membership, which is what that module's docstring specifies — and which leaves a
-near-duplicate channel open (a one-constant mutant of a TRAIN leaf can land in
-EVAL). Rows record `parent_split` and `split` so either policy can be applied
-downstream without re-measuring; `--parent-pool` refuses mixed parent draws and
-`--coherent-split` drops cross-pool mutants for callers who want the intersection
-of both policies. See the run's flag block for the open decision.
+pool decision in this file goes through `families.leaf_split`, never a manifest.
+**Membership is INHERITED from the parent** (`leaf_pool`, via `pool_for`): a
+mutant is a near-twin, so an own-key roll would seed the eval pool with
+train-twins — the exact channel the contract closes (strategist catch
+2026-08-12; an earlier revision recorded own-key `split` and offered an optional
+`--coherent-split` drop — both gone, inheritance is unconditional).
+`--parent-pool` refuses mixed parent draws.
 
 Seams: every `rlmath.lean` import lives inside `make_backend`, so this module
 imports — and its logic unit-tests — with no Lean toolchain present. Tests inject
@@ -89,7 +88,7 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from rlmath.core.leancode import proof_check, statement_check
-from rlmath.families.leaf_split import leaf_split
+from rlmath.families.leaf_split import leaf_split, pool_for
 from rlmath.families.mutate import Mutant, mutants
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -169,7 +168,11 @@ def candidate_row(m: Mutant, parent: dict, seed: int) -> dict:
         parent_source_id=parent.get("source_id"),
         parent_leaf_id=parent.get("leaf_id"),
         parent_split=leaf_split(parent_key),
-        split=leaf_split(row["statement_key"]),
+        # AUTHORITATIVE membership: INHERITED from the parent (pool_for).
+        # A mutant is a near-twin; own-key membership would seed eval with
+        # train-twins (strategist catch 2026-08-12). The earlier `split` field
+        # (own-key roll) is deliberately gone — nothing may read it.
+        leaf_pool=pool_for(row["statement_key"], parent_key),
         seed=seed,
         # build_bank ingest aliases (module docstring). Asserted, not assumed.
         statement=row["prop"],
@@ -271,9 +274,6 @@ def parse_args(argv=None):
     p.add_argument("--max-ops", type=int, default=2, help="numerals changed per mutant (v1: 1-2)")
     p.add_argument("--parent-pool", choices=["both", "train", "eval"], default="both",
                    help="restrict parents by leaf_split; refuses mixed draws when not 'both'")
-    p.add_argument("--coherent-split", action="store_true",
-                   help="drop mutants whose own leaf_split differs from their parent's "
-                        "(closes the near-duplicate channel; costs ~37%% of mutants)")
     p.add_argument("--exclude-bank", type=Path, action="append", default=None,
                    help="extra JSONL whose statement_keys are already measured (repeatable); "
                         "the source bank is always excluded")
@@ -367,9 +367,6 @@ def main(argv=None) -> int:
                 if key in known:
                     stats["dup_or_measured"] += 1
                     continue
-                if args.coherent_split and leaf_split(key) != parent_pool:
-                    stats["cross_pool_dropped"] += 1
-                    continue
                 known.add(key)          # dedupe within this run too
                 fresh.append(m)
 
@@ -403,15 +400,13 @@ def main(argv=None) -> int:
                 append_row(out, row)
                 n_emitted += 1
                 op_kinds.update(o.kind for o in m.ops)
-                splits[f"{row['parent_split']}->{row['split']}"] += 1
+                splits[row["leaf_pool"]] += 1
                 print(f"[{n_emitted}] {row['statement_key']} <- {row['parent_key']} "
-                      f"ops={[o.kind for o in m.ops]} {row['parent_split']}->{row['split']}",
+                      f"ops={[o.kind for o in m.ops]} pool={row['leaf_pool']} (inherited)",
                       file=sys.stderr)
             stats["surplus_unemitted"] += max(0, len(gated) - want)
     finally:
         backend.close()
-
-    cross = sum(v for k, v in splits.items() if k.split("->")[0] != k.split("->")[1])
 
     def tally(c: Counter) -> str:
         return ", ".join(f"{k}={v}" for k, v in sorted(c.items())) or "none"
@@ -424,19 +419,8 @@ def main(argv=None) -> int:
         f"(pass_rate ∈ [{args.band_lo}, {args.band_hi}], pool={args.parent_pool})",
         f"gating: {tally(stats)}",
         f"op kinds: {tally(op_kinds)}",
-        f"splits (parent->mutant): {tally(splits)}  [cross-pool={cross}]",
+        f"pools (inherited from parents): {tally(splits)}",
     ]
-    if cross:
-        lines += [
-            "",
-            f"WARNING: {cross}/{n_emitted} mutants landed in the OPPOSITE leaf_split pool from",
-            "their parent. Fresh keys give independent membership (families/leaf_split.py) but",
-            "NOT independent content: a one-constant mutant of a TRAIN leaf sitting in the EVAL",
-            "pool is a near-duplicate — the contamination the FAMILIES.md leaf-disjointness",
-            "contract exists to close. Rows carry parent_split/split so a policy can be applied",
-            "after measurement; --coherent-split drops these up front, which is cheaper because",
-            "a mutant discarded before measurement costs no GPU.",
-        ]
     lines += [
         "",
         "NEXT (mandatory — mutants inherit the neighborhood, never membership):",

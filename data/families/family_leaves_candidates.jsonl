@@ -1,0 +1,138 @@
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 1 * z ^ 1 + 6 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 3 * x ^ 1 * y ^ 3 * z ^ 1 + 2 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 1", "id": "bridge_chain-k2-0"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 3 * z ^ 1 + 2 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 1 ≤ 2 * x ^ 1 * y ^ 3 * z ^ 3 + 5 * Real.log (x ^ 1 * y ^ 3 * z ^ 3) + 6", "id": "bridge_chain-k2-1"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 1 + 7 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 8 * x ^ 3 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 1) + 6", "id": "bridge_chain-k2-2"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 1) + 6 ≤ 5 * x ^ 3 * y ^ 2 * z ^ 1 + 6 * Real.sqrt (x ^ 3 * y ^ 2 * z ^ 1) + 1", "id": "bridge_chain-k2-3"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 1 + 6 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 8 ≤ 2 * x ^ 1 * y ^ 3 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 8", "id": "bridge_chain-k2-4"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 1 * y ^ 3 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 8 ≤ 2 * x ^ 3 * y ^ 3 * z ^ 1 + 2 * Real.sqrt (x ^ 3 * y ^ 3 * z ^ 1) + 7", "id": "bridge_chain-k2-5"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 7 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 6 * x ^ 1 * y ^ 2 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 9", "id": "bridge_chain-k2-6"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 2 * z ^ 1 + 3 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 9 ≤ 8 * x ^ 1 * y ^ 4 * z ^ 1 + 5 * Real.log (x ^ 1 * y ^ 4 * z ^ 1) + 3", "id": "bridge_chain-k2-7"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 3 * x ^ 1 * y ^ 1 * z ^ 3 + 2 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 1", "id": "bridge_chain-k2-8"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 1 * z ^ 3 + 2 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 1 ≤ 2 * x ^ 1 * y ^ 3 * z ^ 3 + 8 * Real.log (x ^ 1 * y ^ 3 * z ^ 3) + 7", "id": "bridge_chain-k2-9"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 6 ≤ 6 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 9", "id": "bridge_chain-k4-10"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 9 ≤ 8 * x ^ 3 * y ^ 1 * z ^ 1 + 3 * Real.log (x ^ 3 * y ^ 1 * z ^ 1) + 8", "id": "bridge_chain-k4-11"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 1 * z ^ 1 + 3 * Real.log (x ^ 3 * y ^ 1 * z ^ 1) + 8 ≤ 3 * x ^ 3 * y ^ 1 * z ^ 3 + 4 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 3) + 4", "id": "bridge_chain-k4-12"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 3 * y ^ 1 * z ^ 3 + 4 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 3) + 4 ≤ 8 * x ^ 3 * y ^ 3 * z ^ 3 + 2 * Real.log (x ^ 3 * y ^ 3 * z ^ 3) + 6", "id": "bridge_chain-k4-13"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 4 ≤ 7 * x ^ 1 * y ^ 2 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 2", "id": "bridge_chain-k4-14"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 2 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 1) + 2 ≤ 8 * x ^ 1 * y ^ 2 * z ^ 2 + 6 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 2) + 3", "id": "bridge_chain-k4-15"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 2 * z ^ 2 + 6 * Real.sqrt (x ^ 1 * y ^ 2 * z ^ 2) + 3 ≤ 3 * x ^ 3 * y ^ 2 * z ^ 2 + 1 * Real.log (x ^ 3 * y ^ 2 * z ^ 2) + 6", "id": "bridge_chain-k4-16"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 3 * y ^ 2 * z ^ 2 + 1 * Real.log (x ^ 3 * y ^ 2 * z ^ 2) + 6 ≤ 3 * x ^ 5 * y ^ 2 * z ^ 2 + 9 * Real.sqrt (x ^ 5 * y ^ 2 * z ^ 2) + 1", "id": "bridge_chain-k4-17"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 3 ≤ 6 * x ^ 1 * y ^ 1 * z ^ 2 + 6 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 3", "id": "bridge_chain-k4-18"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 1 * z ^ 2 + 6 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 2) + 3 ≤ 6 * x ^ 1 * y ^ 1 * z ^ 3 + 8 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 1", "id": "bridge_chain-k4-19"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 1 * z ^ 3 + 8 * Real.log (x ^ 1 * y ^ 1 * z ^ 3) + 1 ≤ 7 * x ^ 1 * y ^ 3 * z ^ 3 + 2 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 3) + 3", "id": "bridge_chain-k4-20"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 3 * z ^ 3 + 2 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 3) + 3 ≤ 7 * x ^ 1 * y ^ 3 * z ^ 4 + 1 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 4) + 2", "id": "bridge_chain-k4-21"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 1 * y ^ 1 * z ^ 1 + 6 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 6 * x ^ 1 * y ^ 1 * z ^ 2 + 3 * Real.log (x ^ 1 * y ^ 1 * z ^ 2) + 6", "id": "bridge_chain-k4-22"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 1 * z ^ 2 + 3 * Real.log (x ^ 1 * y ^ 1 * z ^ 2) + 6 ≤ 3 * x ^ 1 * y ^ 3 * z ^ 2 + 4 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 2) + 2", "id": "bridge_chain-k4-23"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 3 * z ^ 2 + 4 * Real.sqrt (x ^ 1 * y ^ 3 * z ^ 2) + 2 ≤ 9 * x ^ 2 * y ^ 3 * z ^ 2 + 1 * Real.sqrt (x ^ 2 * y ^ 3 * z ^ 2) + 2", "id": "bridge_chain-k4-24"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 2 * y ^ 3 * z ^ 2 + 1 * Real.sqrt (x ^ 2 * y ^ 3 * z ^ 2) + 2 ≤ 3 * x ^ 4 * y ^ 3 * z ^ 2 + 3 * Real.sqrt (x ^ 4 * y ^ 3 * z ^ 2) + 6", "id": "bridge_chain-k4-25"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 1 * z ^ 1 + 4 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 3 ≤ 2 * x ^ 1 * y ^ 3 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 8", "id": "bridge_chain-k4-26"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 1 * y ^ 3 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 8 ≤ 2 * x ^ 1 * y ^ 5 * z ^ 1 + 6 * Real.log (x ^ 1 * y ^ 5 * z ^ 1) + 4", "id": "bridge_chain-k4-27"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 1 * y ^ 5 * z ^ 1 + 6 * Real.log (x ^ 1 * y ^ 5 * z ^ 1) + 4 ≤ 7 * x ^ 1 * y ^ 7 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 7 * z ^ 1) + 9", "id": "bridge_chain-k4-28"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 7 * z ^ 1 + 1 * Real.log (x ^ 1 * y ^ 7 * z ^ 1) + 9 ≤ 2 * x ^ 3 * y ^ 7 * z ^ 1 + 4 * Real.log (x ^ 3 * y ^ 7 * z ^ 1) + 2", "id": "bridge_chain-k4-29"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 6 ≤ 5 * x ^ 1 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 2 * z ^ 1) + 2", "id": "bridge_chain-k8-30"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 1 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 2 * z ^ 1) + 2 ≤ 8 * x ^ 1 * y ^ 4 * z ^ 1 + 6 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 1) + 4", "id": "bridge_chain-k8-31"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 4 * z ^ 1 + 6 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 1) + 4 ≤ 3 * x ^ 1 * y ^ 4 * z ^ 3 + 5 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 3) + 2", "id": "bridge_chain-k8-32"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 1 * y ^ 4 * z ^ 3 + 5 * Real.sqrt (x ^ 1 * y ^ 4 * z ^ 3) + 2 ≤ 6 * x ^ 3 * y ^ 4 * z ^ 3 + 2 * Real.log (x ^ 3 * y ^ 4 * z ^ 3) + 1", "id": "bridge_chain-k8-33"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 3 * y ^ 4 * z ^ 3 + 2 * Real.log (x ^ 3 * y ^ 4 * z ^ 3) + 1 ≤ 6 * x ^ 3 * y ^ 4 * z ^ 4 + 1 * Real.log (x ^ 3 * y ^ 4 * z ^ 4) + 5", "id": "bridge_chain-k8-34"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 3 * y ^ 4 * z ^ 4 + 1 * Real.log (x ^ 3 * y ^ 4 * z ^ 4) + 5 ≤ 5 * x ^ 3 * y ^ 6 * z ^ 4 + 5 * Real.sqrt (x ^ 3 * y ^ 6 * z ^ 4) + 9", "id": "bridge_chain-k8-35"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 3 * y ^ 6 * z ^ 4 + 5 * Real.sqrt (x ^ 3 * y ^ 6 * z ^ 4) + 9 ≤ 8 * x ^ 3 * y ^ 7 * z ^ 4 + 4 * Real.log (x ^ 3 * y ^ 7 * z ^ 4) + 7", "id": "bridge_chain-k8-36"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 7 * z ^ 4 + 4 * Real.log (x ^ 3 * y ^ 7 * z ^ 4) + 7 ≤ 3 * x ^ 3 * y ^ 7 * z ^ 6 + 5 * Real.sqrt (x ^ 3 * y ^ 7 * z ^ 6) + 4", "id": "bridge_chain-k8-37"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 1 * z ^ 1 + 7 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 6 ≤ 7 * x ^ 2 * y ^ 1 * z ^ 1 + 7 * Real.log (x ^ 2 * y ^ 1 * z ^ 1) + 4", "id": "bridge_chain-k8-38"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 2 * y ^ 1 * z ^ 1 + 7 * Real.log (x ^ 2 * y ^ 1 * z ^ 1) + 4 ≤ 8 * x ^ 3 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 1) + 9", "id": "bridge_chain-k8-39"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 3 * y ^ 1 * z ^ 1) + 9 ≤ 8 * x ^ 3 * y ^ 3 * z ^ 1 + 9 * Real.sqrt (x ^ 3 * y ^ 3 * z ^ 1) + 6", "id": "bridge_chain-k8-40"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 3 * z ^ 1 + 9 * Real.sqrt (x ^ 3 * y ^ 3 * z ^ 1) + 6 ≤ 8 * x ^ 3 * y ^ 5 * z ^ 1 + 8 * Real.sqrt (x ^ 3 * y ^ 5 * z ^ 1) + 2", "id": "bridge_chain-k8-41"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 3 * y ^ 5 * z ^ 1 + 8 * Real.sqrt (x ^ 3 * y ^ 5 * z ^ 1) + 2 ≤ 3 * x ^ 3 * y ^ 7 * z ^ 1 + 5 * Real.sqrt (x ^ 3 * y ^ 7 * z ^ 1) + 1", "id": "bridge_chain-k8-42"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 3 * x ^ 3 * y ^ 7 * z ^ 1 + 5 * Real.sqrt (x ^ 3 * y ^ 7 * z ^ 1) + 1 ≤ 7 * x ^ 3 * y ^ 8 * z ^ 1 + 1 * Real.log (x ^ 3 * y ^ 8 * z ^ 1) + 7", "id": "bridge_chain-k8-43"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 3 * y ^ 8 * z ^ 1 + 1 * Real.log (x ^ 3 * y ^ 8 * z ^ 1) + 7 ≤ 9 * x ^ 5 * y ^ 8 * z ^ 1 + 1 * Real.log (x ^ 5 * y ^ 8 * z ^ 1) + 6", "id": "bridge_chain-k8-44"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 5 * y ^ 8 * z ^ 1 + 1 * Real.log (x ^ 5 * y ^ 8 * z ^ 1) + 6 ≤ 2 * x ^ 5 * y ^ 10 * z ^ 1 + 6 * Real.sqrt (x ^ 5 * y ^ 10 * z ^ 1) + 2", "id": "bridge_chain-k8-45"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 7 ≤ 7 * x ^ 1 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 2 * z ^ 1) + 6", "id": "bridge_chain-k8-46"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 1 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 2 * z ^ 1) + 6 ≤ 2 * x ^ 3 * y ^ 2 * z ^ 1 + 3 * Real.log (x ^ 3 * y ^ 2 * z ^ 1) + 6", "id": "bridge_chain-k8-47"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 3 * y ^ 2 * z ^ 1 + 3 * Real.log (x ^ 3 * y ^ 2 * z ^ 1) + 6 ≤ 9 * x ^ 4 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 4 * y ^ 2 * z ^ 1) + 1", "id": "bridge_chain-k8-48"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 4 * y ^ 2 * z ^ 1 + 8 * Real.log (x ^ 4 * y ^ 2 * z ^ 1) + 1 ≤ 7 * x ^ 4 * y ^ 4 * z ^ 1 + 8 * Real.log (x ^ 4 * y ^ 4 * z ^ 1) + 3", "id": "bridge_chain-k8-49"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 4 * y ^ 4 * z ^ 1 + 8 * Real.log (x ^ 4 * y ^ 4 * z ^ 1) + 3 ≤ 6 * x ^ 5 * y ^ 4 * z ^ 1 + 3 * Real.sqrt (x ^ 5 * y ^ 4 * z ^ 1) + 6", "id": "bridge_chain-k8-50"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 5 * y ^ 4 * z ^ 1 + 3 * Real.sqrt (x ^ 5 * y ^ 4 * z ^ 1) + 6 ≤ 4 * x ^ 5 * y ^ 6 * z ^ 1 + 1 * Real.sqrt (x ^ 5 * y ^ 6 * z ^ 1) + 8", "id": "bridge_chain-k8-51"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 5 * y ^ 6 * z ^ 1 + 1 * Real.sqrt (x ^ 5 * y ^ 6 * z ^ 1) + 8 ≤ 4 * x ^ 6 * y ^ 6 * z ^ 1 + 6 * Real.sqrt (x ^ 6 * y ^ 6 * z ^ 1) + 6", "id": "bridge_chain-k8-52"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 6 * y ^ 6 * z ^ 1 + 6 * Real.sqrt (x ^ 6 * y ^ 6 * z ^ 1) + 6 ≤ 7 * x ^ 6 * y ^ 7 * z ^ 1 + 3 * Real.sqrt (x ^ 6 * y ^ 7 * z ^ 1) + 5", "id": "bridge_chain-k8-53"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 9 * Real.log (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 6 * x ^ 1 * y ^ 3 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 6", "id": "bridge_chain-k8-54"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 1 * y ^ 3 * z ^ 1 + 8 * Real.log (x ^ 1 * y ^ 3 * z ^ 1) + 6 ≤ 5 * x ^ 2 * y ^ 3 * z ^ 1 + 6 * Real.sqrt (x ^ 2 * y ^ 3 * z ^ 1) + 5", "id": "bridge_chain-k8-55"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 2 * y ^ 3 * z ^ 1 + 6 * Real.sqrt (x ^ 2 * y ^ 3 * z ^ 1) + 5 ≤ 4 * x ^ 2 * y ^ 4 * z ^ 1 + 4 * Real.sqrt (x ^ 2 * y ^ 4 * z ^ 1) + 6", "id": "bridge_chain-k8-56"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 2 * y ^ 4 * z ^ 1 + 4 * Real.sqrt (x ^ 2 * y ^ 4 * z ^ 1) + 6 ≤ 9 * x ^ 2 * y ^ 5 * z ^ 1 + 3 * Real.sqrt (x ^ 2 * y ^ 5 * z ^ 1) + 9", "id": "bridge_chain-k8-57"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 9 * x ^ 2 * y ^ 5 * z ^ 1 + 3 * Real.sqrt (x ^ 2 * y ^ 5 * z ^ 1) + 9 ≤ 5 * x ^ 2 * y ^ 5 * z ^ 2 + 5 * Real.sqrt (x ^ 2 * y ^ 5 * z ^ 2) + 9", "id": "bridge_chain-k8-58"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 5 * x ^ 2 * y ^ 5 * z ^ 2 + 5 * Real.sqrt (x ^ 2 * y ^ 5 * z ^ 2) + 9 ≤ 7 * x ^ 2 * y ^ 7 * z ^ 2 + 6 * Real.sqrt (x ^ 2 * y ^ 7 * z ^ 2) + 5", "id": "bridge_chain-k8-59"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 2 * y ^ 7 * z ^ 2 + 6 * Real.sqrt (x ^ 2 * y ^ 7 * z ^ 2) + 5 ≤ 6 * x ^ 2 * y ^ 9 * z ^ 2 + 1 * Real.log (x ^ 2 * y ^ 9 * z ^ 2) + 1", "id": "bridge_chain-k8-60"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 2 * y ^ 9 * z ^ 2 + 1 * Real.log (x ^ 2 * y ^ 9 * z ^ 2) + 1 ≤ 3 * x ^ 2 * y ^ 10 * z ^ 2 + 9 * Real.log (x ^ 2 * y ^ 10 * z ^ 2) + 1", "id": "bridge_chain-k8-61"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 1 * y ^ 1 * z ^ 1 + 4 * Real.sqrt (x ^ 1 * y ^ 1 * z ^ 1) + 5 ≤ 4 * x ^ 1 * y ^ 1 * z ^ 2 + 1 * Real.log (x ^ 1 * y ^ 1 * z ^ 2) + 7", "id": "bridge_chain-k8-62"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 4 * x ^ 1 * y ^ 1 * z ^ 2 + 1 * Real.log (x ^ 1 * y ^ 1 * z ^ 2) + 7 ≤ 6 * x ^ 2 * y ^ 1 * z ^ 2 + 3 * Real.log (x ^ 2 * y ^ 1 * z ^ 2) + 2", "id": "bridge_chain-k8-63"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 6 * x ^ 2 * y ^ 1 * z ^ 2 + 3 * Real.log (x ^ 2 * y ^ 1 * z ^ 2) + 2 ≤ 2 * x ^ 4 * y ^ 1 * z ^ 2 + 5 * Real.sqrt (x ^ 4 * y ^ 1 * z ^ 2) + 1", "id": "bridge_chain-k8-64"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 4 * y ^ 1 * z ^ 2 + 5 * Real.sqrt (x ^ 4 * y ^ 1 * z ^ 2) + 1 ≤ 7 * x ^ 4 * y ^ 3 * z ^ 2 + 3 * Real.log (x ^ 4 * y ^ 3 * z ^ 2) + 6", "id": "bridge_chain-k8-65"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 7 * x ^ 4 * y ^ 3 * z ^ 2 + 3 * Real.log (x ^ 4 * y ^ 3 * z ^ 2) + 6 ≤ 8 * x ^ 4 * y ^ 5 * z ^ 2 + 2 * Real.sqrt (x ^ 4 * y ^ 5 * z ^ 2) + 2", "id": "bridge_chain-k8-66"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 4 * y ^ 5 * z ^ 2 + 2 * Real.sqrt (x ^ 4 * y ^ 5 * z ^ 2) + 2 ≤ 2 * x ^ 4 * y ^ 5 * z ^ 4 + 1 * Real.log (x ^ 4 * y ^ 5 * z ^ 4) + 9", "id": "bridge_chain-k8-67"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 2 * x ^ 4 * y ^ 5 * z ^ 4 + 1 * Real.log (x ^ 4 * y ^ 5 * z ^ 4) + 9 ≤ 8 * x ^ 5 * y ^ 5 * z ^ 4 + 5 * Real.log (x ^ 5 * y ^ 5 * z ^ 4) + 5", "id": "bridge_chain-k8-68"}
+{"formal_statement": "∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → 8 * x ^ 5 * y ^ 5 * z ^ 4 + 5 * Real.log (x ^ 5 * y ^ 5 * z ^ 4) + 5 ≤ 6 * x ^ 6 * y ^ 5 * z ^ 4 + 1 * Real.sqrt (x ^ 6 * y ^ 5 * z ^ 4) + 1", "id": "bridge_chain-k8-69"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 8 * x + 21)", "id": "case_tree-k2-70"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → 3 ≤ 8 - Real.sqrt (x ^ 2 - 6 * x + 17)", "id": "case_tree-k2-71"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → Real.sqrt (x ^ 2 + 4 * x + 15) - 3 ≤ 3", "id": "case_tree-k2-72"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → Real.sqrt (2 * x ^ 2 - 12 * x + 22) - 3 ≤ 3", "id": "case_tree-k2-73"}
+{"formal_statement": "∀ x : ℝ, -8 ≤ x → x ≤ 0 → 3 ≤ 8 - Real.sqrt (x ^ 2 + 8 * x + 25)", "id": "case_tree-k2-74"}
+{"formal_statement": "∀ x : ℝ, 0 ≤ x → x ≤ 8 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 - 12 * x + 31)", "id": "case_tree-k2-75"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 12 * x + 21)", "id": "case_tree-k2-76"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → 3 ≤ 10 - Real.sqrt (3 * x ^ 2 - 18 * x + 28)", "id": "case_tree-k2-77"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 7 - Real.sqrt (x ^ 2 + 8 * x + 22)", "id": "case_tree-k2-78"}
+{"formal_statement": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 4 * x + 14)", "id": "case_tree-k2-79"}
+{"formal_statement": "∀ x : ℝ, -14 ≤ x → x ≤ -8 → Real.sqrt (2 * x ^ 2 + 44 * x + 249) - 2 ≤ 3", "id": "case_tree-k4-80"}
+{"formal_statement": "∀ x : ℝ, -8 ≤ x → x ≤ 0 → Real.sqrt (3 * x ^ 2 + 18 * x + 32) - 6 ≤ 3", "id": "case_tree-k4-81"}
+{"formal_statement": "∀ x : ℝ, 0 ≤ x → x ≤ 8 → Real.sqrt (x ^ 2 - 8 * x + 24) - 2 ≤ 3", "id": "case_tree-k4-82"}
+{"formal_statement": "∀ x : ℝ, 8 ≤ x → x ≤ 14 → Real.sqrt (x ^ 2 - 20 * x + 109) - 2 ≤ 3", "id": "case_tree-k4-83"}
+{"formal_statement": "∀ x : ℝ, -13 ≤ x → x ≤ -7 → Real.sqrt (2 * x ^ 2 + 40 * x + 207) - 2 ≤ 3", "id": "case_tree-k4-84"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → Real.sqrt (x ^ 2 + 8 * x + 22) - 1 ≤ 3", "id": "case_tree-k4-85"}
+{"formal_statement": "∀ x : ℝ, -1 ≤ x → x ≤ 5 → Real.sqrt (x ^ 2 - 2 * x + 9) - 2 ≤ 3", "id": "case_tree-k4-86"}
+{"formal_statement": "∀ x : ℝ, 5 ≤ x → x ≤ 13 → Real.sqrt (3 * x ^ 2 - 60 * x + 306) - 6 ≤ 3", "id": "case_tree-k4-87"}
+{"formal_statement": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → Real.sqrt (2 * x ^ 2 + 44 * x + 255) - 5 ≤ 3", "id": "case_tree-k4-88"}
+{"formal_statement": "∀ x : ℝ, -6 ≤ x → x ≤ 2 → Real.sqrt (2 * x ^ 2 + 4 * x + 15) - 5 ≤ 3", "id": "case_tree-k4-89"}
+{"formal_statement": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (x ^ 2 - 10 * x + 31) - 1 ≤ 3", "id": "case_tree-k4-90"}
+{"formal_statement": "∀ x : ℝ, 8 ≤ x → x ≤ 14 → Real.sqrt (3 * x ^ 2 - 72 * x + 433) - 4 ≤ 3", "id": "case_tree-k4-91"}
+{"formal_statement": "∀ x : ℝ, -13 ≤ x → x ≤ -5 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 40 * x + 214)", "id": "case_tree-k4-92"}
+{"formal_statement": "∀ x : ℝ, -5 ≤ x → x ≤ 1 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 12 * x + 22)", "id": "case_tree-k4-93"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → 3 ≤ 7 - Real.sqrt (x ^ 2 - 8 * x + 22)", "id": "case_tree-k4-94"}
+{"formal_statement": "∀ x : ℝ, 7 ≤ x → x ≤ 13 → 3 ≤ 8 - Real.sqrt (2 * x ^ 2 - 40 * x + 206)", "id": "case_tree-k4-95"}
+{"formal_statement": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 22 * x + 132)", "id": "case_tree-k4-96"}
+{"formal_statement": "∀ x : ℝ, -6 ≤ x → x ≤ 0 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 24 * x + 63)", "id": "case_tree-k4-97"}
+{"formal_statement": "∀ x : ℝ, 8 ≤ x → x ≤ 14 → 3 ≤ 7 - Real.sqrt (x ^ 2 - 22 * x + 128)", "id": "case_tree-k4-98"}
+{"formal_statement": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → Real.sqrt (3 * x ^ 2 + 150 * x + 1876) - 4 ≤ 3", "id": "case_tree-k8-99"}
+{"formal_statement": "∀ x : ℝ, -21 ≤ x → x ≤ -13 → Real.sqrt (3 * x ^ 2 + 108 * x + 977) - 6 ≤ 3", "id": "case_tree-k8-100"}
+{"formal_statement": "∀ x : ℝ, -13 ≤ x → x ≤ -7 → Real.sqrt (3 * x ^ 2 + 66 * x + 364) - 4 ≤ 3", "id": "case_tree-k8-101"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → Real.sqrt (x ^ 2 + 6 * x + 18) - 2 ≤ 3", "id": "case_tree-k8-102"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 9 → Real.sqrt (2 * x ^ 2 - 16 * x + 46) - 5 ≤ 3", "id": "case_tree-k8-103"}
+{"formal_statement": "∀ x : ℝ, 9 ≤ x → x ≤ 15 → Real.sqrt (3 * x ^ 2 - 78 * x + 508) - 4 ≤ 3", "id": "case_tree-k8-104"}
+{"formal_statement": "∀ x : ℝ, 15 ≤ x → x ≤ 21 → Real.sqrt (2 * x ^ 2 - 68 * x + 582) - 3 ≤ 3", "id": "case_tree-k8-105"}
+{"formal_statement": "∀ x : ℝ, 21 ≤ x → x ≤ 29 → Real.sqrt (3 * x ^ 2 - 150 * x + 1890) - 5 ≤ 3", "id": "case_tree-k8-106"}
+{"formal_statement": "∀ x : ℝ, -28 ≤ x → x ≤ -22 → Real.sqrt (2 * x ^ 2 + 104 * x + 1356) - 3 ≤ 3", "id": "case_tree-k8-107"}
+{"formal_statement": "∀ x : ℝ, -22 ≤ x → x ≤ -16 → Real.sqrt (2 * x ^ 2 + 80 * x + 803) - 3 ≤ 3", "id": "case_tree-k8-108"}
+{"formal_statement": "∀ x : ℝ, -16 ≤ x → x ≤ -8 → Real.sqrt (3 * x ^ 2 + 72 * x + 447) - 5 ≤ 3", "id": "case_tree-k8-109"}
+{"formal_statement": "∀ x : ℝ, -8 ≤ x → x ≤ 0 → Real.sqrt (2 * x ^ 2 + 20 * x + 64) - 5 ≤ 3", "id": "case_tree-k8-110"}
+{"formal_statement": "∀ x : ℝ, 0 ≤ x → x ≤ 6 → Real.sqrt (x ^ 2 - 6 * x + 15) - 1 ≤ 3", "id": "case_tree-k8-111"}
+{"formal_statement": "∀ x : ℝ, 6 ≤ x → x ≤ 14 → Real.sqrt (3 * x ^ 2 - 60 * x + 315) - 5 ≤ 3", "id": "case_tree-k8-112"}
+{"formal_statement": "∀ x : ℝ, 14 ≤ x → x ≤ 20 → Real.sqrt (2 * x ^ 2 - 64 * x + 516) - 3 ≤ 3", "id": "case_tree-k8-113"}
+{"formal_statement": "∀ x : ℝ, 20 ≤ x → x ≤ 28 → Real.sqrt (x ^ 2 - 48 * x + 585) - 2 ≤ 3", "id": "case_tree-k8-114"}
+{"formal_statement": "∀ x : ℝ, -31 ≤ x → x ≤ -23 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 52 * x + 687)", "id": "case_tree-k8-115"}
+{"formal_statement": "∀ x : ℝ, -23 ≤ x → x ≤ -15 → 3 ≤ 8 - Real.sqrt (x ^ 2 + 38 * x + 370)", "id": "case_tree-k8-116"}
+{"formal_statement": "∀ x : ℝ, -15 ≤ x → x ≤ -7 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 48 * x + 302)", "id": "case_tree-k8-117"}
+{"formal_statement": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 8 - Real.sqrt (x ^ 2 + 6 * x + 18)", "id": "case_tree-k8-118"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 9 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 12 * x + 46)", "id": "case_tree-k8-119"}
+{"formal_statement": "∀ x : ℝ, 9 ≤ x → x ≤ 15 → 3 ≤ 8 - Real.sqrt (x ^ 2 - 22 * x + 130)", "id": "case_tree-k8-120"}
+{"formal_statement": "∀ x : ℝ, 15 ≤ x → x ≤ 23 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 - 76 * x + 726)", "id": "case_tree-k8-121"}
+{"formal_statement": "∀ x : ℝ, 23 ≤ x → x ≤ 31 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 56 * x + 795)", "id": "case_tree-k8-122"}
+{"formal_statement": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 48 * x + 586)", "id": "case_tree-k8-123"}
+{"formal_statement": "∀ x : ℝ, -21 ≤ x → x ≤ -15 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 68 * x + 582)", "id": "case_tree-k8-124"}
+{"formal_statement": "∀ x : ℝ, -15 ≤ x → x ≤ -7 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 40 * x + 213)", "id": "case_tree-k8-125"}
+{"formal_statement": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → 3 ≤ 8 - Real.sqrt (2 * x ^ 2 - 16 * x + 39)", "id": "case_tree-k8-126"}
+{"formal_statement": "∀ x : ℝ, 7 ≤ x → x ≤ 15 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 20 * x + 111)", "id": "case_tree-k8-127"}
+{"formal_statement": "∀ x : ℝ, 15 ≤ x → x ≤ 21 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 - 76 * x + 726)", "id": "case_tree-k8-128"}
+{"formal_statement": "∀ x : ℝ, 21 ≤ x → x ≤ 29 → 3 ≤ 8 - Real.sqrt (x ^ 2 - 50 * x + 633)", "id": "case_tree-k8-129"}
+{"formal_statement": "∀ x : ℝ, -26 ≤ x → x ≤ -18 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 132 * x + 1467)", "id": "case_tree-k8-130"}
+{"formal_statement": "∀ x : ℝ, -18 ≤ x → x ≤ -12 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 56 * x + 395)", "id": "case_tree-k8-131"}
+{"formal_statement": "∀ x : ℝ, -12 ≤ x → x ≤ -6 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 48 * x + 207)", "id": "case_tree-k8-132"}
+{"formal_statement": "∀ x : ℝ, -6 ≤ x → x ≤ 0 → 3 ≤ 10 - Real.sqrt (3 * x ^ 2 + 24 * x + 49)", "id": "case_tree-k8-133"}
+{"formal_statement": "∀ x : ℝ, 0 ≤ x → x ≤ 6 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 - 8 * x + 11)", "id": "case_tree-k8-134"}
+{"formal_statement": "∀ x : ℝ, 6 ≤ x → x ≤ 14 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 22 * x + 131)", "id": "case_tree-k8-135"}
+{"formal_statement": "∀ x : ℝ, 14 ≤ x → x ≤ 20 → 3 ≤ 7 - Real.sqrt (x ^ 2 - 34 * x + 296)", "id": "case_tree-k8-136"}
+{"formal_statement": "∀ x : ℝ, 20 ≤ x → x ≤ 26 → 3 ≤ 8 - Real.sqrt (x ^ 2 - 48 * x + 585)", "id": "case_tree-k8-137"}

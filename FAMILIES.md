@@ -88,8 +88,12 @@ interpretable**: eval-k problems built from training-seen leaves cannot distingu
 contamination channel the retrieval RLM never had (its content was inexhaustible).
 
 - Membership is decided by `families/leaf_split.py` — a pure function of `statement_key`
-  (last hex nibble; 25% eval). No manifest, stable under bank growth and re-sweeps;
-  mutation-bred variants get fresh keys and independent membership.
+  (last hex nibble; 25% eval). No manifest, stable under bank growth and re-sweeps.
+- **Mutants INHERIT their parent's membership** (`pool_for`; strategist catch 2026-08-12):
+  a mutant is a near-twin, so an own-key roll would seed eval with train-twins and recreate
+  the contamination channel this contract closes. Fresh keys, inherited membership. (An
+  earlier revision of this contract stated independent membership as a feature — it was the
+  bug.) Consumers read `leaf_pool` on mutant rows, never bare `leaf_split`.
 - **TRAIN problems (any k) draw leaves exclusively from the train pool; EVAL problems
   exclusively from the eval pool.** Datasets record the pool per problem; the gen CLI must
   refuse mixed draws.

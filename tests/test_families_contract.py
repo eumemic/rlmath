@@ -181,3 +181,22 @@ def test_leaf_split_rejects_empty():
 
     with pytest.raises(ValueError):
         leaf_split("")
+
+
+def test_mutants_inherit_parent_membership():
+    """Strategist catch 2026-08-12: a mutant is a near-twin of its parent, so
+    membership must be INHERITED — an independently-drawn pool would seed eval
+    with train-twins and recreate the contamination channel the split closes."""
+    from rlmath.families.leaf_split import leaf_split, pool_for
+
+    train_parent = "0123456789abcde0"   # -> train
+    eval_parent = "0123456789abcdef"    # -> eval
+    # a mutant whose own key would roll the OTHER pool still inherits the parent's
+    mutant_key_rolling_eval = "aaaaaaaaaaaaaaac"
+    mutant_key_rolling_train = "aaaaaaaaaaaaaaa0"
+    assert leaf_split(mutant_key_rolling_eval) == "eval"
+    assert pool_for(mutant_key_rolling_eval, parent_key=train_parent) == "train"
+    assert leaf_split(mutant_key_rolling_train) == "train"
+    assert pool_for(mutant_key_rolling_train, parent_key=eval_parent) == "eval"
+    # non-mutants: pool_for == leaf_split
+    assert pool_for(train_parent) == leaf_split(train_parent)
