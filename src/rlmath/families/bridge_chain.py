@@ -1,92 +1,75 @@
 """Family A — bridge chains: prove `R(a₀, a_k)` through k hidden intermediates.
 
-Schema (v1, "monomial ladder over ℝ")
-------------------------------------
+Schema (v2, "named-function monomial ladder over ℝ")
+----------------------------------------------------
 Every problem is a chain `a₀ ≤ a₁ ≤ … ≤ a_k` of real terms
 
-    aᵢ  =  cᵢ * x ^ pᵢ * y ^ qᵢ * z ^ rᵢ + dᵢ           cᵢ ∈ [2,9], dᵢ ∈ [1,9]
+    aᵢ  =  cᵢ * Mᵢ  +  dᵢ * Fᵢ(Mᵢ)  +  oᵢ        Mᵢ = x ^ pᵢ * y ^ qᵢ * z ^ rᵢ
 
-under the shared side conditions `3 ≤ x`, `3 ≤ y`, `3 ≤ z`. One step multiplies the
-monomial by `v ^ δ` for a randomly chosen variable `v ∈ {x,y,z}` and `δ ∈ {1,2}`, and
-*resamples* the coefficient and the additive offset. Exponents start at `(1,1,1)`.
+with `cᵢ ∈ [2,9]`, `dᵢ ∈ [1,9]`, `oᵢ ∈ [1,9]` and `Fᵢ ∈ {Real.sqrt, Real.log}` drawn iid
+per term, under the shared side conditions `3 ≤ x`, `3 ≤ y`, `3 ≤ z`. One step multiplies
+the monomial by `v ^ δ` for a randomly chosen `v ∈ {x,y,z}` and `δ ∈ {1,2}`, and resamples
+`(c, d, o, F)`. Exponents start at `(1,1,1)`.
 
     goal    ∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → a₀ ≤ a_k
     hᵢ      ∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → aᵢ₋₁ ≤ aᵢ            (i = 1..k)
     assembly    intro x y z hx hy hz
                 exact (le_trans (h1 x y z hx hy hz) (le_trans (h2 …) … ))
 
-Only `a₀` and `a_k` occur in the goal; `a₁ … a_{k-1}` — the coefficient, the offset and
-the exponent triple of every intermediate — are exactly what a policy has to invent.
+Only `a₀` and `a_k` occur in the goal; every intermediate's coefficients, offset,
+named function and exponent triple are what a policy has to invent.
 
 **Step form, not cumulative form.** The alternative plan shape `hᵢ : R(a₀, aᵢ)` was
-rejected on two counts, both structural rather than aesthetic: (1) `h_k` *is* the goal,
-so the last lemma is a restatement — it fails V6 unless exempted, and a policy that
-emits it has decomposed nothing; (2) the witness for a cumulative `hᵢ` has to redo the
-whole prefix, so leaf difficulty grows linearly in i and per-node flatness (the validity
-metric for the entire size axis, DIRECTION §5.4a) is lost by construction. Step form
-gives k leaves that are pairwise interchangeable in difficulty, and transitivity — the
-one thing the assembly is allowed to know — is what glues them.
+rejected on two counts, both structural: (1) `h_k` *is* the goal, so the last lemma is a
+restatement — it fails V6 unless exempted, and a policy emitting it has decomposed
+nothing; (2) a cumulative witness redoes the whole prefix, so leaf difficulty grows with
+i and per-node flatness (DIRECTION §5.4a) dies by construction.
+
+Why v1 died, and what v2 changes (measured, 2026-08-12)
+-------------------------------------------------------
+v1 terms were `cᵢ Mᵢ + dᵢ`. Under the *strengthened* V0/V5 battery (10 tactics × {bare,
+intros-first}) **16 of its leaves fell to `intros; gcongr <;> linarith`** — the combo v1
+gated at the endpoints but never ran against individual steps. `gcongr` anti-unifies the
+two sides, so a step whose every coefficient is non-decreasing (`c₁ ≤ c₂`, `d₁ ≤ d₂`,
+`M ≤ M'`) is pure relational congruence and closes in one line.
+
+v2 closes that hole twice over, and both halves were measured before shipping
+(`research/family-v2-hardening.md` §2):
+
+1. **Named-function content.** Each term carries `dᵢ * Fᵢ(Mᵢ)` with `Fᵢ` drawn from
+   `{Real.sqrt, Real.log}`. When consecutive terms disagree on `F` there is no common
+   wrapper to anti-unify, so `gcongr` cannot even build a template; `linarith`/`nlinarith`
+   see `Real.sqrt (…)`/`Real.log (…)` as opaque atoms with no connecting hypothesis.
+   Measured: `4M + 2 log M ≤ 9M' + 7 √M'` survives the whole battery *even with every
+   coefficient rising*, while the same step with `√` on both sides dies to
+   `intros; gcongr <;> linarith`.
+2. **A per-step congruence gate** (`step_resists_congruence`): at least one of `c`, `d`,
+   `o` must strictly *decrease* across every step. That is exactly the negation of
+   gcongr's success condition, so it holds regardless of which functions were drawn.
+   The multiplicative gain `M' ≥ 3^δ M` pays for the drop.
+
+The gate is applied unconditionally, i.e. it is stricter than the measurement demands
+(only `√|√` steps needed it). Making it conditional on the function pair would make the
+`(c,d,o)` distribution depend on the function draw for no measured benefit.
 
 Why the step is sound and why its witness needs no search
 ---------------------------------------------------------
-With `M = x^p y^q z^r ≥ 1` and `v ≥ 3`, the step `c₁M + d₁ ≤ c₂ (v^δ M) + d₂` follows
-from `v^δ M ≥ 3^δ M` by *linear* reasoning over the two monomial atoms, provided
+With `M ≥ 1`, `F(M) ≤ M` (for `√`: `Real.sqrt_le_self_iff`; for `log`:
+`Real.log_le_sub_one_of_pos`), `F(M') ≥ 0`, and `M' ≥ 3^δ M`, the step
+`c₁M + d₁F₁(M) + o₁ ≤ c₂M' + d₂F₂(M') + o₂` is a *linear* consequence over the four
+atoms `M, M', F₁(M), F₂(M')` provided
 
-    c₂ · 3^δ − c₁  ≥  max(0, d₁ − d₂)                            (SAMPLING CONSTRAINT)
+    c₂ · 3^δ − (c₁ + d₁)  ≥  max(0, o₁ − o₂)                     (SAMPLING CONSTRAINT)
 
-which the sampler enforces by rejection (see `_sample_chain`; measured rejection rate is
-reported in `meta["resamples"]`). Everything else in the witness is the `1 ≤ M` scaffold.
+which the sampler enforces by rejection. Everything else in the witness is the `1 ≤ M`
+scaffold, unchanged from v1 (search-free `gcongr` on a one-variable numeric bound, no
+`nlinarith` anywhere — that is what kept the composed k=32 artifact inside PREAMBLE's
+`maxHeartbeats`).
 
-Empirical findings that shaped this schema (all measured on the local ReplPool,
-Mathlib @ lean 4.34.0-rc1; kill-lists are the V0/V5 battery = simp, aesop, norm_num,
-omega, decide, linarith, positivity):
-
-* `n ∣ n * (n+4)`-style **divisibility steps with symbolic multipliers die instantly**
-  (`simp`, `aesop`, `norm_num` all close `∀ n : ℕ, (n^2+3n+2) ∣ (n^2+3n+2)*(n+4)`).
-  Thickening to `x^6 - 1 ∣ x^12 - 1` survives the battery, but the divisor chain grows
-  the exponent multiplicatively (2^k by k=32) and the composed goal is one
-  `Nat.sub_dvd_pow_sub_pow` application away — collapsible, so it was dropped.
-* **`Real.sqrt` steps die to `aesop`** (`∀ x : ℝ, 1 ≤ x → √x ≤ x`). `Real.log x ≤ x - 1`
-  and `x + 1 ≤ Real.exp x` both survive, but log/exp/sqrt terms *nest*: the term grows a
-  wrapper per step, so leaf size is linear in k and flatness dies. Function-bound chains
-  are usable only at small k; not the backbone.
-* **Set/subset steps survived the battery** (`s ∩ t ⊆ s ∪ u`, `f '' (s ∩ t) ⊆ f '' s`
-  were *not* closed by bare `aesop` here) but the reachable state space is tiny, so the
-  intermediates repeat and stop being invented content past k≈4.
-* **Monomial ladders over ℝ and over ℕ both survive the full battery**, with and without
-  the additive offsets, at every k tested (leaf, k=2 goal, k=8 goal, k=32 goal: 0/7
-  tactics closed each). ℝ was chosen over ℕ only because the leaf bank is ℝ-heavy.
-* The **additive offsets are load-bearing against collapse**, and this was measured, not
-  assumed: strip them and `by intro x y z hx hy hz; gcongr <;> linarith` closes the k=8
-  endpoint goal in **one line**. With offsets that one-liner fails, and so do bare
-  `nlinarith` and `gcongr`+`nlinarith` at k=8 and k=32 — `nlinarith` cannot even derive
-  `1 ≤ x^1*y^1*z^1` from `3 ≤ x, 3 ≤ y, 3 ≤ z`.
-* The one flat route that *did* work was `1 ≤ M₀` + `gcongr` + `linarith`. Its success
-  condition is an endpoint-only predicate, so it became a **generation-time endpoint
-  gate** (`endpoints_resist_naive_collapse`: `c_k < c₀ ∧ d_k ≤ d₀`), which discards ≈78%
-  of candidate chains and touches only the endpoints, leaving leaf difficulty untouched.
-  After the gate, five flat routes — including one *granted* the true bound `27 ≤ M₀` —
-  close **0/3 goals at every k ∈ {2,4,8,16,32}**. `gcongr <;> linarith` still proves
-  `M₀ ≤ M_k` instantly; it is the coefficient drop that makes that useless.
-* Known residual (reported, not argued away): the gate defeats the "`M₀ ≤ M_k` plus a
-  bound on `M₀`" family of routes, not collapse in general — a prover that establishes a
-  *quantitative ratio* `M_k ≥ r·M₀` still closes the goal in a k-independent number of
-  lines. Bridge chains over an *ordered numeric* domain are collapsible in principle
-  (`≤` is transitive **and** total, so every sub-chain is a valid proof); the k-axis here
-  stresses plan length and intermediate invention, and DIRECTION §5.4(d) (flat-prover
-  decay) must be measured in Phase 2 rather than assumed.
-* At k=32 the *composed* oracle artifact can exceed PREAMBLE's `maxHeartbeats 400000`
-  even though all 32 leaves check individually — the witness was rewritten search-free
-  (`gcongr`, not `nlinarith`, with the numeric bound proved before the big-monomial
-  hypotheses enter the context) to buy headroom.
-
-Measured outcome (n=3 per k, `check_automation=True`, real `ReplPool(2)`, seed 2026):
-**every V0–V6 check passed for 3/3 problems at k ∈ {2,4,8}** — 100% against a ≥90%
-target, 0 Lean-observed failures — at an 83% candidate discard rate (the endpoint gate)
-and a 5% per-step resample rate (the sampling constraint). Leaf prop length is 98
-characters (min=median=max) at k ∈ {2,4,8} and 98–104 at k=32, the spread being exactly
-the extra digits of two-digit exponents: per-node structural flatness holds. Full table
-and kill-lists: `research/family-bridge-chain.md`.
+Residual, stated plainly and unchanged from v1: bridge chains over an *ordered numeric*
+domain are collapsible in principle (`≤` is transitive **and** total), so what the k-axis
+stresses here is plan length and intermediate invention. DIRECTION §5.4(d) (flat-prover
+decay) is a Phase-2 measurement, not a schema property.
 
 Determinism: output is a pure function of `(k, seed)`; problem i, attempt a uses the
 derived seed string `bridge_chain|{k}|{seed}|{i}|{a}`.
@@ -101,22 +84,30 @@ from rlmath.families import register
 from rlmath.families.types import GeneratedProblem, LeafWitness
 
 FAMILY = "bridge_chain"
+SCHEMA = "named_function_monomial_ladder_R"
 
 # --- schema knobs (identical at every k — this is what makes per-node difficulty flat)
 VARS: tuple[str, str, str] = ("x", "y", "z")
 HYP_NAMES: tuple[str, str, str] = ("hx", "hy", "hz")   # side-condition names in every proof
 LOWER = 3                      # side condition `LOWER ≤ v` on every variable
-COEF_RANGE = (2, 9)            # cᵢ
-OFFSET_RANGE = (1, 9)          # dᵢ
+COEF_RANGE = (2, 9)            # cᵢ — multiplier of the monomial
+FCOEF_RANGE = (1, 9)           # dᵢ — multiplier of the named-function term
+OFFSET_RANGE = (1, 9)          # oᵢ — additive offset
 DELTAS = (1, 2)                # exponent increment per step
 START_EXPONENTS = (1, 1, 1)
+FUNCS: tuple[str, str] = ("sqrt", "log")   # named function wrapping the monomial
 _MAX_REJECTS = 512             # sampler safety valve; the constraint is always satisfiable
-_MAX_DISCARDS = 400            # offline regeneration attempts per slot (endpoint gate accepts ≈20%)
+_MAX_DISCARDS = 400            # offline regeneration attempts per slot
+
+# The one `(c,d,o)` state with no legal successor under the congruence gate: nothing can
+# strictly decrease below the floor of all three ranges. Excluded from the sample space
+# so `_sample_chain` can never paint itself into a corner.
+_CORNER = (COEF_RANGE[0], FCOEF_RANGE[0], OFFSET_RANGE[0])
 
 BINDER = f"∀ x y z : ℝ, {LOWER} ≤ x → {LOWER} ≤ y → {LOWER} ≤ z → "
 
-Term = tuple[int, tuple[int, int, int], int]      # (coefficient, exponents, offset)
-Step = tuple[int, int]                            # (variable index, δ)
+Term = tuple[int, tuple[int, int, int], int, int, str]   # (c, exponents, d, o, func)
+Step = tuple[int, int]                                   # (variable index, δ)
 
 
 # --------------------------------------------------------------------------
@@ -129,9 +120,16 @@ def _mono(exps: Sequence[int]) -> str:
     return " * ".join(f"{v} ^ {e}" for v, e in zip(VARS, exps))
 
 
+def _fn(func: str, arg: str) -> str:
+    """Fully qualified: PREAMBLE opens both `Real` and `Nat`, so bare `log`/`sqrt`
+    would be ambiguous."""
+    return f"Real.{func} ({arg})"
+
+
 def render_term(t: Term) -> str:
-    c, exps, d = t
-    return f"{c} * {_mono(exps)} + {d}"
+    c, exps, d, o, func = t
+    mono = _mono(exps)
+    return f"{c} * {mono} + {d} * {_fn(func, mono)} + {o}"
 
 
 def _prop(lo: Term, hi: Term) -> str:
@@ -142,60 +140,90 @@ def _prop(lo: Term, hi: Term) -> str:
 # sampling
 # --------------------------------------------------------------------------
 
-def _valid(c_prev: int, d_prev: int, c_new: int, d_new: int, delta: int) -> bool:
+def _valid(prev: tuple[int, int, int], new: tuple[int, int, int], delta: int) -> bool:
     """SAMPLING CONSTRAINT (see module docstring): what makes the leaf witness a
-    `linarith` over two monomial atoms rather than a nonlinear search."""
-    return c_new * (LOWER ** delta) - c_prev >= max(0, d_prev - d_new)
+    `linarith` over four atoms rather than a nonlinear search.
+
+    `F(M) ≤ M` and `F(M') ≥ 0` reduce the step to `(c₁+d₁)M + o₁ ≤ c₂M' + o₂`, and
+    `M' ≥ 3^δ M ≥ 3^δ` closes it exactly when the inequality below holds.
+    """
+    c1, d1, o1 = prev
+    c2, _d2, o2 = new
+    return c2 * (LOWER ** delta) - (c1 + d1) >= max(0, o1 - o2)
+
+
+def step_resists_congruence(prev: tuple[int, int, int], new: tuple[int, int, int]) -> bool:
+    """Per-step gate against `gcongr <;> linarith` — the tactic that killed 16 v1 leaves.
+
+    `gcongr` anti-unifies the two sides of `≤` and emits one side goal per differing
+    position. For `c₁M + d₁F(M) + o₁ ≤ c₂M' + d₂F(M') + o₂` those are `c₁ ≤ c₂`,
+    `M ≤ M'`, `d₁ ≤ d₂`, `o₁ ≤ o₂` (plus the monotonicity of `F`), all of which the
+    `<;> linarith` discharger closes when the coefficients rise together. Forcing **one
+    of the three coefficients strictly down** makes a side goal false, so no template
+    succeeds, while the multiplicative gain `M' ≥ 3^δ M` keeps the step true.
+
+    Measured (research/family-v2-hardening.md §2): with every coefficient rising and the
+    same function on both sides the step dies to `intros; gcongr <;> linarith` in ~1 s;
+    with one coefficient dropping it survives all 20 battery proofs.
+    """
+    return any(n < p for n, p in zip(new, prev))
 
 
 def endpoints_resist_naive_collapse(first: Term, last: Term) -> bool:
     """Endpoint gate: reject chains the *endpoints alone* give away.
 
-    The k-independent flat route on a goal `c₀M₀ + d₀ ≤ c_k M_k + d_k` is
-    `have hj : M₀ ≤ M_k := by gcongr <;> linarith` plus some lower bound `t ≤ M₀`, then
-    `linarith`. The strongest form of that argument closes the goal iff
-    `(c_k − c₀)·t ≥ d₀ − d_k` for the best available `t`. Demanding
+    The k-independent flat route on the goal is `have hj : M₀ ≤ M_k := by gcongr <;>
+    linarith` plus a lower bound `t ≤ M₀`, then `linarith`. Its strongest form closes the
+    goal iff `(c_k − c₀)·t ≥ o₀ − o_k` for the best available `t`. Demanding
 
-        c_k < c₀   and   d_k ≤ d₀
+        c_k < c₀   and   o_k ≤ o₀   and   d_k ≤ d₀
 
-    makes the left side *negative* and the right side non-negative, so **no** lower
-    bound on `M₀`, however sharp, can rescue it: a flat prover must instead establish a
+    makes the left side *negative* and the right side non-negative, so **no** lower bound
+    on `M₀`, however sharp, can rescue it: a flat prover must instead establish a
     quantitative ratio `M_k ≥ r·M₀` with `r ≥ c₀/c_k > 1`, which is exactly the
-    multiplicative content the chain carries and which `gcongr` cannot produce.
+    multiplicative content the chain carries and which `gcongr` cannot produce. The
+    `d_k ≤ d₀` conjunct extends the same argument to the named-function term (whose
+    coefficient a prover could otherwise trade against, since `F(M) ≤ M`).
 
-    Measured: before the gate, a k=8 goal with `c₀=4,d₀=3 → c_k=6,d_k=7` fell to that
-    route in 8 lines. After it, all four flat routes we know of close 0/3 goals at every
-    k ∈ {2,4,8,16,32} (§4 of research/family-bridge-chain.md). This defeats a family of
-    routes, not collapse in general — the residual is documented there, not argued away.
-    The gate touches only the endpoints, so leaf difficulty is untouched.
+    Measured for v1 (§4 of research/family-bridge-chain.md): before the gate a k=8 goal
+    fell to that route in 8 lines; after it, all five flat routes we know of close 0/3
+    goals at every k ∈ {2,4,8,16,32}. The gate touches only the endpoints, so leaf
+    difficulty is untouched. It defeats a *family* of routes, not collapse in general.
     """
-    c0, _, d0 = first
-    ck, _, dk = last
-    return ck < c0 and dk <= d0
+    c0, _exps0, d0, o0, _f0 = first
+    ck, _expsk, dk, ok, _fk = last
+    return ck < c0 and ok <= o0 and dk <= d0
+
+
+def _sample_knobs(rng: random.Random) -> tuple[int, int, int]:
+    return (rng.randint(*COEF_RANGE), rng.randint(*FCOEF_RANGE), rng.randint(*OFFSET_RANGE))
 
 
 def _sample_chain(rng: random.Random, k: int) -> tuple[list[Term], list[Step], int]:
     exps = list(START_EXPONENTS)
-    c = rng.randint(*COEF_RANGE)
-    d = rng.randint(*OFFSET_RANGE)
-    terms: list[Term] = [(c, tuple(exps), d)]  # type: ignore[arg-type]
-    steps: list[Step] = []
     rejects = 0
+    knobs = _sample_knobs(rng)
+    while knobs == _CORNER:
+        knobs = _sample_knobs(rng)
+        rejects += 1
+    func = rng.choice(FUNCS)
+    terms: list[Term] = [(knobs[0], tuple(exps), knobs[1], knobs[2], func)]  # type: ignore[arg-type]
+    steps: list[Step] = []
     for _ in range(k):
         j = rng.randrange(len(VARS))
         delta = rng.choice(DELTAS)
         for _attempt in range(_MAX_REJECTS):
-            c_new = rng.randint(*COEF_RANGE)
-            d_new = rng.randint(*OFFSET_RANGE)
-            if _valid(c, d, c_new, d_new, delta):
+            new = _sample_knobs(rng)
+            if new != _CORNER and _valid(knobs, new, delta) and step_resists_congruence(knobs, new):
                 break
             rejects += 1
-        else:  # pragma: no cover - unreachable: c_new=9, δ=1 always satisfies it
-            raise RuntimeError("bridge_chain: sampling constraint unsatisfiable")
+        else:  # pragma: no cover - unreachable: the corner is excluded, so a legal
+               # successor always exists (see _CORNER and the gate's docstring)
+            raise RuntimeError("bridge_chain: step constraints unsatisfiable")
         exps[j] += delta
         steps.append((j, delta))
-        c, d = c_new, d_new
-        terms.append((c, tuple(exps), d))  # type: ignore[arg-type]
+        knobs = new
+        terms.append((knobs[0], tuple(exps), knobs[1], knobs[2], rng.choice(FUNCS)))  # type: ignore[arg-type]
     return terms, steps, rejects
 
 
@@ -203,20 +231,44 @@ def _sample_chain(rng: random.Random, k: int) -> tuple[list[Term], list[Step], i
 # witnesses
 # --------------------------------------------------------------------------
 
+def _fn_bounds(prev: Term, cur: Term) -> list[str]:
+    """The two named-function facts the final `linarith` needs, per function pair.
+
+    Upper bound on the *left* term's function (`F₁(M) ≤ M`) and non-negativity of the
+    *right* one (`0 ≤ F₂(M')`). Both are single lemma applications — no search — which
+    is what keeps the composed artifact cheap at large k.
+    """
+    mono, mono_next = _mono(prev[1]), _mono(cur[1])
+    left, right = prev[4], cur[4]
+    lines = []
+    if left == "sqrt":
+        lines.append(f"  have hfu : Real.sqrt ({mono}) ≤ {mono} :="
+                     " Real.sqrt_le_self_iff.mpr (Or.inr hM)")
+    else:
+        lines.append(f"  have hfu : Real.log ({mono}) ≤ {mono} - 1 :="
+                     " Real.log_le_sub_one_of_pos (by linarith)")
+    if right == "sqrt":
+        lines.append(f"  have hfl : (0:ℝ) ≤ Real.sqrt ({mono_next}) := Real.sqrt_nonneg _")
+    else:
+        lines.append(f"  have hfl : (0:ℝ) ≤ Real.log ({mono_next}) :="
+                     " Real.log_nonneg (by linarith [hM, hstep])")
+    return lines
+
+
 def _witness_proof(prev: Term, cur: Term, step: Step) -> str:
     """Generator-known proof of `_prop(prev, cur)`.
 
-    Search-free: `gcongr` on a one-variable numeric bound, then `linarith` over the two
-    monomial atoms. No `nlinarith` anywhere — it is what made the composed artifact
-    expensive at large k.
+    Search-free: `gcongr` on a one-variable numeric bound, two named-function lemma
+    applications, then `linarith` over the four atoms `M, M', F₁(M), F₂(M')`. No
+    `nlinarith` anywhere — it is what made the composed artifact expensive at large k.
     """
     j, delta = step
     v = VARS[j]
-    _, exps, _ = prev
+    exps = prev[1]
     mono = _mono(exps)
     mono_next = _mono(cur[1])
     factor = LOWER ** delta
-    # `hpow` comes first, while the context is still just hx/hy/hz: proved later it
+    # `hbase` comes first, while the context is still just hx/hy/hz: proved later it
     # would drag every big-monomial hypothesis into the search, and the composed k=32
     # artifact then blows PREAMBLE's maxHeartbeats budget (measured — see the design log).
     lines = [
@@ -235,19 +287,34 @@ def _witness_proof(prev: Term, cur: Term, step: Step) -> str:
         " mul_le_mul_of_nonneg_right hpow (by linarith)",
         f"  have hring : {v} ^ {delta} * ({mono}) = {mono_next} := by ring",
         "  rw [hring] at hstep",
-        "  linarith [hM, hstep]",
     ]
+    lines += _fn_bounds(prev, cur)
+    lines.append("  linarith [hM, hstep, hfu, hfl]")
     return "\n".join(lines)
 
 
 def _assembly(k: int) -> str:
-    """`le_trans` fold. Deliberately mentions no term text: the assembly is pure
-    transitivity, so all invented content lives in the lemma statements."""
+    """**Balanced** `le_trans` fold. Deliberately mentions no term text: the assembly is
+    pure transitivity, so all invented content lives in the lemma statements.
+
+    Balanced rather than right-nested for elaboration cost, and this was measured, not
+    assumed: v1's right-nested fold `le_trans h1 (le_trans h2 (…))` puts step i at depth
+    i, so the elaborator propagates postponed metavariables through k levels. v2's leaf
+    props carry two extra function applications each, and at k=32 the right-nested fold
+    tipped V3 (`plan_check`) over PREAMBLE's `maxHeartbeats 400000` —
+    `(deterministic) timeout at «synthesize pending MVars»` — while every leaf still
+    checked individually. A balanced fold puts every step at depth ⌈log₂ k⌉; same k−1
+    `le_trans` applications, same absence of term text, k=32 back inside budget.
+    """
     apply = [f"h{i} x y z hx hy hz" for i in range(1, k + 1)]
-    expr = f"({apply[-1]})"
-    for a in reversed(apply[:-1]):
-        expr = f"(le_trans ({a}) {expr})"
-    return f"intro x y z hx hy hz\nexact {expr}"
+
+    def rec(lo: int, hi: int) -> str:
+        if hi - lo == 1:
+            return f"({apply[lo]})"
+        mid = (lo + hi) // 2
+        return f"(le_trans {rec(lo, mid)} {rec(mid, hi)})"
+
+    return f"intro x y z hx hy hz\nexact {rec(0, k)}"
 
 
 # --------------------------------------------------------------------------
@@ -272,15 +339,19 @@ def hidden_intermediate_violations(problem: GeneratedProblem) -> list[str]:
 
 
 def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
-    """Structural flatness evidence for the datasheet: leaf prop length distribution
-    and step-kind mix, grouped by k (FAMILIES.md 'Scaling requirements')."""
+    """Structural flatness evidence for the datasheet: leaf prop length distribution,
+    step-kind mix and named-function mix, grouped by k (FAMILIES.md 'Scaling
+    requirements')."""
     by_k: dict[int, dict] = {}
     for p in problems:
-        s = by_k.setdefault(p.k, {"n_problems": 0, "leaf_chars": [], "deltas": [], "vars": []})
+        s = by_k.setdefault(p.k, {"n_problems": 0, "leaf_chars": [], "deltas": [],
+                                  "vars": [], "funcs": [], "fn_pairs": []})
         s["n_problems"] += 1
         s["leaf_chars"].extend(len(l.prop) for l in p.oracle_plan.lemmas)
         s["deltas"].extend(d for _, d in p.meta["step_kinds"])
         s["vars"].extend(VARS[j] for j, _ in p.meta["step_kinds"])
+        s["funcs"].extend(p.meta["funcs"])
+        s["fn_pairs"].extend(p.meta["fn_pairs"])
     out = {}
     for k, s in sorted(by_k.items()):
         chars = sorted(s["leaf_chars"])
@@ -293,6 +364,9 @@ def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
             },
             "delta_mix": {d: s["deltas"].count(d) for d in DELTAS},
             "var_mix": {v: s["vars"].count(v) for v in VARS},
+            "func_mix": {f: s["funcs"].count(f) for f in FUNCS},
+            "fn_pair_mix": {f"{a}|{b}": s["fn_pairs"].count(f"{a}|{b}")
+                            for a in FUNCS for b in FUNCS},
         }
     return out
 
@@ -317,7 +391,7 @@ def generate(k: int, seed: int, n: int = 1) -> list[GeneratedProblem]:
 def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
     """Discard/regenerate loop, on two offline gates:
 
-    * `endpoints_resist_naive_collapse` — the binding one, ≈50% of candidates;
+    * `endpoints_resist_naive_collapse` — the binding one;
     * `hidden_intermediate_violations` — a tripwire, 0% in every run measured (distinct
       exponent sums already make an intermediate/endpoint collision impossible).
 
@@ -345,15 +419,18 @@ def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
             witnesses=witnesses,
             meta={
                 "visible_lemmas": [],
-                "schema": "monomial_ladder_R",
+                "schema": SCHEMA,
                 "lower_bound": LOWER,
                 "vars": list(VARS),
                 "step_kinds": steps,
+                "funcs": [t[4] for t in terms],
+                "fn_pairs": [f"{terms[i - 1][4]}|{terms[i][4]}" for i in range(1, k + 1)],
                 "intermediate_terms": [render_term(t) for t in terms[1:-1]],
                 # consumed by validate.py V6b: these strings must not occur in the goal
                 "hidden_terms": [render_term(t) for t in terms[1:-1]],
                 "endpoint_terms": [render_term(terms[0]), render_term(terms[-1])],
                 "exponent_sums": [sum(t[1]) for t in terms],
+                "knobs": [{"c": t[0], "d": t[2], "o": t[3], "func": t[4]} for t in terms],
                 "leaf_prop_chars": [len(l.prop) for l in lemmas],
                 "goal_prop_chars": len(goal.prop),
                 "resamples": rejects,

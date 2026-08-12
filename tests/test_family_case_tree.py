@@ -53,10 +53,11 @@ def test_determinism_is_stable_across_processes():
     next month must be the same dataset."""
     p = ct.build(3, 42, 0)
     assert p.goal.prop == (
-        "∀ x : ℝ, -9 ≤ x → x ≤ 9 → 3 ≤ max (-3 * x ^ 2 - 36 * x - 78) "
-        "(max (-2 * x ^ 2 + 22) (-2 * x ^ 2 + 28 * x - 62))"
+        "∀ x : ℝ, -9 ≤ x → x ≤ 9 → 3 ≤ max (9 - Real.sqrt (3 * x ^ 2 + 36 * x + 117)) "
+        "(max (8 - Real.sqrt (2 * x ^ 2 + 6)) (9 - Real.sqrt (2 * x ^ 2 - 28 * x + 101)))"
     )
-    assert p.oracle_plan.lemmas[1].prop == "∀ x : ℝ, -3 ≤ x → x ≤ 3 → 3 ≤ -2 * x ^ 2 + 22"
+    assert p.oracle_plan.lemmas[1].prop == \
+        "∀ x : ℝ, -3 ≤ x → x ≤ 3 → 3 ≤ 8 - Real.sqrt (2 * x ^ 2 + 6)"
 
 
 def test_distinct_seeds_give_distinct_problems():
@@ -86,6 +87,31 @@ def test_k_leaves_with_matching_witnesses(k):
         assert len(set(names)) == k
         assert set(names) == set(p.witnesses)
         assert all(p.witnesses[n].prop == l.prop for n, l in zip(names, p.oracle_plan.lemmas))
+
+
+@pytest.mark.parametrize("k", KS)
+def test_every_leaf_carries_the_sqrt_cap(k):
+    """v2's whole hardening is that the band claim sits behind `Real.sqrt`; a
+    silent regression to v1's bare quadratic re-opens the 70/70 `intros;
+    nlinarith` kill and must fail offline, not at the next live sweep."""
+    for p in _problems(k):
+        assert p.meta["schema"] == "sqrt_capped_quadratic_bands"
+        for l in p.oracle_plan.lemmas:
+            assert "Real.sqrt (" in l.prop, l.prop
+        assert p.goal.prop.count("Real.sqrt (") == k
+
+
+@pytest.mark.parametrize("k", KS)
+def test_witness_goes_through_the_rewriting_step(k):
+    """The witness must *rewrite* before it arithmetises. `Real.sqrt_le_iff` is
+    the step the battery never attempts — it is the reason a leaf whose inner
+    bound is still an `nlinarith` call is nonetheless not a bare-`nlinarith`
+    leaf (research/family-v2-hardening.md §3.2)."""
+    for p in _problems(k):
+        for w in p.witnesses.values():
+            assert "Real.sqrt_le_iff.mpr" in w.proof
+            assert w.proof.startswith("by\n  intro x hl hr\n")
+            assert w.proof.rstrip().endswith("linarith")
 
 
 @pytest.mark.parametrize("k", KS)
@@ -365,24 +391,61 @@ def test_negative_split_points_are_parenthesised_in_application_position():
     assert "le_or_gt x (-" in ct.build(4, 7).oracle_plan.assembly
 
 
-def test_coeffs_reduce_to_one_covering_condition():
-    """max and min variants differ by a sign; `holds_at` is variant-free."""
+def test_radicand_and_cap_reduce_to_one_covering_condition():
+    """Both variants reduce to `√u ≤ t`, i.e. `a(x-m)² ≤ d`; `holds_at` is
+    variant-free and the radicand is positive definite (pad ≥ 1) so the
+    `√u ≤ t ⟺ u ≤ t²` characterisation is exact everywhere."""
     p = ct.Piece(lo=0, hi=4, a=2, m=2, d=8, width=4, offset=0, slack=0)
-    c2, c1, c0 = p.coeffs("max")
-    assert (c2, c1, c0) == (-2, 8, ct.C_LEVEL + 8 - 8)
-    d2, d1, d0 = p.coeffs("min")
-    assert (d2, d1, d0) == (2, -8, 8 - 8 + ct.C_LEVEL)
+    assert p.cap == 3 and p.pad == 1                     # 3² = 9 > 8, e = 1
+    assert p.radicand() == (2, -8, 2 * 4 + 1)            # 2(x-2)² + 1
+    assert p.outer_const("max") == ct.C_LEVEL + 3        # piece is `6 - √u`
+    # (this hand-built piece has width 4, outside WIDTHS; the shipped support keeps
+    #  the min-variant constant ≥ 1 — see test_shipped_knobs_… below)
+    assert p.outer_const("min") == 3 - ct.C_LEVEL
     assert p.holds_at(2) and p.holds_at(0) and not p.holds_at(5)
+
+
+def test_cap_forces_a_strictly_positive_radicand_pad():
+    """`e ≥ 1` keeps the radicand off `a·x²` (vertex at the origin, readable) and
+    off a perfect square (which `Real.sqrt_sq_eq_abs` rewrites to `|x - m|`)."""
+    for d in range(0, 200):
+        t = ct._cap(d)
+        assert t * t > d and (t - 1) ** 2 <= d
+    for k in KS:
+        for p in _problems(k, seed=11, n=2):
+            for kb in p.meta["knobs"]:
+                assert kb["pad"] >= 1, (k, kb)
+
+
+def test_shipped_knobs_keep_the_min_variant_constant_positive():
+    """`n = t - C_LEVEL ≥ 1` for every legal piece: width ≥ 6 and curvature ≥ 1
+    force `d ≥ 9`, hence `t ≥ 4`. If the knob support ever widens below that, the
+    min-variant piece would render `√u - 0` / `√u + n`, which the renderer does
+    not handle."""
+    for width in ct.WIDTHS:
+        for a in ct.CURVATURES:
+            for off in ct.VERTEX_OFFSETS:
+                for slack in ct.SLACKS:
+                    m = width // 2 + off
+                    far = max(abs(0 - m), abs(width - m))
+                    d = a * far**2 + slack
+                    assert ct._cap(d) - ct.C_LEVEL >= 1, (width, a, off, slack)
 
 
 # ------------------------------------------------------- validator, offline
 
 
 def _wire_ok(fb) -> None:
+    """Battery calls fail, everything else succeeds.
+
+    Matching is on the *whole* proof body (`endswith`), not a substring: the v2
+    witness legitimately contains `by nlinarith [...]` and `by norm_num` inside
+    a `Real.sqrt_le_iff.mpr ⟨_, _⟩` term, and a substring rule would score the
+    generator's own witness as an automation kill."""
     from rlmath.families.validate import battery_proofs
 
     fb.rule(lambda c: ":= sorry" in c, VerifyResult(ok=True, sorries=1))
-    fb.rule(lambda c: any(p in c for p in battery_proofs()),
+    fb.rule(lambda c: c.rstrip().endswith(tuple(battery_proofs())),
             VerifyResult(ok=False, sorries=0))
     fb.rule(lambda c: True, VerifyResult(ok=True, sorries=0))
 
@@ -479,5 +542,55 @@ def test_leaves_resist_the_intro_first_battery_live():
             res = pool.check_many(codes, timeout_s=25.0)
             killers = [t for t, r in zip(AUTOMATION_TACTICS, res) if r.ok and r.sorries == 0]
             assert not killers, f"{label} closed by intro + {killers}"
+    finally:
+        pool.close()
+
+
+def _v1_unwrapped(p: ct.Piece, variant: str) -> str:
+    """The same band claim as v1 wrote it: the bare expanded quadratic, no `√`.
+
+    max: `C ≤ C + d − a(x−m)²`   min: `a(x−m)² − d + C ≤ C`
+    Same truth condition (`a(x−m)² ≤ d`), same band — only the `√` cap removed.
+    """
+    s = -1 if variant == "max" else 1
+    poly = ct._render_poly(s * p.a, -2 * s * p.a * p.m,
+                           s * (p.a * p.m**2 - p.d) + ct.C_LEVEL)
+    side = f"{ct.C_LEVEL} ≤ {poly}" if variant == "max" else f"{poly} ≤ {ct.C_LEVEL}"
+    return f"∀ x : ℝ, {p.lo} ≤ x → x ≤ {p.hi} → {side}"
+
+
+@pytest.mark.integration
+@needs_lean
+@pytest.mark.timeout(1800)
+def test_the_sqrt_cap_is_what_survives_intros_nlinarith():
+    """The v2 decision, pinned as a live A/B (research/family-v2-hardening.md §2).
+
+    v1's bare quadratic band died 70/70 to `intros; nlinarith` — structurally,
+    because nlinarith's preprocessing multiplies hypothesis *pairs* and
+    `(x − lo ≥ 0, hi − x ≥ 0)` is exactly the product certificate the witness
+    used. This test asserts both halves on the *same* pieces: unwrapped dies,
+    `√`-capped survives. If a future Mathlib teaches nlinarith about `Real.sqrt`,
+    this fails loudly instead of the family silently going soft.
+    """
+    from rlmath.core import leancode
+    from rlmath.families.validate import battery_proofs
+
+    pool = ReplPool(n_workers=2)
+    try:
+        for k in (2, 8):
+            variant, pieces = ct.layout(k, 4242, 0)
+            for p in pieces[:3]:
+                v1 = _v1_unwrapped(p, variant)
+                res = pool.check(leancode.proof_check(v1, "by intros; nlinarith"),
+                                 timeout_s=60.0)
+                assert res.ok and res.sorries == 0, \
+                    f"v1 control did not die to intros; nlinarith — {v1}"
+
+                v2 = ct._leaf_prop(p, variant)
+                codes = [leancode.proof_check(v2, b) for b in battery_proofs()]
+                out = pool.check_many(codes, timeout_s=25.0)
+                killers = [b for b, r in zip(battery_proofs(), out)
+                           if r.ok and r.sorries == 0]
+                assert not killers, f"{v2} closed by {killers}"
     finally:
         pool.close()

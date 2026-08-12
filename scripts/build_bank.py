@@ -27,6 +27,32 @@ Seams to concurrently-developed modules (`rlmath.lean`, `rlmath.leaf`) and to
 toolchain, no network, and no siblings present. Tests inject stubs either by
 monkeypatching those three functions or via `--backend fake` plus the
 `FAKE_BACKEND_FACTORY` / `FAKE_LEAF_FACTORY` hooks below.
+
+Concurrency (`--concurrent N`, added for the wide candidate sweep — FAMILIES.md
+"corridor widening" (1)). N=1 is the sequential path, unchanged. With N>1 up to
+N statements are in flight in one thread pool; each in-flight statement runs the
+same `process_one` — elaboration check first (cheap, per-statement, before any
+generation), then leaf generation, then kernel verification through the SHARED
+backend, and finally a single locked writer appends the row and prints the
+progress line. Rows therefore land out of dataset order; resume is key-based so
+that is safe, and every row carries `slice_index` (its position in this run's
+dispatch order) so the sequential order stays reconstructible.
+
+**Which seam gets the lock.** `AttemptCache` is sqlite and single-writer by
+contract (leaf/cache.py), so all cache access is serialized behind one
+process-wide lock via `_SerializedCache`. That is the finer of the two seams
+`leaf/adapter.py` offers, and it is safe *because of how `prove` is written*:
+`_attempts` reads the cache, releases it, calls the model, then writes the
+attempts; `prove` then kernel-checks each attempt and writes the verdict — no
+cache call is ever held across blocking work, and one statement is only ever
+touched by one thread (`_dispatch` dedupes keys). So locking the cache calls
+alone keeps *both* the HTTP generation (which dominates: PHASE0_NOTES measured
+16.3 s/statement end-to-end, ~4 s/attempt inference, against a 36.8k checks/hr
+verification ceiling) and the kernel checks parallel. The alternative — a coarse
+mutex around `LeafProver.prove` — would additionally have serialized
+verification, throwing away the ReplPool's fan-out, and would have forced
+generation to be hoisted out of `prove` (via `LeafProver.generate`) to stay
+parallel at all, i.e. two behavioural changes for no extra safety.
 """
 from __future__ import annotations
 
@@ -36,9 +62,11 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import traceback
 from collections.abc import Callable, Iterable, Iterator, Sequence
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from pathlib import Path
 
 from rlmath.core.leancode import statement_check
@@ -75,6 +103,9 @@ STATUS_ELABORATED = "elaborated"
 # Test seams (see module docstring). Left None in production; --backend fake errors out.
 FAKE_BACKEND_FACTORY: Callable[[], object] | None = None
 FAKE_LEAF_FACTORY: Callable[[], object] | None = None
+# The two locks --concurrent needs, behind a named factory so a test can supply
+# recording locks and *assert* the serialization claims rather than trust them.
+LOCK_FACTORY: Callable[[str], object] = lambda name: threading.Lock()  # noqa: E731
 
 
 # ---------------------------------------------------------------------------
@@ -409,6 +440,32 @@ def make_leaf(args):
     )
 
 
+class _SerializedCache:
+    """One lock around every `AttemptCache` call (see the module docstring).
+
+    Delegation is total rather than a hand-listed method set: the cache is
+    another agent's module, and a method added there must not silently escape
+    the lock. Non-callable attributes (`.path`) pass through unwrapped — they
+    touch no sqlite. The wrapped object's own methods never re-enter this proxy,
+    so a plain (non-reentrant) lock cannot deadlock.
+    """
+
+    def __init__(self, cache: object, lock) -> None:
+        self._cache = cache
+        self._lock = lock
+
+    def __getattr__(self, name: str):
+        attr = getattr(self._cache, name)
+        if not callable(attr):
+            return attr
+
+        def locked(*a, **kw):
+            with self._lock:
+                return attr(*a, **kw)
+
+        return locked
+
+
 def load_rows(args) -> Iterator[dict]:
     """Stream the dataset. Shuffle (if --seed) happens BEFORE the --limit slice,
     so a limited run is a deterministic random sample rather than the head of
@@ -460,6 +517,13 @@ def parse_args(argv=None):
     p.add_argument("--timeout-s", type=float, default=DEFAULT_TIMEOUT_S)
     p.add_argument("--elaborate-only", action="store_true", help="skip the leaf prover")
     p.add_argument(
+        "--concurrent",
+        type=int,
+        default=1,
+        help="statements in flight (default 1 = sequential). >1 parallelizes leaf generation, "
+             "the dominant cost; verification parallelism is still bounded by --workers",
+    )
+    p.add_argument(
         "--repair",
         action="store_true",
         help="re-run only rows whose status=='error' (drops them from --out first); ignores the dataset",
@@ -488,8 +552,95 @@ def _candidates(args) -> Iterator[tuple[str, str]]:
         print(f"note: {n_skipped} rows had no extractable statement", file=sys.stderr)
 
 
+def _dispatch(targets: Iterable[tuple[str, str]], done: set[str]) -> Iterator[tuple[int, str, str]]:
+    """(slice_index, prop, source_id) for the statements this run will measure.
+
+    The single place resume-skipping and in-run deduplication happen, shared by
+    both modes so N=1 keeps exactly its old semantics. `slice_index` counts only
+    dispatched statements, so it is the order the sequential path would have
+    written them in — per run, not globally (a resumed run starts at 0 again;
+    the row key, not the index, is the identity).
+    """
+    i = 0
+    for prop, src_id in targets:
+        key = statement_key(prop)
+        if key in done:
+            continue
+        done.add(key)  # the dataset itself contains duplicate statements
+        yield i, prop, src_id
+        i += 1
+
+
+class _Writer:
+    """The single appender: one lock covers append_row + counters + progress line.
+
+    Under --concurrent that lock is what keeps two rows from interleaving inside
+    one JSONL line and the `[n]` counter from repeating. At N=1 it is an
+    uncontended no-op and the sequential path is what it was, with one addition:
+    `slice_index` is written in BOTH modes on purpose. A bank file must not have
+    two row schemas depending on a flag — "which rows came from the concurrent
+    path" is exactly the hidden variable DIRECTION.md §6's evidence discipline
+    forbids, and rows predating this flag are already handled by `.get()`.
+    """
+
+    def __init__(self, out: Path, leaf_id: str | None, lock, *, show_slice: bool) -> None:
+        self.out = out
+        self.leaf_id = leaf_id
+        self.lock = lock
+        self.show_slice = show_slice
+        self.counts: dict[str, int] = {}
+        self.n_done = 0
+
+    def emit(self, slice_index: int, row: dict) -> None:
+        row["leaf_id"] = self.leaf_id
+        row["slice_index"] = slice_index
+        with self.lock:
+            append_row(self.out, row)
+            self.counts[row["status"]] = self.counts.get(row["status"], 0) + 1
+            self.n_done += 1
+            slice_note = f" slice={slice_index}" if self.show_slice else ""
+            print(
+                f"[{self.n_done}] {row['statement_key']} status={row['status']} "
+                f"pass_rate={row['pass_rate']} elapsed={row['elapsed_s']}s{slice_note}",
+                file=sys.stderr,
+            )
+
+
+def _run_concurrent(work: Iterator[tuple[int, str, str]], writer: _Writer, backend, leaf, args) -> None:
+    """Bounded pipeline: never more than --concurrent statements in flight.
+
+    Bounded because the dataset is streamed (140k rows) — submitting everything
+    would materialize the whole slice and queue thousands of futures against a
+    pool that can only run N. Refill-on-first-completion keeps all N busy.
+    """
+
+    def task(item: tuple[int, str, str]) -> None:
+        idx, prop, src_id = item
+        writer.emit(
+            idx, process_one(prop, src_id, backend, leaf, k=args.k, timeout_s=args.timeout_s)
+        )
+
+    pending: set = set()
+    exhausted = False
+    with ThreadPoolExecutor(max_workers=args.concurrent, thread_name_prefix="bank") as pool:
+        while True:
+            while not exhausted and len(pending) < args.concurrent:
+                item = next(work, None)
+                if item is None:
+                    exhausted = True
+                    break
+                pending.add(pool.submit(task, item))
+            if not pending:
+                return
+            finished, pending = wait(pending, return_when=FIRST_COMPLETED)
+            for f in finished:
+                f.result()  # process_one never raises; this surfaces writer/IO failures
+
+
 def main(argv=None) -> int:
     args = parse_args(argv)
+    if args.concurrent < 1:
+        raise SystemExit("--concurrent must be >= 1")
     out: Path = args.out
     out.parent.mkdir(parents=True, exist_ok=True)
 
@@ -527,27 +678,26 @@ def main(argv=None) -> int:
                 f"(stand-in numbers must never leak into the oracle bank)."
             )
 
-    counts: dict[str, int] = {}
-    n_done = 0
+    # Cache access is serialized for the whole run (module docstring: "which seam
+    # gets the lock"). Only under --concurrent: at N=1 there is nothing to
+    # serialize and the wrapper would be dead weight on every attempt.
+    if args.concurrent > 1 and getattr(leaf, "cache", None) is not None:
+        leaf.cache = _SerializedCache(leaf.cache, LOCK_FACTORY("cache"))
+
+    writer = _Writer(out, leaf_id, LOCK_FACTORY("writer"), show_slice=args.concurrent > 1)
+    work = _dispatch(targets, done)
     try:
-        for prop, src_id in targets:
-            key = statement_key(prop)
-            if key in done:
-                continue
-            done.add(key)  # the dataset itself contains duplicate statements
-            row = process_one(prop, src_id, backend, leaf, k=args.k, timeout_s=args.timeout_s)
-            row["leaf_id"] = leaf_id
-            append_row(out, row)
-            counts[row["status"]] = counts.get(row["status"], 0) + 1
-            n_done += 1
-            print(
-                f"[{n_done}] {key} status={row['status']} pass_rate={row['pass_rate']} "
-                f"elapsed={row['elapsed_s']}s",
-                file=sys.stderr,
-            )
+        if args.concurrent > 1:
+            _run_concurrent(work, writer, backend, leaf, args)
+        else:
+            for idx, prop, src_id in work:
+                writer.emit(
+                    idx, process_one(prop, src_id, backend, leaf, k=args.k, timeout_s=args.timeout_s)
+                )
     finally:
         backend.close()
 
+    counts, n_done = writer.counts, writer.n_done
     n_ill = counts.get(Status.STATEMENT_ILL_FORMED, 0)
     rate = f"{n_ill / n_done:.1%}" if n_done else "n/a"
     print(

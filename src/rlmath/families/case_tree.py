@@ -5,69 +5,74 @@ a distinct leaf lemma. The *split* (where the cases are) and the *per-case
 claim* are what a policy has to invent; the assembly performs the split and
 dispatches.
 
-The shipped schema: **piecewise extremum over a real interval.**
+The shipped schema (v2): **piecewise extremum of `Real.sqrt`-capped quadratics
+over a real interval.**
 
     ∀ x : ℝ, L ≤ x → x ≤ R → C ≤ max (max (q₁ x) (q₂ x)) (max (q₃ x) (q₄ x))
 
-with each `qᵢ` a quadratic written in *expanded* form. Every `qᵢ` dips below `C`
-somewhere, so no single piece proves the goal; the pieces' super-level sets
-`{qᵢ ≥ C}` cover `[L, R]`, so a k-way interval split does. The generator picks
-band `[lᵢ, rᵢ]` and curvature/vertex/margin so that `qᵢ ≥ C` holds on band i with
-exact-integer slack, and asserts at generation time that each piece is
-*necessary* (there is a point in band i that no other piece covers) — otherwise
-the "k-case" split would secretly be a j-case split for some j < k.
+    qᵢ x  =  Aᵢ − Real.sqrt (aᵢ x² + bᵢ x + cᵢ)          (max variant, Aᵢ = C + tᵢ)
+    qᵢ x  =  Real.sqrt (aᵢ x² + bᵢ x + cᵢ) − nᵢ          (min variant, nᵢ = tᵢ − C)
 
-There is a dual variant (`min`, sampled per problem): convex pieces and an upper
-bound `min (q₁ x) (…) ≤ C`. Same leaf schema, different Mathlib glue
-(`min_le_of_left_le`/`min_le_of_right_le` vs `le_max_of_le_left/right`).
+The radicand is a positive-definite quadratic `aᵢ(x − mᵢ)² + eᵢ` with `eᵢ ≥ 1`,
+written *expanded* so neither the vertex nor the band is readable off the goal.
+Because `√u ≤ t ⟺ u ≤ t²` for `t ≥ 0`, the piece satisfies the goal's
+inequality at `x` iff `aᵢ(x − mᵢ)² ≤ dᵢ` with `dᵢ = tᵢ² − eᵢ` — **the same exact
+integer condition as v1**, so the coverage/necessity machinery below is
+unchanged and still uses no floating point anywhere in the truth argument.
 
-Why this shape and not the obvious alternatives — measured, not argued
----------------------------------------------------------------------
-Battery probe (the seven tactics in validate.AUTOMATION_TACTICS, 25 s each,
-Mathlib @ lean v4.34.0-rc1, 2026-08-11). "DEAD" = at least one tactic closed it:
+Every `qᵢ` dips below `C` somewhere, so no single piece proves the goal; the
+pieces' super-level sets cover `[L, R]`, so a k-way interval split does. The
+generator asserts at generation time that each piece is *necessary* (there is an
+integer point in band i that no other piece covers) — otherwise the "k-case"
+split would secretly be a j-case split for some j < k.
 
-    ∀ n : ℕ, 4 ≤ n → n ≤ 9 → 3 * n ≤ 30                 DEAD (omega, decide)
-    ∀ n : ℕ, n % 5 = 3 → 5 ∣ n + 2                      DEAD (omega)
-    ∀ n : ℕ, n < 12 → n * n ≤ 121                       DEAD (decide)
-    ∀ n : ℕ, 4 ≤ n → n ≤ 9 → n * n ≤ 81                 DEAD (decide)
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 3 ≤ 4 * x - 5              survives (see below)
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 3 ≤ -2*x^2 + 16*x - 20     survives
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 2*x^2 - 16*x + 26 ≤ 3      survives
+Why v1 died, and what v2 changes (measured, 2026-08-12)
+-------------------------------------------------------
+v1's pieces were bare expanded quadratics (`C ≤ −a x² + b x + c` on a band).
+Under the *strengthened* V0/V5 battery (10 tactics × {bare, intros-first})
+**70 of 70 v1 leaves fell to `intros; nlinarith`**, at every k. The cause is
+structural rather than incidental: `nlinarith`'s preprocessing multiplies pairs
+of hypotheses, and the pair `(x − lᵢ ≥ 0, rᵢ − x ≥ 0)` *is* the product
+certificate v1's witness passed in by hand. A leaf whose witness is one
+`nlinarith` call with a hint the tactic finds by itself is not a leaf.
 
-So: **ℕ interval bands and ℕ/ℤ residue bands are not viable leaves.** `decide`
-discharges any bounded-ℕ band — nonlinear ones included — through Mathlib's
-bounded-∀ decidability instances for ℕ, and `omega` discharges linear-plus-`%`
-divisibility outright, which kills candidate directions 1 and 2 in their natural
-(ℕ) formulations. Bands over ℝ survive.
+v2 keeps the geometry and moves the claim behind `Real.sqrt`:
 
-The battery is applied to the *closed* prop, and none of its tactics introduce
-the leading `∀`/`→`, so even a linear real band survives it. That is a property
-of the validator, not of the task, and this family declines to exploit it: run
-the same battery **after `intro x hl hr`** and
+    v1  ∀ x : ℝ, −7 ≤ x → x ≤ 1 → 3 ≤ −2x² − 12x + 17          DEAD (intros; nlinarith)
+    v2  ∀ x : ℝ, −7 ≤ x → x ≤ 1 → 3 ≤ 9 − Real.sqrt (2x² + 12x + 22)   survives all 20
 
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 3 ≤ 4 * x - 5              DEAD (linarith)
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 3 ≤ -2*x^2 + 16*x - 20     survives
-    ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 2*x^2 - 16*x + 26 ≤ 3      survives
-    the k=3 goals of both variants                       survive
+`linarith`/`nlinarith` see `Real.sqrt (…)` as an opaque atom with no connecting
+hypothesis, so the band product no longer reaches the goal; `positivity` only
+proves `0 ≤ e`-shaped goals; `gcongr` has no relational template. The generator
+still knows the proof by construction — one `Real.sqrt_le_iff` step whose
+right conjunct is the *same* band bound v1 proved, now hidden one lemma deep:
 
-which is why the pieces are quadratic rather than affine: the leaves hold up
-against a strictly stronger battery than the contract runs, so a later widening
-of AUTOMATION_TACTICS (FAMILIES.md: "extending this list strengthens every
-family retroactively") does not silently invalidate the bank.
+    intro x hl hr
+    have h : Real.sqrt (u) ≤ t := Real.sqrt_le_iff.mpr
+      ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩
+    linarith
+
+That asymmetry is the whole trick, and it is the honest line FAMILIES.md draws:
+`nlinarith`-with-hints inside a *witness* is fine; a leaf that bare
+`intros; nlinarith` closes is dead.
+
+Directions measured and rejected (research/family-v2-hardening.md §2, and v1's
+log): ℕ interval bands and ℕ/ℤ residue bands die to `decide`/`omega`; affine ℝ
+bands die to `intros; linarith`; `Real.log`-capped pieces are *not* usable here
+because `log u ≤ t` has no exact integer characterisation, so the piece's true
+super-level set would be larger than the integer certificate believes and the
+necessity argument would become unsound in the unsafe direction.
 
 Visibility (V6)
 ---------------
 The pieces are necessarily visible — a piecewise function has to be *stated*.
 What is hidden is everything a policy must produce: the k band endpoints and the
-per-band claim. The pieces are in *expanded* form, so neither the vertex nor the
-crossing points `qᵢ = C` (at `m ± sqrt(d/a)` — irrational for ~half the sampled
-pieces, integral for the rest, and in neither case equal to both band endpoints,
-because the vertex is offset from the band midpoint) can be read off the goal
-without completing the square; the bands then have to be chosen to tile the
-domain while each stays inside its own piece's super-level set. No leaf prop is
-a substring of the goal — each carries band hypotheses that appear nowhere in it
-— so this family sets `meta["visible_lemmas"] = []` and passes V6 with no
-exemption at all.
+per-band claim. The radicand is in *expanded* form, so neither the vertex nor
+the crossing points can be read off the goal without completing the square; the
+bands then have to be chosen to tile the domain while each stays inside its own
+piece's super-level set. No leaf prop is a substring of the goal — each carries
+band hypotheses that appear nowhere in it — so this family sets
+`meta["visible_lemmas"] = []` and passes V6 with no exemption at all.
 
 Flatness in k
 -------------
@@ -75,10 +80,10 @@ Every leaf is drawn from one schema with a fixed knob support
 (WIDTHS × CURVATURES × VERTEX_OFFSETS × SLACKS), independent of k; k changes only
 how many bands tile the domain. The single k-dependence is the band's *absolute
 position*: the domain is `[-T/2, T/2]` with `T = Σ widths ≈ 7k`, so the constant
-coefficient of a piece grows like `a·m²`. `leaf_stats()` reports the leaf-prop
-length and coefficient-magnitude distributions per k so this is measured rather
-than assumed (see research/family-case-tree.md for the numbers). The domain is
-centered on 0 rather than starting at 0 specifically to halve that growth.
+coefficient of a radicand grows like `a·m²`. The outer constant (`Aᵢ`/`nᵢ`) is
+bounded by the knob support and does **not** grow with k. `leaf_stats()` reports
+the leaf-prop length and coefficient-magnitude distributions per k so this is
+measured rather than assumed.
 """
 from __future__ import annotations
 
@@ -100,7 +105,7 @@ WIDTHS = (6, 8)           # band width; even so band midpoints stay integral, an
                           # ≥ 6 so no piece can swallow a neighbour (see
                           # _repair_necessity: max spill past a band is
                           # 2·|offset| + ε ≤ 2.24, independent of width)
-CURVATURES = (1, 2, 3)    # |leading coefficient| of the piece
+CURVATURES = (1, 2, 3)    # leading coefficient of the radicand
 VERTEX_OFFSETS = (-1, 0, 1)   # vertex displacement from the band midpoint
 SLACKS = (0, 1)           # extra margin above the exact covering requirement
 VARIANTS = ("max", "min")
@@ -111,12 +116,29 @@ _GLUE = {
     "min": ("min_le_of_left_le", "min_le_of_right_le"),
 }
 
-LEAF_PROOF = "by intro x hl hr; nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]"
+
+def _cap(d: int) -> int:
+    """Smallest integer `t` with `t² > d`.
+
+    The strict inequality (rather than `t² ≥ d`) forces the radicand's additive
+    slack `e = t² − d` to be **≥ 1**, which keeps the radicand off two shapes
+    that leak the vertex — the thing the policy is supposed to invent. With
+    `e = 0` the radicand is a perfect square `a(x−m)²`, one normalisation away
+    from `√((x−m)²) = |x−m|` (`Real.sqrt_sq_eq_abs`); with `m = 0` on top it
+    degenerates to a bare `a·x²`. The expanded rendering hides both from `simp`,
+    but not from a prover that normalises — which is the reader we care about.
+    Measured: both shapes survive the battery, so this is an invention
+    constraint, not a validity one (research/family-v2-hardening.md §2).
+    """
+    t = 1
+    while t * t <= d:
+        t += 1
+    return t
 
 
 @dataclass(frozen=True)
 class Piece:
-    """One case: band `[lo, hi]` and the quadratic assigned to it.
+    """One case: band `[lo, hi]` and the `√`-capped quadratic assigned to it.
 
     Invariant (`covers_band`): the piece satisfies the goal's inequality
     everywhere on its own band, by exact integer arithmetic — the generator
@@ -124,7 +146,7 @@ class Piece:
     """
     lo: int
     hi: int
-    a: int          # curvature (positive; the variant decides the sign)
+    a: int          # curvature of the radicand (positive)
     m: int          # vertex abscissa
     d: int          # margin: the piece holds at x iff a*(x-m)^2 ≤ d
     width: int
@@ -133,8 +155,11 @@ class Piece:
     repaired: bool = False   # tightened by the necessity repair (kept for stats)
 
     def holds_at(self, x: int) -> bool:
-        """Does this piece satisfy the goal's inequality at x? (Both variants
-        reduce to the same condition — see `coeffs`.)"""
+        """Does this piece satisfy the goal's inequality at x?
+
+        `√(a(x−m)² + e) ≤ t ⟺ a(x−m)² + e ≤ t² ⟺ a(x−m)² ≤ d` — exactly (both
+        sides of the first step are non-negative), so the v1 condition survives
+        the `√` cap unchanged and both variants still reduce to it."""
         return self.a * (x - self.m) ** 2 <= self.d
 
     @property
@@ -142,14 +167,27 @@ class Piece:
         far = max(abs(self.lo - self.m), abs(self.hi - self.m))
         return self.a * far**2 <= self.d
 
-    def coeffs(self, variant: str) -> tuple[int, int, int]:
-        """(x², x, 1) coefficients of the piece in expanded form.
+    @property
+    def cap(self) -> int:
+        """`t`: the bound the radicand's root must respect on this band."""
+        return _cap(self.d)
 
-        max: q(x) = C + d - a(x-m)²   — concave, `C ≤ q(x) ⟺ a(x-m)² ≤ d`
-        min: q(x) = a(x-m)² + C - d   — convex,  `q(x) ≤ C ⟺ a(x-m)² ≤ d`
-        """
-        s = -1 if variant == "max" else 1
-        return (s * self.a, -2 * s * self.a * self.m, s * (self.a * self.m**2 - self.d) + C_LEVEL)
+    @property
+    def pad(self) -> int:
+        """`e ≥ 1`: additive slack inside the radicand, `t² − d`."""
+        return self.cap**2 - self.d
+
+    def radicand(self) -> tuple[int, int, int]:
+        """(x², x, 1) coefficients of `a(x − m)² + e`, expanded. Positive
+        definite, so `Real.sqrt` is never applied to a negative value and the
+        `√u ≤ t ⟺ u ≤ t²` characterisation is exact on the whole line."""
+        return (self.a, -2 * self.a * self.m, self.a * self.m**2 + self.pad)
+
+    def outer_const(self, variant: str) -> int:
+        """max: `A = C + t` (piece is `A − √u`). min: `n = t − C` (piece is
+        `√u − n`). Both give `piece ⋛ C ⟺ √u ≤ t`. `n ≥ 1` because the knob
+        support forces `d ≥ 9` hence `t ≥ 4 > C`."""
+        return C_LEVEL + self.cap if variant == "max" else self.cap - C_LEVEL
 
 
 # ---------------------------------------------------------------- rendering --
@@ -171,6 +209,14 @@ def _render_poly(c2: int, c1: int, c0: int) -> str:
         else:
             out += f" - {term}" if coeff < 0 else f" + {term}"
     return out or "0"
+
+
+def _piece_term(p: Piece, variant: str) -> str:
+    """The piece as a Lean expression. `Real.sqrt` is fully qualified: PREAMBLE
+    opens both `Real` and `Nat`, so a bare `sqrt` would be ambiguous."""
+    root = f"Real.sqrt ({_render_poly(*p.radicand())})"
+    n = p.outer_const(variant)
+    return f"{n} - {root}" if variant == "max" else f"{root} - {n}"
 
 
 def _num(n: int) -> str:
@@ -216,18 +262,37 @@ def _paths(k: int) -> list[tuple[str, ...]]:
     return out
 
 
+def _side(body: str, variant: str) -> str:
+    return f"{C_LEVEL} ≤ {body}" if variant == "max" else f"{body} ≤ {C_LEVEL}"
+
+
 def _goal_prop(pieces: list[Piece], variant: str) -> str:
-    terms = [_render_poly(*p.coeffs(variant)) for p in pieces]
+    terms = [_piece_term(p, variant) for p in pieces]
     lo, hi = pieces[0].lo, pieces[-1].hi
-    body = _chain(terms, variant)
-    side = f"{C_LEVEL} ≤ {body}" if variant == "max" else f"{body} ≤ {C_LEVEL}"
-    return f"∀ x : ℝ, {lo} ≤ x → x ≤ {hi} → {side}"
+    return f"∀ x : ℝ, {lo} ≤ x → x ≤ {hi} → {_side(_chain(terms, variant), variant)}"
 
 
 def _leaf_prop(p: Piece, variant: str) -> str:
-    poly = _render_poly(*p.coeffs(variant))
-    side = f"{C_LEVEL} ≤ {poly}" if variant == "max" else f"{poly} ≤ {C_LEVEL}"
-    return f"∀ x : ℝ, {p.lo} ≤ x → x ≤ {p.hi} → {side}"
+    return f"∀ x : ℝ, {p.lo} ≤ x → x ≤ {p.hi} → {_side(_piece_term(p, variant), variant)}"
+
+
+def leaf_proof(p: Piece) -> str:
+    """Generator-known witness, one template for every leaf and every k.
+
+    `Real.sqrt_le_iff : √u ≤ t ↔ 0 ≤ t ∧ u ≤ t²` turns the `√` claim into the
+    band bound `a(x−m)² + e ≤ t²`, which the product certificate
+    `(x − lo)(hi − x) ≥ 0` linearises. The `nlinarith` call is *inside the
+    witness*, where FAMILIES.md allows it; what matters is that the leaf itself
+    does not fall to a bare `intros; nlinarith` (measured: it does not — the
+    `√` wrapper is opaque to linear-arithmetic preprocessing).
+    """
+    return (
+        "by\n"
+        "  intro x hl hr\n"
+        f"  have hb : Real.sqrt ({_render_poly(*p.radicand())}) ≤ {p.cap} := Real.sqrt_le_iff.mpr\n"
+        "    ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n"
+        "  linarith"
+    )
 
 
 def _wrap(term: str, path: tuple[str, ...], variant: str) -> str:
@@ -263,8 +328,7 @@ def _assembly(pieces: list[Piece], variant: str, names: list[str]) -> str:
 
 
 def _rng(k: int, seed: int, idx: int) -> random.Random:
-    """Deterministic in (k, seed, idx) across processes and platforms —
-    `random.Random(str)` and `hash()` are not, a sha256 digest is."""
+    """Deterministic in (k, seed, idx) across processes and platforms."""
     h = hashlib.sha256(f"{FAMILY}|{k}|{seed}|{idx}".encode()).hexdigest()[:16]
     return random.Random(int(h, 16))
 
@@ -374,14 +438,18 @@ def build(k: int, seed: int, idx: int = 0) -> GeneratedProblem:
     bad = [i for i, p in enumerate(pieces) if not p.covers_band]
     if bad:  # unreachable by construction; a loud tripwire beats a false problem
         raise AssertionError(f"piece(s) {bad} do not cover their band — generator bug")
+    thin = [i for i, p in enumerate(pieces) if p.pad < 1 or p.outer_const(variant) < 1]
+    if thin:  # ditto: _cap() guarantees e ≥ 1, and d ≥ 9 guarantees t ≥ 4 > C_LEVEL
+        raise AssertionError(f"piece(s) {thin} have a degenerate radicand/constant — generator bug")
 
     names = [f"hb{i + 1}" for i in range(k)]
     goal = GoalSpec(id=f"{FAMILY}-k{k}-s{seed}-{idx}", prop=_goal_prop(pieces, variant), name="goal")
     lemmas = [LemmaSpec(name=n, prop=_leaf_prop(p, variant)) for n, p in zip(names, pieces)]
     plan = DecompositionPlan(lemmas=lemmas, assembly=_assembly(pieces, variant, names))
-    witnesses = {l.name: LeafWitness(prop=l.prop, proof=LEAF_PROOF) for l in lemmas}
+    witnesses = {n: LeafWitness(prop=l.prop, proof=leaf_proof(p))
+                 for n, l, p in zip(names, lemmas, pieces)}
 
-    coeffs = [c for p in pieces for c in p.coeffs(variant)]
+    coeffs = [c for p in pieces for c in p.radicand()]
     return GeneratedProblem(
         id=f"{FAMILY}-k{k}-s{seed}-{idx}",
         family=FAMILY,
@@ -396,12 +464,15 @@ def build(k: int, seed: int, idx: int = 0) -> GeneratedProblem:
             "visible_lemmas": [],
             "variant": variant,
             "split_kind": "interval",
+            "schema": "sqrt_capped_quadratic_bands",
             "domain": [pieces[0].lo, pieces[-1].hi],
             "bands": [[p.lo, p.hi] for p in pieces],
             "knobs": [{"width": p.width, "curvature": p.a, "offset": p.offset,
-                       "slack": p.slack, "repaired": p.repaired} for p in pieces],
+                       "slack": p.slack, "cap": p.cap, "pad": p.pad,
+                       "repaired": p.repaired} for p in pieces],
             "leaf_prop_lens": [len(l.prop) for l in lemmas],
             "max_abs_coeff": max(abs(c) for c in coeffs),
+            "max_outer_const": max(p.outer_const(variant) for p in pieces),
         },
     )
 
@@ -421,7 +492,8 @@ def leaf_stats(problems: list[GeneratedProblem]) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for k, ps in sorted(by_k.items()):
         lens = [n for p in ps for n in p.meta["leaf_prop_lens"]]
-        knobs = {tuple(sorted(kb.items())) for p in ps for kb in p.meta["knobs"]}
+        knobs = {(kb["width"], kb["curvature"], kb["offset"], kb["slack"])
+                 for p in ps for kb in p.meta["knobs"]}
         out[k] = {
             "problems": len(ps),
             "leaves": len(lens),
@@ -430,6 +502,9 @@ def leaf_stats(problems: list[GeneratedProblem]) -> dict[int, dict]:
             "leaf_len_max": max(lens),
             "goal_len_mean": round(sum(len(p.goal.prop) for p in ps) / len(ps), 1),
             "max_abs_coeff": max(p.meta["max_abs_coeff"] for p in ps),
+            # bounded by the knob support, so unlike the radicand's constant it
+            # must NOT grow with k — the flatness claim the √ cap adds
+            "max_outer_const": max(p.meta["max_outer_const"] for p in ps),
             "distinct_knob_tuples": len(knobs),
             # fraction of leaves whose knobs were tightened by the necessity
             # repair — the one way the leaf distribution could drift with k
