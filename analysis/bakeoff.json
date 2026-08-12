@@ -1,0 +1,50 @@
+[
+  {
+    "file": "data/bank/bank_dsv2.jsonl",
+    "leaf_id": [
+      "deepseek-ai/DeepSeek-Prover-V2-7B|deepseek-prover-v2-non-cot|Mdef|Tdef"
+    ],
+    "n_measured": 374,
+    "n_errors": 222,
+    "mean_pass": 0.1641042780748663,
+    "band_mass": 0.09893048128342247,
+    "frac_zero": 0.7834224598930482,
+    "frac_one": 0.09893048128342247,
+    "attempts": 2992,
+    "verified": 491,
+    "attempts_per_hr_end_to_end": 1763.499335937193,
+    "mean_s_per_statement": 16.331165775401068
+  },
+  {
+    "file": "data/bank/bakeoff_goedel_16k_evidence.jsonl",
+    "leaf_id": [
+      "Goedel-LM/Goedel-Prover-V2-8B|goedel-prover-v2"
+    ],
+    "n_measured": 26,
+    "n_errors": 19,
+    "mean_pass": 0.10096153846153846,
+    "band_mass": 0.11538461538461539,
+    "frac_zero": 0.8461538461538461,
+    "frac_one": 0.038461538461538464,
+    "attempts": 199,
+    "verified": 21,
+    "attempts_per_hr_end_to_end": 118.9375904711798,
+    "mean_s_per_statement": 231.66642307692308
+  },
+  {
+    "file": "data/bank/bakeoff_goedel8k.jsonl",
+    "leaf_id": [
+      "Goedel-LM/Goedel-Prover-V2-8B|goedel-prover-v2|M8192|Tdef"
+    ],
+    "n_measured": 12,
+    "n_errors": 0,
+    "mean_pass": 0.0,
+    "band_mass": 0.0,
+    "frac_zero": 1.0,
+    "frac_one": 0.0,
+    "attempts": 61,
+    "verified": 0,
+    "attempts_per_hr_end_to_end": 137.13720464917606,
+    "mean_s_per_statement": 133.443
+  }
+]

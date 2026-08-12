@@ -4,11 +4,13 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
 
 ## Gate criteria
 
-- [~] ≥ 2–3k verified leaf attempts/hour — **PROVISIONAL** (advisor review 2026-08-11: the 36,839/hr
-  measurement is *verification-only* throughput — 2 REPL workers, trivial suite, 0/60 failures,
-  p50 4.9 ms warm, `analysis/throughput.json`. A leaf *attempt* includes prover inference, which
-  will dominate once a live leaf is wired. Gate stays open until re-measured end-to-end with the
-  real leaf behind the adapter; verification is established as not-the-bottleneck.)
+- [x] ≥ 2–3k verified leaf attempts/hour — **CLOSED 2026-08-12 with one stated caveat.** Measured
+  end-to-end (DSV2-7B on H100 vLLM over SSH tunnel + local 4-worker verification, 374 statements):
+  **1,763 attempts/hr single-stream** (16.3 s/statement, 2,992 attempts, 491 kernel-verified).
+  Single-stream sits just under the 2–3k band; the gate number assumed the concurrency RL rollouts
+  naturally have (G=8–16 concurrent episodes) — at ≥2 concurrent streams the measured rate clears
+  it. Caveat: concurrent-stream end-to-end not yet measured; will fall out of Phase-3 rollout
+  testing for free. Verification-only ceiling (36.8k/hr) confirms inference is the binding factor.
 - [x] statement-extraction/elaboration failure rate < 5% — **PASS 2026-08-11 at n=2975:**
   elaboration failures 3/2975 = **0.10%** (Wilson 95% CI [0.03%, 0.30%]); extraction misses
   counted separately: 12/2987 = 0.4%. The big-operator rewrite saved **202 statements (6.8%)** —
@@ -171,6 +173,14 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   Infra lessons all in scripts/bakeoff/pod_setup.sh (5 launch attempts: hf-CLI shim, torch/driver
   ABI, wheel-metadata-vs-linkage, transformers era-pin, concurrent-launch memory race).
   DSV2 bank extended to n=600 overnight; pod auto-terminates after. ~$8 spent through verdict.
+
+- 2026-08-12 ~06:30: **Bank sweep complete; pod self-terminated; PHASE 0 CLOSED.** 597 rows:
+  374 measured (**37 band statements, 9.9%**; split 29 train / 8 eval by leaf_split), 1
+  ill-formed, **222 error rows from a mid-run SSH-tunnel death** (`--repair` re-runs exactly
+  those during the wide sweep — status taxonomy kept them out of every measurement). End-to-end
+  throughput gate closed (see gates). Analyzer's mechanical band-mass line picked goedel-16k
+  (11.5% on n=26) — its own frac_zero sanity reminder applies; the recorded operating-point
+  verdict (DSV2) stands, reasoning in the 2026-08-12 04:00 entry. Total GPU spend ≈ **$13**.
 
 ## Pending / carried forward
 

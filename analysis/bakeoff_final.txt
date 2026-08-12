@@ -1,0 +1,44 @@
+
+== data/bank/bank_dsv2.jsonl
+   leaf_id                      ['deepseek-ai/DeepSeek-Prover-V2-7B|deepseek-prover-v2-non-cot|Mdef|Tdef']
+   n_measured                   374
+   n_errors                     222
+   mean_pass                    0.1641
+   band_mass                    0.0989
+   frac_zero                    0.7834
+   frac_one                     0.0989
+   attempts                     2992
+   verified                     491
+   attempts_per_hr_end_to_end   1763.4993
+   mean_s_per_statement         16.3312
+
+== data/bank/bakeoff_goedel_16k_evidence.jsonl
+   leaf_id                      ['Goedel-LM/Goedel-Prover-V2-8B|goedel-prover-v2']
+   n_measured                   26
+   n_errors                     19
+   mean_pass                    0.101
+   band_mass                    0.1154
+   frac_zero                    0.8462
+   frac_one                     0.0385
+   attempts                     199
+   verified                     21
+   attempts_per_hr_end_to_end   118.9376
+   mean_s_per_statement         231.6664
+
+== data/bank/bakeoff_goedel8k.jsonl
+   leaf_id                      ['Goedel-LM/Goedel-Prover-V2-8B|goedel-prover-v2|M8192|Tdef']
+   n_measured                   12
+   n_errors                     0
+   mean_pass                    0.0
+   band_mass                    0.0
+   frac_zero                    1.0
+   frac_one                     0.0
+   attempts                     61
+   verified                     0
+   attempts_per_hr_end_to_end   137.1372
+   mean_s_per_statement         133.443
+
+BAND-FIT WINNER (mass in [0.25, 0.9]): ['Goedel-LM/Goedel-Prover-V2-8B|goedel-prover-v2']  band_mass=0.1154
+Reminder: the winner is the more *discriminative* leaf, not the stronger one (PHASE0_NOTES decision 2026-08-11). Sanity-check frac_zero/frac_one before committing — a high-band_mass arm with huge frac_zero may just be weak.
+
+wrote analysis/bakeoff.json
