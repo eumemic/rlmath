@@ -7,7 +7,7 @@ dispatches.
 
 The shipped schema: **piecewise extremum over a real interval.**
 
-    ∀ x : ℝ, L ≤ x → x ≤ R → C ≤ max (q₁ x) (max (q₂ x) (… (q_{k-1} x) (q_k x)))
+    ∀ x : ℝ, L ≤ x → x ≤ R → C ≤ max (max (q₁ x) (q₂ x)) (max (q₃ x) (q₄ x))
 
 with each `qᵢ` a quadratic written in *expanded* form. Every `qᵢ` dips below `C`
 somewhere, so no single piece proves the goal; the pieces' super-level sets
@@ -35,9 +35,10 @@ Mathlib @ lean v4.34.0-rc1, 2026-08-11). "DEAD" = at least one tactic closed it:
     ∀ x : ℝ, 2 ≤ x → x ≤ 6 → 2*x^2 - 16*x + 26 ≤ 3      survives
 
 So: **ℕ interval bands and ℕ/ℤ residue bands are not viable leaves.** `decide`
-discharges any bounded-ℕ band through `Nat.decidableBallLE`, and `omega`
-discharges linear-plus-`%` divisibility outright — which kills candidate
-directions 1 and 2 in their natural (ℕ) formulations. Real bands survive.
+discharges any bounded-ℕ band — nonlinear ones included — through Mathlib's
+bounded-∀ decidability instances for ℕ, and `omega` discharges linear-plus-`%`
+divisibility outright, which kills candidate directions 1 and 2 in their natural
+(ℕ) formulations. Bands over ℝ survive.
 
 The battery is applied to the *closed* prop, and none of its tactics introduce
 the leading `∀`/`→`, so even a linear real band survives it. That is a property
@@ -57,19 +58,23 @@ family retroactively") does not silently invalidate the bank.
 Visibility (V6)
 ---------------
 The pieces are necessarily visible — a piecewise function has to be *stated*.
-What is hidden is everything a policy must produce: the k band endpoints (the
-pieces are in expanded form, so the vertex of `qᵢ` is not readable off the goal
-without completing the square, and the true crossing points `qᵢ = C` are
-irrational in general), and the per-band claim. No leaf prop is a substring of
-the goal — each carries band hypotheses that appear nowhere in it — so this
-family sets `meta["visible_lemmas"] = []` and passes V6 with no exemption at all.
+What is hidden is everything a policy must produce: the k band endpoints and the
+per-band claim. The pieces are in *expanded* form, so neither the vertex nor the
+crossing points `qᵢ = C` (at `m ± sqrt(d/a)` — irrational for ~half the sampled
+pieces, integral for the rest, and in neither case equal to both band endpoints,
+because the vertex is offset from the band midpoint) can be read off the goal
+without completing the square; the bands then have to be chosen to tile the
+domain while each stays inside its own piece's super-level set. No leaf prop is
+a substring of the goal — each carries band hypotheses that appear nowhere in it
+— so this family sets `meta["visible_lemmas"] = []` and passes V6 with no
+exemption at all.
 
 Flatness in k
 -------------
 Every leaf is drawn from one schema with a fixed knob support
 (WIDTHS × CURVATURES × VERTEX_OFFSETS × SLACKS), independent of k; k changes only
 how many bands tile the domain. The single k-dependence is the band's *absolute
-position*: the domain is `[-T/2, T/2]` with `T = Σ widths ≈ 3k`, so the constant
+position*: the domain is `[-T/2, T/2]` with `T = Σ widths ≈ 7k`, so the constant
 coefficient of a piece grows like `a·m²`. `leaf_stats()` reports the leaf-prop
 length and coefficient-magnitude distributions per k so this is measured rather
 than assumed (see research/family-case-tree.md for the numbers). The domain is
@@ -91,13 +96,14 @@ FAMILY = "case_tree"
 # --- leaf schema knobs. Fixed support, identical at every k (flatness). -------
 C_LEVEL = 3               # the bare side of the goal; nonzero so the goal never
                           # takes the `0 ≤ e` shape `positivity` attacks
-WIDTHS = (2, 4)           # band width; even so band midpoints stay integral
+WIDTHS = (6, 8)           # band width; even so band midpoints stay integral, and
+                          # ≥ 6 so no piece can swallow a neighbour (see
+                          # _repair_necessity: max spill past a band is
+                          # 2·|offset| + ε ≤ 2.24, independent of width)
 CURVATURES = (1, 2, 3)    # |leading coefficient| of the piece
 VERTEX_OFFSETS = (-1, 0, 1)   # vertex displacement from the band midpoint
 SLACKS = (0, 1)           # extra margin above the exact covering requirement
 VARIANTS = ("max", "min")
-
-_MAX_RESAMPLE = 12        # per-piece redundancy resampling budget (deterministic)
 
 _GLUE = {
     # variant -> (left injection, right injection) for the nested extremum
@@ -124,6 +130,7 @@ class Piece:
     width: int
     offset: int     # vertex offset from the band midpoint (a knob, kept for stats)
     slack: int      # margin above the exact requirement (a knob, kept for stats)
+    repaired: bool = False   # tightened by the necessity repair (kept for stats)
 
     def holds_at(self, x: int) -> bool:
         """Does this piece satisfy the goal's inequality at x? (Both variants
@@ -174,17 +181,45 @@ def _num(n: int) -> str:
 
 
 def _chain(terms: list[str], variant: str) -> str:
-    """Right-nested `max`/`min` over the pieces: max (q₁) (max (q₂) (…))."""
-    acc = terms[-1]
-    for t in reversed(terms[:-1]):
-        acc = f"{variant} ({t}) ({acc})"
-    return acc
+    """**Balanced** `max`/`min` tree over the pieces.
+
+    Right-nesting (`max q₁ (max q₂ (…))`) would put leaf i at depth i, so
+    injecting its fact into the root costs i glue lemmas and the assembly is
+    Θ(k²) — at k=128 that is ~200 KB of `le_max_of_le_right (` for 128 leaves of
+    content. Since the root policy has to *emit* the assembly, that would make
+    the k-axis partly measure token copying rather than decomposition, which is
+    the confound this whole experiment exists to avoid. A balanced tree puts
+    every leaf at depth ⌈log₂ k⌉ and the assembly at Θ(k log k).
+    """
+    def rec(lo: int, hi: int) -> str:
+        if hi - lo == 1:
+            return terms[lo]
+        mid = (lo + hi) // 2
+        return f"{variant} ({rec(lo, mid)}) ({rec(mid, hi)})"
+
+    return rec(0, len(terms))
+
+
+def _paths(k: int) -> list[tuple[str, ...]]:
+    """Root-to-leaf L/R address of each piece in the same balanced tree."""
+    out: list[tuple[str, ...]] = [()] * k
+
+    def rec(lo: int, hi: int, prefix: tuple[str, ...]) -> None:
+        if hi - lo == 1:
+            out[lo] = prefix
+            return
+        mid = (lo + hi) // 2
+        rec(lo, mid, prefix + ("L",))
+        rec(mid, hi, prefix + ("R",))
+
+    rec(0, k, ())
+    return out
 
 
 def _goal_prop(pieces: list[Piece], variant: str) -> str:
     terms = [_render_poly(*p.coeffs(variant)) for p in pieces]
     lo, hi = pieces[0].lo, pieces[-1].hi
-    body = _chain(terms, variant) if len(terms) > 1 else terms[0]
+    body = _chain(terms, variant)
     side = f"{C_LEVEL} ≤ {body}" if variant == "max" else f"{body} ≤ {C_LEVEL}"
     return f"∀ x : ℝ, {lo} ≤ x → x ≤ {hi} → {side}"
 
@@ -195,14 +230,12 @@ def _leaf_prop(p: Piece, variant: str) -> str:
     return f"∀ x : ℝ, {p.lo} ≤ x → x ≤ {p.hi} → {side}"
 
 
-def _wrap(term: str, i: int, k: int, variant: str) -> str:
-    """Inject a per-band fact into the nested extremum: (i-1) right steps, then
-    a left step for every band but the last (which *is* the innermost slot)."""
+def _wrap(term: str, path: tuple[str, ...], variant: str) -> str:
+    """Inject a per-band fact into the extremum tree, walking its address from
+    the leaf back up to the root (so the outermost glue is the root step)."""
     left, right = _GLUE[variant]
-    if i < k:
-        term = f"{left} ({term})"
-    for _ in range(i - 1):
-        term = f"{right} ({term})"
+    for step in reversed(path):
+        term = f"{left if step == 'L' else right} ({term})"
     return term
 
 
@@ -215,13 +248,14 @@ def _assembly(pieces: list[Piece], variant: str, names: list[str]) -> str:
     FAMILIES.md scaling note) readable and cheap to elaborate.
     """
     k = len(pieces)
+    paths = _paths(k)
     lines = ["intro x hx0 hxR"]
     for i in range(1, k):
         prev = "hx0" if i == 1 else f"c{i - 1}.le"
         lines.append(f"rcases le_or_gt x {_num(pieces[i - 1].hi)} with c{i} | c{i}")
-        lines.append(f"· exact {_wrap(f'{names[i - 1]} x {prev} c{i}', i, k, variant)}")
+        lines.append(f"· exact {_wrap(f'{names[i - 1]} x {prev} c{i}', paths[i - 1], variant)}")
     last = f"{names[k - 1]} x c{k - 1}.le hxR"
-    lines.append(f"exact {_wrap(last, k, k, variant)}")
+    lines.append(f"exact {_wrap(last, paths[k - 1], variant)}")
     return "\n".join(lines)
 
 
@@ -246,54 +280,96 @@ def _sample_piece(rng: random.Random, lo: int, width: int) -> Piece:
                  width=width, offset=offset, slack=slack)
 
 
+def _tighten(p: Piece) -> Piece:
+    """The minimal legal piece for a band: vertex at the midpoint, zero slack.
+    Its super-level set is *exactly* its own band, so it spills into no
+    neighbour. Curvature is preserved — only the spill is removed."""
+    half = p.width // 2
+    return Piece(lo=p.lo, hi=p.hi, a=p.a, m=p.lo + half, d=p.a * half**2,
+                 width=p.width, offset=0, slack=0, repaired=True)
+
+
 def _redundant(pieces: list[Piece], i: int) -> bool:
     """Is band i's piece unnecessary — is every integer point of band i already
     covered by some other piece? A redundant piece makes the goal a (k-1)-case
-    problem wearing a k-case costume, so the generator resamples it."""
+    problem wearing a k-case costume, so the generator repairs it away.
+
+    (`not _redundant(·, i)` exhibits an integer point of band i that only piece
+    i covers, which is a *sufficient* certificate of necessity — exact integer
+    arithmetic, no interval algebra over irrational crossing points.)
+    """
     p = pieces[i]
-    for x in range(p.lo, p.hi + 1):
-        if not any(q.holds_at(x) for j, q in enumerate(pieces) if j != i):
-            return False
-    return True
+    return all(
+        any(q.holds_at(x) for j, q in enumerate(pieces) if j != i)
+        for x in range(p.lo, p.hi + 1)
+    )
+
+
+def _repair_necessity(pieces: list[Piece]) -> list[Piece]:
+    """Safety net for necessity — under the shipped knobs it never fires.
+
+    A piece's super-level set reaches past its own band by
+    `|offset| + sqrt(far² + slack/a) − width/2 = 2·|offset| + ε`, with
+    `ε < 0.24` and *no* dependence on the band width. Since `min(WIDTHS) = 6 >
+    2 · 2.24`, two maximally greedy neighbours still leave the victim band's
+    midpoint — an integer, because widths are even — uncovered. Necessity is
+    therefore structural, which is what keeps the leaf-knob distribution
+    *exactly* independent of k (`leaf_stats()["repaired_frac"] == 0.0`
+    everywhere): a repair that fired at different rates per k would itself be a
+    flatness leak, which is how this constraint was found (see the design log).
+
+    Kept anyway as a tripwire: if the knob support is ever widened past the
+    bound above, this quietly restores necessity instead of shipping k-leaf
+    plans that are secretly (k−1)-leaf. It tightens the pieces that *reach
+    into* a swallowed band; a piece with no spill is never rewritten.
+    Terminates in at most k passes — a band whose overlappers are all tight
+    keeps its midpoint private, so while any band is redundant some overlapping
+    piece is still loose, and each pass tightens at least one.
+    """
+    k = len(pieces)
+    for _ in range(k + 1):
+        bad = [i for i in range(k) if _redundant(pieces, i)]
+        if not bad:
+            break
+        for i in bad:
+            span = range(pieces[i].lo, pieces[i].hi + 1)
+            for j in range(k):
+                loose = pieces[j].offset != 0 or pieces[j].slack != 0
+                if j != i and loose and any(pieces[j].holds_at(x) for x in span):
+                    pieces[j] = _tighten(pieces[j])
+    return pieces
 
 
 def _sample_pieces(k: int, rng: random.Random) -> list[Piece]:
     """k contiguous bands tiling a domain centered on 0, each with its piece."""
     widths = [rng.choice(WIDTHS) for _ in range(k)]
-    total = sum(widths)
-    lo = -(total // 2)
+    lo = -(sum(widths) // 2)
     pieces: list[Piece] = []
     for w in widths:
         pieces.append(_sample_piece(rng, lo, w))
         lo += w
-
-    # Necessity sweep: a piece whose whole band is covered by its neighbours is
-    # resampled; if the budget runs out we force the tightest legal piece
-    # (slack 0, vertex at the band midpoint, max curvature), which is the least
-    # coverage this schema can produce.
-    for i, p in enumerate(pieces):
-        for _ in range(_MAX_RESAMPLE):
-            if not _redundant(pieces, i):
-                break
-            pieces[i] = _sample_piece(rng, p.lo, p.width)
-        else:
-            w = p.width
-            a = max(CURVATURES)
-            pieces[i] = Piece(lo=p.lo, hi=p.hi, a=a, m=p.lo + w // 2,
-                              d=a * (w // 2) ** 2, width=w, offset=0, slack=0)
-    return pieces
+    return _repair_necessity(pieces)
 
 
 # ---------------------------------------------------------------- generator --
 
 
-def build(k: int, seed: int, idx: int = 0) -> GeneratedProblem:
-    """One problem, a pure function of (k, seed, idx)."""
+def layout(k: int, seed: int, idx: int = 0) -> tuple[str, list[Piece]]:
+    """The sampled case structure behind one problem: (variant, pieces).
+
+    Exposed so tests and datasheets can check the geometric invariants against
+    the same objects `build` uses, instead of re-deriving them from the RNG.
+    """
     if k < 2:
         raise ValueError(f"case_tree needs k >= 2 (a 1-case split is not a case tree); got {k}")
     rng = _rng(k, seed, idx)
     variant = rng.choice(VARIANTS)
-    pieces = _sample_pieces(k, rng)
+    return variant, _sample_pieces(k, rng)
+
+
+def build(k: int, seed: int, idx: int = 0) -> GeneratedProblem:
+    """One problem, a pure function of (k, seed, idx)."""
+    variant, pieces = layout(k, seed, idx)
 
     bad = [i for i, p in enumerate(pieces) if not p.covers_band]
     if bad:  # unreachable by construction; a loud tripwire beats a false problem
@@ -322,8 +398,8 @@ def build(k: int, seed: int, idx: int = 0) -> GeneratedProblem:
             "split_kind": "interval",
             "domain": [pieces[0].lo, pieces[-1].hi],
             "bands": [[p.lo, p.hi] for p in pieces],
-            "knobs": [{"width": p.width, "curvature": p.a, "offset": p.offset, "slack": p.slack}
-                      for p in pieces],
+            "knobs": [{"width": p.width, "curvature": p.a, "offset": p.offset,
+                       "slack": p.slack, "repaired": p.repaired} for p in pieces],
             "leaf_prop_lens": [len(l.prop) for l in lemmas],
             "max_abs_coeff": max(abs(c) for c in coeffs),
         },
@@ -345,10 +421,7 @@ def leaf_stats(problems: list[GeneratedProblem]) -> dict[int, dict]:
     out: dict[int, dict] = {}
     for k, ps in sorted(by_k.items()):
         lens = [n for p in ps for n in p.meta["leaf_prop_lens"]]
-        knobs = [tuple(sorted(kb.items())) for p in ps for kb in p.meta["knobs"]]
-        hist: dict[tuple, int] = {}
-        for kb in knobs:
-            hist[kb] = hist.get(kb, 0) + 1
+        knobs = {tuple(sorted(kb.items())) for p in ps for kb in p.meta["knobs"]}
         out[k] = {
             "problems": len(ps),
             "leaves": len(lens),
@@ -357,7 +430,11 @@ def leaf_stats(problems: list[GeneratedProblem]) -> dict[int, dict]:
             "leaf_len_max": max(lens),
             "goal_len_mean": round(sum(len(p.goal.prop) for p in ps) / len(ps), 1),
             "max_abs_coeff": max(p.meta["max_abs_coeff"] for p in ps),
-            "distinct_knob_tuples": len(hist),
+            "distinct_knob_tuples": len(knobs),
+            # fraction of leaves whose knobs were tightened by the necessity
+            # repair — the one way the leaf distribution could drift with k
+            "repaired_frac": round(
+                sum(kb["repaired"] for p in ps for kb in p.meta["knobs"]) / len(lens), 3),
             "knob_support_ok": all(
                 kb["width"] in WIDTHS and kb["curvature"] in CURVATURES
                 and kb["offset"] in VERTEX_OFFSETS and kb["slack"] in SLACKS

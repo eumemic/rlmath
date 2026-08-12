@@ -8,6 +8,7 @@ oracle-replay a *ceiling*, not an estimate.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 
 from rlmath.core import leancode
@@ -19,8 +20,34 @@ from .types import GeneratedProblem
 
 # V0/V5 battery (FAMILIES.md): ANY success fails the check. Extending this list
 # strengthens every family retroactively; keep it in one place.
-AUTOMATION_TACTICS = ("simp", "aesop", "norm_num", "omega", "decide", "linarith", "positivity")
+# 2026-08-11 strengthenings, both measured by the family agents' empirical loops:
+#  - nlinarith / gcongr / "gcongr <;> linarith": the combo closed offset-free
+#    monomial inequality goals that all seven original tactics missed (famA).
+#  - every tactic also runs intros-first: no bare tactic introduces ∀/→, so any
+#    quantified prop passed the old battery for free — measured kill: an affine
+#    band passed V5 then died instantly to `intro; linarith` (famB).
+AUTOMATION_TACTICS = (
+    "simp", "aesop", "norm_num", "omega", "decide", "linarith", "positivity",
+    "nlinarith", "gcongr", "gcongr <;> linarith",
+)
 AUTOMATION_TIMEOUT_S = 25.0
+
+
+def battery_proofs() -> list[str]:
+    """The full battery: each tactic bare AND intros-first."""
+    out = []
+    for t in AUTOMATION_TACTICS:
+        out.append(f"by {t}")
+        out.append(f"by intros; {t}")
+    return out
+
+
+_FORALL_PREFIX = re.compile(r"^(?:∀[^,]*,\s*)+")
+
+
+def _prop_body(prop: str) -> str:
+    """Normalized prop with leading ∀-binder groups stripped (V6a)."""
+    return _FORALL_PREFIX.sub("", normalize_statement(prop))
 
 
 @dataclass
@@ -47,10 +74,11 @@ class ValidationReport:
 
 
 def _resists_automation(prop: str, backend: LeanBackend, label: str, report: ValidationReport) -> None:
-    codes = [leancode.proof_check(prop, f"by {t}") for t in AUTOMATION_TACTICS]
+    proofs = battery_proofs()
+    codes = [leancode.proof_check(prop, p) for p in proofs]
     results = backend.check_many(codes, timeout_s=AUTOMATION_TIMEOUT_S)
-    closed = [t for t, r in zip(AUTOMATION_TACTICS, results) if r.ok and r.sorries == 0]
-    report.add(label, not closed, f"auto-closable by: {', '.join(closed)}" if closed else "")
+    closed = [p for p, r in zip(proofs, results) if r.ok and r.sorries == 0]
+    report.add(label, not closed, f"auto-closable by: {'; '.join(closed)}" if closed else "")
 
 
 def validate_problem(
@@ -109,13 +137,26 @@ def validate_problem(
         for l in plan.lemmas:
             _resists_automation(l.prop, backend, f"V5_leaf_resists[{l.name}]", r)
 
-    # V6 hidden intermediates
+    # V6 hidden intermediates. Two layers (both family agents independently
+    # measured the original whole-prop substring check as near-vacuous — any
+    # binder-spelling difference defeated it):
+    #  V6a: lemma BODY (leading ∀-binders stripped) not a substring of the goal
+    #       body — catches restatement across binder reformattings.
+    #  V6b: family-declared meta["hidden_terms"] (rendered intermediate term
+    #       strings) must not occur in the goal — the property families actually
+    #       claim, where term leakage is the risk model (bridge_chain emits it;
+    #       structural-split families may not have term-shaped secrets).
     visible = set(problem.meta.get("visible_lemmas", ()))
     goal_norm = normalize_statement(goal.prop)
+    goal_body = _prop_body(goal.prop)
     for l in plan.lemmas:
         if l.name in visible:
             continue
-        r.add(f"V6_hidden[{l.name}]", normalize_statement(l.prop) not in goal_norm,
-              "lemma prop is a substring of the goal")
+        r.add(f"V6_hidden[{l.name}]", _prop_body(l.prop) not in goal_body,
+              "lemma body is a substring of the goal body")
+    for i, term in enumerate(problem.meta.get("hidden_terms", ())):
+        t = normalize_statement(term)
+        r.add(f"V6b_hidden_term[{i}]", t not in goal_norm,
+              f"hidden term {t!r} occurs in the goal")
 
     return r

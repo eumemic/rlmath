@@ -149,6 +149,16 @@ Working log for Phase 0 (DIRECTION.md §5.5). Started 2026-08-11.
   history is now mislabeled). Rules going forward: `set -o pipefail` or no pipe on gating pytest;
   **scoped `git add` whenever background agents are editing the tree**.
 
+- 2026-08-11 ~21:30: Phase-1 workflow landed (bridge_chain + case_tree + CLI, 30/30 valid under
+  the v1 validator; three agents independently flagged validator soundness gaps with measured
+  kills). Contract strengthened per their findings: battery 7→10 tactics × {bare, intros-first},
+  V6 → binder-stripped-body + hidden_terms layers, REGISTRY populates on import, MAX_LEMMAS_HARD
+  64→1024. **Re-materialization under the strengthened battery: bridge_chain 6/15, case_tree 0/15
+  — all kills V5** (`intros; nlinarith` / `intros; gcongr <;> linarith`); **V0 held at every k**.
+  Verdict: skeletons sound, v1 leaf content too soft; leaf-hardening (bank-drawn or
+  named-function-hardened) is the next Phase-1 iteration. The corridor is now explicit: battery
+  floor ≤ leaf difficulty ≤ frozen-leaf pass@8 band ceiling (the ceiling needs the bake-off).
+
 ## Pending / carried forward
 
 - Environments Hub publish needs an account decision (end of phase).

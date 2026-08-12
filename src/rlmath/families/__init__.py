@@ -22,6 +22,11 @@ def register(name: str, gen: Generator) -> None:
     REGISTRY[name] = gen
 
 
+# Importing the package populates REGISTRY (both family agents + the integrator
+# flagged the previous empty-on-import behavior; FAMILIES.md promised otherwise).
+# Import AFTER register() is defined — family modules call it at import time.
+from . import bridge_chain, case_tree  # noqa: E402, F401
+
 __all__ = [
     "AUTOMATION_TACTICS",
     "GeneratedProblem",

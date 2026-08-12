@@ -13,7 +13,7 @@ monomial by `v ^ δ` for a randomly chosen variable `v ∈ {x,y,z}` and `δ ∈ 
     goal    ∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → a₀ ≤ a_k
     hᵢ      ∀ x y z : ℝ, 3 ≤ x → 3 ≤ y → 3 ≤ z → aᵢ₋₁ ≤ aᵢ            (i = 1..k)
     assembly    intro x y z hx hy hz
-                exact le_trans (h1 x y z hx hy hz) (le_trans (h2 …) … )
+                exact (le_trans (h1 x y z hx hy hz) (le_trans (h2 …) … ))
 
 Only `a₀` and `a_k` occur in the goal; `a₁ … a_{k-1}` — the coefficient, the offset and
 the exponent triple of every intermediate — are exactly what a policy has to invent.
@@ -27,8 +27,8 @@ metric for the entire size axis, DIRECTION §5.4a) is lost by construction. Step
 gives k leaves that are pairwise interchangeable in difficulty, and transitivity — the
 one thing the assembly is allowed to know — is what glues them.
 
-Why the step is sound and why the witness is a two-liner
---------------------------------------------------------
+Why the step is sound and why its witness needs no search
+---------------------------------------------------------
 With `M = x^p y^q z^r ≥ 1` and `v ≥ 3`, the step `c₁M + d₁ ≤ c₂ (v^δ M) + d₂` follows
 from `v^δ M ≥ 3^δ M` by *linear* reasoning over the two monomial atoms, provided
 
@@ -56,19 +56,40 @@ omega, decide, linarith, positivity):
 * **Monomial ladders over ℝ and over ℕ both survive the full battery**, with and without
   the additive offsets, at every k tested (leaf, k=2 goal, k=8 goal, k=32 goal: 0/7
   tactics closed each). ℝ was chosen over ℕ only because the leaf bank is ℝ-heavy.
-* The **additive offsets are load-bearing against collapse**: with them, the obvious
-  k-independent flat route (`have : M₀ ≤ M_k := by gcongr <;> linarith` then
-  `nlinarith`) *fails* — measured on the k=8 and k=32 goals — because the offsets force
-  the prover to also establish `1 ≤ M₀`, which `nlinarith` does not get from `3 ≤ x`
-  alone. Without offsets that route is much closer to working.
-* Known residual (reported, not argued away): a prover that reconstructs the full
-  `1 ≤ M`/`3^δ ≤ v^δ` scaffold can close the endpoint goal in a k-independent number of
-  lines. Bridge chains over an *ordered numeric* domain are collapsible in principle —
-  the k-axis here stresses plan length and intermediate invention, and DIRECTION §5.4(d)
-  (flat-prover decay) must be measured in Phase 2 rather than assumed.
+* The **additive offsets are load-bearing against collapse**, and this was measured, not
+  assumed: strip them and `by intro x y z hx hy hz; gcongr <;> linarith` closes the k=8
+  endpoint goal in **one line**. With offsets that one-liner fails, and so do bare
+  `nlinarith` and `gcongr`+`nlinarith` at k=8 and k=32 — `nlinarith` cannot even derive
+  `1 ≤ x^1*y^1*z^1` from `3 ≤ x, 3 ≤ y, 3 ≤ z`.
+* The one flat route that *did* work was `1 ≤ M₀` + `gcongr` + `linarith`. Its success
+  condition is an endpoint-only predicate, so it became a **generation-time endpoint
+  gate** (`endpoints_resist_naive_collapse`: `c_k < c₀ ∧ d_k ≤ d₀`), which discards ≈78%
+  of candidate chains and touches only the endpoints, leaving leaf difficulty untouched.
+  After the gate, five flat routes — including one *granted* the true bound `27 ≤ M₀` —
+  close **0/3 goals at every k ∈ {2,4,8,16,32}**. `gcongr <;> linarith` still proves
+  `M₀ ≤ M_k` instantly; it is the coefficient drop that makes that useless.
+* Known residual (reported, not argued away): the gate defeats the "`M₀ ≤ M_k` plus a
+  bound on `M₀`" family of routes, not collapse in general — a prover that establishes a
+  *quantitative ratio* `M_k ≥ r·M₀` still closes the goal in a k-independent number of
+  lines. Bridge chains over an *ordered numeric* domain are collapsible in principle
+  (`≤` is transitive **and** total, so every sub-chain is a valid proof); the k-axis here
+  stresses plan length and intermediate invention, and DIRECTION §5.4(d) (flat-prover
+  decay) must be measured in Phase 2 rather than assumed.
+* At k=32 the *composed* oracle artifact can exceed PREAMBLE's `maxHeartbeats 400000`
+  even though all 32 leaves check individually — the witness was rewritten search-free
+  (`gcongr`, not `nlinarith`, with the numeric bound proved before the big-monomial
+  hypotheses enter the context) to buy headroom.
 
-Determinism: output is a pure function of `(k, seed)`; problem i uses the derived seed
-string `bridge_chain|{k}|{seed}|{i}`.
+Measured outcome (n=3 per k, `check_automation=True`, real `ReplPool(2)`, seed 2026):
+**every V0–V6 check passed for 3/3 problems at k ∈ {2,4,8}** — 100% against a ≥90%
+target, 0 Lean-observed failures — at an 83% candidate discard rate (the endpoint gate)
+and a 5% per-step resample rate (the sampling constraint). Leaf prop length is 98
+characters (min=median=max) at k ∈ {2,4,8} and 98–104 at k=32, the spread being exactly
+the extra digits of two-digit exponents: per-node structural flatness holds. Full table
+and kill-lists: `research/family-bridge-chain.md`.
+
+Determinism: output is a pure function of `(k, seed)`; problem i, attempt a uses the
+derived seed string `bridge_chain|{k}|{seed}|{i}|{a}`.
 """
 from __future__ import annotations
 
@@ -83,16 +104,16 @@ FAMILY = "bridge_chain"
 
 # --- schema knobs (identical at every k — this is what makes per-node difficulty flat)
 VARS: tuple[str, str, str] = ("x", "y", "z")
-HYP_NAMES: tuple[str, str, str] = ("hx", "hy", "hz")
+HYP_NAMES: tuple[str, str, str] = ("hx", "hy", "hz")   # side-condition names in every proof
 LOWER = 3                      # side condition `LOWER ≤ v` on every variable
 COEF_RANGE = (2, 9)            # cᵢ
 OFFSET_RANGE = (1, 9)          # dᵢ
 DELTAS = (1, 2)                # exponent increment per step
 START_EXPONENTS = (1, 1, 1)
 _MAX_REJECTS = 512             # sampler safety valve; the constraint is always satisfiable
-_MAX_DISCARDS = 16             # offline regeneration attempts per problem slot
+_MAX_DISCARDS = 400            # offline regeneration attempts per slot (endpoint gate accepts ≈20%)
 
-_BINDER = f"∀ x y z : ℝ, {LOWER} ≤ x → {LOWER} ≤ y → {LOWER} ≤ z → "
+BINDER = f"∀ x y z : ℝ, {LOWER} ≤ x → {LOWER} ≤ y → {LOWER} ≤ z → "
 
 Term = tuple[int, tuple[int, int, int], int]      # (coefficient, exponents, offset)
 Step = tuple[int, int]                            # (variable index, δ)
@@ -114,7 +135,7 @@ def render_term(t: Term) -> str:
 
 
 def _prop(lo: Term, hi: Term) -> str:
-    return f"{_BINDER}{render_term(lo)} ≤ {render_term(hi)}"
+    return f"{BINDER}{render_term(lo)} ≤ {render_term(hi)}"
 
 
 # --------------------------------------------------------------------------
@@ -125,6 +146,32 @@ def _valid(c_prev: int, d_prev: int, c_new: int, d_new: int, delta: int) -> bool
     """SAMPLING CONSTRAINT (see module docstring): what makes the leaf witness a
     `linarith` over two monomial atoms rather than a nonlinear search."""
     return c_new * (LOWER ** delta) - c_prev >= max(0, d_prev - d_new)
+
+
+def endpoints_resist_naive_collapse(first: Term, last: Term) -> bool:
+    """Endpoint gate: reject chains the *endpoints alone* give away.
+
+    The k-independent flat route on a goal `c₀M₀ + d₀ ≤ c_k M_k + d_k` is
+    `have hj : M₀ ≤ M_k := by gcongr <;> linarith` plus some lower bound `t ≤ M₀`, then
+    `linarith`. The strongest form of that argument closes the goal iff
+    `(c_k − c₀)·t ≥ d₀ − d_k` for the best available `t`. Demanding
+
+        c_k < c₀   and   d_k ≤ d₀
+
+    makes the left side *negative* and the right side non-negative, so **no** lower
+    bound on `M₀`, however sharp, can rescue it: a flat prover must instead establish a
+    quantitative ratio `M_k ≥ r·M₀` with `r ≥ c₀/c_k > 1`, which is exactly the
+    multiplicative content the chain carries and which `gcongr` cannot produce.
+
+    Measured: before the gate, a k=8 goal with `c₀=4,d₀=3 → c_k=6,d_k=7` fell to that
+    route in 8 lines. After it, all four flat routes we know of close 0/3 goals at every
+    k ∈ {2,4,8,16,32} (§4 of research/family-bridge-chain.md). This defeats a family of
+    routes, not collapse in general — the residual is documented there, not argued away.
+    The gate touches only the endpoints, so leaf difficulty is untouched.
+    """
+    c0, _, d0 = first
+    ck, _, dk = last
+    return ck < c0 and dk <= d0
 
 
 def _sample_chain(rng: random.Random, k: int) -> tuple[list[Term], list[Step], int]:
@@ -159,18 +206,24 @@ def _sample_chain(rng: random.Random, k: int) -> tuple[list[Term], list[Step], i
 def _witness_proof(prev: Term, cur: Term, step: Step) -> str:
     """Generator-known proof of `_prop(prev, cur)`.
 
-    Fully deterministic: no `nlinarith` search on the main inequality. The only
-    non-elementary step is `hpow`, a one-variable numeric bound `3^δ ≤ v ^ δ`.
+    Search-free: `gcongr` on a one-variable numeric bound, then `linarith` over the two
+    monomial atoms. No `nlinarith` anywhere — it is what made the composed artifact
+    expensive at large k.
     """
     j, delta = step
-    v, hv = VARS[j], HYP_NAMES[j]
+    v = VARS[j]
     _, exps, _ = prev
     mono = _mono(exps)
     mono_next = _mono(cur[1])
     factor = LOWER ** delta
+    # `hpow` comes first, while the context is still just hx/hy/hz: proved later it
+    # would drag every big-monomial hypothesis into the search, and the composed k=32
+    # artifact then blows PREAMBLE's maxHeartbeats budget (measured — see the design log).
     lines = [
         "by",
         "  intro x y z hx hy hz",
+        f"  have hbase : ({LOWER}:ℝ) ^ {delta} ≤ {v} ^ {delta} := by gcongr <;> linarith",
+        f"  have hpow : ({factor}:ℝ) ≤ {v} ^ {delta} := by linarith [hbase]",
     ]
     for idx, (var, e) in enumerate(zip(VARS, exps)):
         lines.append(f"  have hp{idx} : (1:ℝ) ≤ {var} ^ {e} := one_le_pow₀ (by linarith)")
@@ -178,7 +231,6 @@ def _witness_proof(prev: Term, cur: Term, step: Step) -> str:
         f"  have hA : (1:ℝ) ≤ {VARS[0]} ^ {exps[0]} * {VARS[1]} ^ {exps[1]} :="
         " le_trans hp0 (le_mul_of_one_le_right (by linarith) hp1)",
         f"  have hM : (1:ℝ) ≤ {mono} := le_trans hA (le_mul_of_one_le_right (by linarith) hp2)",
-        f"  have hpow : ({factor}:ℝ) ≤ {v} ^ {delta} := by nlinarith [{hv}]",
         f"  have hstep : {factor} * ({mono}) ≤ {v} ^ {delta} * ({mono}) :="
         " mul_le_mul_of_nonneg_right hpow (by linarith)",
         f"  have hring : {v} ^ {delta} * ({mono}) = {mono_next} := by ring",
@@ -252,7 +304,7 @@ def leaf_shape_stats(problems: Iterable[GeneratedProblem]) -> dict:
 def generate(k: int, seed: int, n: int = 1) -> list[GeneratedProblem]:
     """`k` bridge steps, `n` problems, deterministic in `(k, seed)`."""
     if k < 2:
-        raise ValueError(f"bridge_chain needs k >= 2 (k=1 makes the single lemma the goal); got {k}")
+        raise ValueError(f"bridge_chain needs k >= 2 (k=1 makes the lemma the goal); got {k}")
     if n < 0:
         raise ValueError(f"n must be >= 0; got {n}")
 
@@ -263,14 +315,19 @@ def generate(k: int, seed: int, n: int = 1) -> list[GeneratedProblem]:
 
 
 def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
-    """Discard/regenerate loop: a candidate that fails the offline hidden-intermediate
-    pre-check is thrown away and resampled under the next attempt seed. The count lands
-    in `meta["discards"]` so the datasheet can report a real discard rate rather than an
-    assumed one (it is 0 in every run measured so far — the check is a tripwire, not a
-    filter, because distinct exponent sums already make collisions impossible)."""
+    """Discard/regenerate loop, on two offline gates:
+
+    * `endpoints_resist_naive_collapse` — the binding one, ≈50% of candidates;
+    * `hidden_intermediate_violations` — a tripwire, 0% in every run measured (distinct
+      exponent sums already make an intermediate/endpoint collision impossible).
+
+    The realised count lands in `meta["discards"]`, so the datasheet reports a measured
+    discard rate rather than an assumed one."""
     for attempt in range(_MAX_DISCARDS + 1):
         rng = random.Random(f"{FAMILY}|{k}|{seed}|{idx}|{attempt}")
         terms, steps, rejects = _sample_chain(rng, k)
+        if not endpoints_resist_naive_collapse(terms[0], terms[-1]):
+            continue
         pid = f"{FAMILY}-k{k}-s{seed}-{idx}"
 
         goal = GoalSpec(id=pid, prop=_prop(terms[0], terms[-1]), name=f"bridge_k{k}_s{seed}_{idx}")
@@ -293,6 +350,8 @@ def _one(k: int, seed: int, idx: int) -> GeneratedProblem:
                 "vars": list(VARS),
                 "step_kinds": steps,
                 "intermediate_terms": [render_term(t) for t in terms[1:-1]],
+                # consumed by validate.py V6b: these strings must not occur in the goal
+                "hidden_terms": [render_term(t) for t in terms[1:-1]],
                 "endpoint_terms": [render_term(terms[0]), render_term(terms[-1])],
                 "exponent_sums": [sum(t[1]) for t in terms],
                 "leaf_prop_chars": [len(l.prop) for l in lemmas],

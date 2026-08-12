@@ -21,7 +21,11 @@ import re
 from .leancode import RESERVED_NAMES
 from .types import DecompositionPlan, LemmaSpec
 
-MAX_LEMMAS_HARD = 64          # parser cap; Budgets.max_lemmas enforces the real limit
+# Parser anti-runaway cap only; Budgets.max_lemmas enforces the real per-episode
+# limit. Raised 64 -> 1024 (2026-08-11): famB measured the beyond-window tier at
+# k≈512 post tree-balancing, and a parser cap below the k-grid would make the
+# matching decomposition policy-unemittable (their test pinned exactly this).
+MAX_LEMMAS_HARD = 1024
 _NAME = re.compile(r"^[A-Za-z][A-Za-z0-9_']*$")
 _LEMMA_LINE = re.compile(r"^#lemma\s+(\S+)\s*:\s*(.+?)\s*$")
 
