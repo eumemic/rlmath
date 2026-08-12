@@ -59,3 +59,27 @@ full autonomy within caps. This file is the morning report; entries append as th
   caught the coverage gap. End-window planned: 15:24 cron stops the sweep, runs the 138-leaf
   family calibration on the quiet pod (~15 min; closes DIRECTION §5.4a flatness for #11),
   harvests both files home, self-terminates before the 16:17 backstop. Candidates staged.
+- 16:15 — **END-WINDOW EXECUTED (manually; the 15:24 cron queued behind interactive work).
+  Pod TERMINATED at ≈$29.7 of the $30 cap.** Final harvest, all local and committed:
+  **BANK: 4,102 rows / 4,085 measured / 401 band (299 train, 102 eval) / 0 errors** — 10.8×
+  the morning's 37. Calibration reached 58/138 leaves (all bridge_chain; case_tree unmeasured —
+  ~$1–2 on the next pod).
+- **FLATNESS VERDICT (Phase-1 gate §5.4a), partial data:** bridge_chain per-leaf pass@8:
+  k=2 0.225 (n=10), k=4 0.125 (n=20), k=8 0.129 (n=28). **Flatness PASSES where measured**
+  (k4 vs k8 within 0.004 — the size axis is structurally sound). **Level FAILS**: ~0.13 is
+  below the 0.25 corridor floor — even a perfect decomposition rarely closes all k=8 leaves
+  within episode budgets. **Phase 1 stays OPEN on this finding.** Fix: easier step knobs or
+  bank-drawn in-band leaves, then re-calibrate. Exactly the measurement calibration exists
+  to produce; vindicates "close on data, not snapshots."
+- Afternoon strategist items all landed: membership-inheritance fix (pool_for, leaf_pool,
+  tests, contract corrected, staged mutants purged — no contamination); rung 1.5 + four-root
+  roster registered; CREDITS_ASK.md drafted.
+
+## Morning summary
+
+- **Phase 0: CLOSED** (all gates, throughput re-measured end-to-end concurrent).
+- **Phase 1: OPEN on one finding** — flatness passes, leaf level below corridor floor.
+  Next: retune/re-draw leaves, re-calibrate (small GPU session), close on the number.
+- **Phase 2: instrument validated** — 24 episodes, reward 0 with clean separation; 2 smuggled
+  sorrys caught. Next cell: four-root few-shot roster (rung 1.5), pennies via Prime Inference.
+- **Money: GPU ≈$42.7 of $50; inference pennies of $5. CREDITS_ASK.md ready — send today.**
