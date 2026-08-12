@@ -83,3 +83,23 @@ full autonomy within caps. This file is the morning report; entries append as th
 - **Phase 2: instrument validated** — 24 episodes, reward 0 with clean separation; 2 smuggled
   sorrys caught. Next cell: four-root few-shot roster (rung 1.5), pennies via Prime Inference.
 - **Money: GPU ≈$42.7 of $50; inference pennies of $5. CREDITS_ASK.md ready — send today.**
+
+## Session 3 (16:50–18:40, ~$5.8) — three verdicts
+
+1. **PRESET: e3_lowdeg WINS — measured 0.429 vs registered projection 0.404** (band-fit 0.83,
+   zero 0.07; the pre-registered 3-factor model predicted the measurement to 0.025). All four
+   easier presets beat v2; decision rule applied as registered. bridge_chain regenerating at e3.
+2. **FLATNESS, full 138 leaves:** bridge_chain 0.225/0.125/0.106 across k (level fixed by e3;
+   mild within-chain gradient to confirm at e3). **case_tree 0.850/0.974/0.917 — ABOVE the 0.9
+   ceiling**: its leaves are too EASY for DSV2 (the uniform nlinarith witness template is the
+   tell). Symmetric to bridge's problem, same fix methodology: a case_tree hardening ladder.
+   Phase 1 now open on case_tree only.
+3. **ROSTER (rung 1.5): THE COLD-START PROBLEM WAS A PROMPT GAP.** Paired control:
+   qwen3-30b few-shot **5/5 stage-1-passing decompositions vs 0/5 zero-shot**. haiku few-shot
+   also 5/5 stage-1 (episodes then leaf_failed on v2's too-hard leaves — coherent with verdict
+   2). Per the registered decision rule: **rung 1.5 suffices; do NOT escalate to warm-up;
+   priors barely move.** (Qwen3.5-122B: 5/5 format errors — a chat-template quirk worth a note;
+   opus cell unfinished at deadline — verdict provisional only for the ceiling datapoint.)
+   Roster spend: ~$1.20 of the $5 inference cap.
+
+Pod terminated at deadline. GPU total for the project: ≈$48.5 of $50.

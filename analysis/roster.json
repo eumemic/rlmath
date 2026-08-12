@@ -1,0 +1,449 @@
+{
+  "generated_by": "scripts/roster_analyze.py",
+  "direction_ref": "DIRECTION.md §5.5 cold-start ladder, rung 1.5",
+  "scope": {
+    "family": "bridge_chain",
+    "k": "2",
+    "results": [
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_anthropic-claude-haiku-4-5.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_qwen-qwen3-5-122b-a10b.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_anthropic-claude-haiku-4-5.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_qwen-qwen3-5-122b-a10b.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k4_decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k4_direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/case_tree_k2_decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/case_tree_k2_direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/case_tree_k4_decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl",
+      "/Users/tom/code/playground/rlmath/results/zeroshot/case_tree_k4_direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl"
+    ],
+    "rows": 56,
+    "in_scope": 38,
+    "out_of_scope": 18,
+    "files": 14
+  },
+  "expected_roots": [
+    "qwen/qwen3-30b-a3b-instruct-2507",
+    "Qwen/Qwen3.5-122B-A10B",
+    "anthropic/claude-haiku-4.5",
+    "anthropic/claude-opus-5"
+  ],
+  "cells": [
+    {
+      "root_model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "arm": "decomp",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.002273,
+      "by_status": {
+        "leaf_failed": 5
+      },
+      "stage1": {
+        "pass": 5
+      },
+      "restatement_max": {
+        "buckets": {
+          ">=0.95": 5
+        },
+        "median": 0.9774,
+        "max": 0.9944,
+        "n": 5
+      },
+      "median_completion_tokens": 267,
+      "median_total_tokens": 1472,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "decomp",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 1003
+        }
+      ]
+    },
+    {
+      "root_model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "arm": "decomp",
+      "shot": "zs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.00164,
+      "by_status": {
+        "plan_invalid": 5
+      },
+      "stage1": {
+        "fail": 5
+      },
+      "restatement_max": {
+        "buckets": {
+          "0.5-0.8": 1,
+          "0.8-0.95": 4
+        },
+        "median": 0.8471,
+        "max": 0.8726,
+        "n": 5
+      },
+      "median_completion_tokens": 124,
+      "median_total_tokens": 851,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_decomp_qwen-qwen3-30b-a3b-instruct-2507.jsonl"
+      ],
+      "exemplars": []
+    },
+    {
+      "root_model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "arm": "direct",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 2.0,
+      "mean_reward": 0.4,
+      "cost_usd": 0.007339,
+      "by_status": {
+        "leaf_failed": 3,
+        "verified": 2
+      },
+      "stage1": {},
+      "restatement_max": {
+        "buckets": {},
+        "median": null,
+        "max": null,
+        "n": 0
+      },
+      "median_completion_tokens": 1304,
+      "median_total_tokens": 3121,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "direct",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 3267
+        }
+      ]
+    },
+    {
+      "root_model": "qwen/qwen3-30b-a3b-instruct-2507",
+      "arm": "direct",
+      "shot": "zs",
+      "n": 3,
+      "n_scored": 3,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.006883,
+      "by_status": {
+        "leaf_failed": 2,
+        "sanitizer_rejected": 1
+      },
+      "stage1": {},
+      "restatement_max": {
+        "buckets": {},
+        "median": null,
+        "max": null,
+        "n": 0
+      },
+      "median_completion_tokens": 2829,
+      "median_total_tokens": 3144,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_direct_qwen-qwen3-30b-a3b-instruct-2507.jsonl"
+      ],
+      "exemplars": []
+    },
+    {
+      "root_model": "Qwen/Qwen3.5-122B-A10B",
+      "arm": "decomp",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.02027,
+      "by_status": {
+        "format_error": 5
+      },
+      "stage1": {
+        "fail": 5
+      },
+      "restatement_max": {
+        "buckets": {
+          "no_plan": 5
+        },
+        "median": null,
+        "max": null,
+        "n": 0
+      },
+      "median_completion_tokens": 4096,
+      "median_total_tokens": 5322,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_qwen-qwen3-5-122b-a10b.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "decomp",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 1003
+        }
+      ]
+    },
+    {
+      "root_model": "Qwen/Qwen3.5-122B-A10B",
+      "arm": "direct",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.019244,
+      "by_status": {
+        "format_error": 4,
+        "leaf_failed": 1
+      },
+      "stage1": {},
+      "restatement_max": {
+        "buckets": {},
+        "median": null,
+        "max": null,
+        "n": 0
+      },
+      "median_completion_tokens": 4096,
+      "median_total_tokens": 5961,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_qwen-qwen3-5-122b-a10b.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "direct",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 3267
+        }
+      ]
+    },
+    {
+      "root_model": "anthropic/claude-haiku-4.5",
+      "arm": "decomp",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 0.0,
+      "mean_reward": 0.0,
+      "cost_usd": 0.016225,
+      "by_status": {
+        "leaf_failed": 5
+      },
+      "stage1": {
+        "pass": 5
+      },
+      "restatement_max": {
+        "buckets": {
+          ">=0.95": 5
+        },
+        "median": 0.9718,
+        "max": 0.983,
+        "n": 5
+      },
+      "median_completion_tokens": 356,
+      "median_total_tokens": 1822,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-decomp_anthropic-claude-haiku-4-5.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "decomp",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 1003
+        }
+      ]
+    },
+    {
+      "root_model": "anthropic/claude-haiku-4.5",
+      "arm": "direct",
+      "shot": "fs",
+      "n": 5,
+      "n_scored": 5,
+      "reward_sum": 2.0,
+      "mean_reward": 0.4,
+      "cost_usd": 0.05466,
+      "by_status": {
+        "leaf_failed": 3,
+        "verified": 2
+      },
+      "stage1": {},
+      "restatement_max": {
+        "buckets": {},
+        "median": null,
+        "max": null,
+        "n": 0
+      },
+      "median_completion_tokens": 1818,
+      "median_total_tokens": 4188,
+      "k": [
+        "2"
+      ],
+      "family": [
+        "bridge_chain"
+      ],
+      "files": [
+        "/Users/tom/code/playground/rlmath/results/zeroshot/bridge_chain_k2_fs-direct_anthropic-claude-haiku-4-5.jsonl"
+      ],
+      "exemplars": [
+        {
+          "arm": "direct",
+          "family": "bridge_chain",
+          "k": 2,
+          "seed": 999,
+          "problem_id": "bridge_chain-k2-s999-0",
+          "goal_statement_key": "86514aa7879eb3dd",
+          "goal_name": "bridge_k2_s999_0",
+          "chars": 3267
+        }
+      ]
+    }
+  ],
+  "warnings": [],
+  "verdict": {
+    "question": "DIRECTION §5.5 rung 1.5: does any root emit a stage-1-passing decomposition (VERIFIED or plan-valid-but-leaf_failed) few-shot at k=2?",
+    "stage1_passing_statuses": [
+      "compose_failed",
+      "leaf_failed",
+      "verified"
+    ],
+    "status": "stage1_observed",
+    "line": "STAGE-1-PASSING DECOMPOSITIONS few-shot at k=2 from: qwen/qwen3-30b-a3b-instruct-2507, anthropic/claude-haiku-4.5. The RL target (qwen/qwen3-30b-a3b-instruct-2507) is among them — per DIRECTION §5.5 the cold-start problem was a prompt gap; rung 1.5 suffices and priors barely move. Do not escalate to warm-up. PROVISIONAL — missing roster cells: anthropic/claude-opus-5.",
+    "roots_with_stage1": [
+      "qwen/qwen3-30b-a3b-instruct-2507",
+      "anthropic/claude-haiku-4.5"
+    ],
+    "roots_missing_cells": [
+      "anthropic/claude-opus-5"
+    ],
+    "n_ambiguous": 0,
+    "rl_target": "qwen/qwen3-30b-a3b-instruct-2507",
+    "paired_control": {
+      "root": "qwen/qwen3-30b-a3b-instruct-2507",
+      "fs_stage1_pass": 5,
+      "fs_n": 5,
+      "zs_stage1_pass": 0,
+      "zs_n": 5,
+      "delta_stage1_pass": 5
+    },
+    "per_root": {
+      "qwen/qwen3-30b-a3b-instruct-2507": {
+        "n": 5,
+        "n_evidence": 5,
+        "stage1_pass": 5,
+        "verified": 0,
+        "direct_close": 0,
+        "ambiguous": 0,
+        "pre_stage1_fail": 0,
+        "not_evidence": 0
+      },
+      "Qwen/Qwen3.5-122B-A10B": {
+        "n": 5,
+        "n_evidence": 5,
+        "stage1_pass": 0,
+        "verified": 0,
+        "direct_close": 0,
+        "ambiguous": 0,
+        "pre_stage1_fail": 5,
+        "not_evidence": 0
+      },
+      "anthropic/claude-haiku-4.5": {
+        "n": 5,
+        "n_evidence": 5,
+        "stage1_pass": 5,
+        "verified": 0,
+        "direct_close": 0,
+        "ambiguous": 0,
+        "pre_stage1_fail": 0,
+        "not_evidence": 0
+      },
+      "anthropic/claude-opus-5": {
+        "n": 0,
+        "n_evidence": 0,
+        "stage1_pass": 0,
+        "verified": 0,
+        "direct_close": 0,
+        "ambiguous": 0,
+        "pre_stage1_fail": 0,
+        "not_evidence": 0
+      }
+    }
+  }
+}
