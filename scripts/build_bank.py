@@ -510,7 +510,14 @@ def main(argv=None) -> int:
     # (DIRECTION.md §5.4) — a file silently mixing leaf models would corrupt it
     # invisibly. Every leaf row records its model; appending with a different
     # model than the file already contains is a hard refusal, not a warning.
-    leaf_id = None if args.elaborate_only else f"{args.leaf_model}|{args.leaf_template}"
+    # leaf_id carries the full sampling profile, not just model|template: the
+    # 2026-08-12 bake-off showed max_tokens changes the measured population
+    # (a 16k-CoT attempt and an 8k-capped attempt are different experiments).
+    _mt = args.leaf_max_tokens if args.leaf_max_tokens is not None else "def"
+    _tp = args.leaf_temperature if args.leaf_temperature is not None else "def"
+    leaf_id = None if args.elaborate_only else (
+        f"{args.leaf_model}|{args.leaf_template}|M{_mt}|T{_tp}"
+    )
     if leaf_id is not None:
         prior = {r.get("leaf_id") for r in read_rows(out) if r.get("leaf_id")}
         if prior and prior != {leaf_id}:

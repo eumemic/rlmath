@@ -538,7 +538,8 @@ def test_leaf_provenance_guard(tmp_path, monkeypatch, fake_backend):
     args = ["--out", str(out), "--leaf-model", "prover-A", "--leaf-template", "plain"]
     assert build_bank.main(args) == 0
     rows = list(build_bank.read_rows(out))
-    assert rows and all(r["leaf_id"] == "prover-A|plain" for r in rows)
+    # leaf_id carries the full sampling profile (M/T default markers included)
+    assert rows and all(r["leaf_id"] == "prover-A|plain|Mdef|Tdef" for r in rows)
 
     # same leaf: resume runs fine (nothing new to do, no refusal)
     assert build_bank.main(args) == 0
