@@ -394,12 +394,18 @@ def make_leaf(args):
 
     # Cache is what makes the bank resumable at the attempt level (repeated
     # statements do zero generation/kernel work on re-runs) — always on here.
+    kw = {}
+    if args.leaf_max_tokens is not None:
+        kw["max_tokens"] = args.leaf_max_tokens
+    if args.leaf_temperature is not None:
+        kw["temperature"] = args.leaf_temperature
     return LeafProver.from_openai(
         base_url=args.leaf_base_url,
         api_key=os.environ.get("LEAF_API_KEY", "EMPTY"),
         model=args.leaf_model,
         template=args.leaf_template,
         cache=AttemptCache(),
+        **kw,
     )
 
 
@@ -444,6 +450,12 @@ def parse_args(argv=None):
     p.add_argument("--leaf-base-url", default="http://localhost:11434/v1")
     p.add_argument("--leaf-model", default=None)
     p.add_argument("--leaf-template", default=None, help="template name from rlmath.leaf.prompts.TEMPLATES")
+    # CoT-style templates (goedel-prover-v2, deepseek CoT) generate 8-32k tokens;
+    # the adapter default (2048) silently truncates them into parse failures.
+    # Both knobs enter the cache sampling_key, so overriding them correctly
+    # separates cache populations (leaf/adapter.py flag 5).
+    p.add_argument("--leaf-max-tokens", type=int, default=None, help="override adapter DEFAULT_MAX_TOKENS")
+    p.add_argument("--leaf-temperature", type=float, default=None, help="override adapter DEFAULT_TEMPERATURE")
     p.add_argument("--k", type=int, default=DEFAULT_K, help="leaf attempts per statement (pass@k)")
     p.add_argument("--timeout-s", type=float, default=DEFAULT_TIMEOUT_S)
     p.add_argument("--elaborate-only", action="store_true", help="skip the leaf prover")
