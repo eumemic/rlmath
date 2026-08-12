@@ -380,11 +380,26 @@ prime-rl 0.8.0 algorithms layer; we already sit on the enabling substrate):**
 - **Phase 3, services gap:** before building tunnel plumbing, spike modeling the frozen leaf as a
   verifiers `Agent` with its own `Runtime` (the `UserSimEnv` frozen+trainable pattern) — if the
   framework manages leaf execution, hosted rollouts may need no side-channel services at all.
-- **Phase 3, cold start:** OPD (on-policy distillation, per-env teacher endpoint) is now a config
-  option, not a project — warming the root against a frontier teacher on format+decomposition
-  before GRPO directly addresses the measured zero-shot P4 pathology (first 3 live rollouts: 100%
-  restatement-delegation). Named option; decide on Phase-2 zero-shot data. Fallback algorithm if
-  GRPO group advantages degenerate in the early near-zero-success regime: MaxRL.
+  **Spike survival requirements (strategist 2026-08-12, pass/fail criteria of the spike itself):**
+  (a) the normalized leaf cache must still intercept every leaf call — it is load-bearing for cost
+  *and* for making degenerate restatement nearly free to observe; (b) the `leaf_id` provenance
+  guard must travel onto bank/episode rows unchanged. If either dies in translation, keep the
+  process-global wart — it is cheaper than the fix.
+- **Phase 3, cold start — a scientific decision wearing an infrastructure costume (strategist
+  2026-08-12); it does not get made at the tooling layer.** The danger is real (all-fail GRPO
+  groups → zero advantages → nothing trains; cf. Goedel-Code-Prover's 281k-pair SFT), but warm-up
+  touches the headline measurement twice: **symmetry** (whatever warm-up the root gets, the flat
+  arm gets the matched equivalent, and distillation compute enters the compute-matching) and
+  **attribution** (distilling decomposition *content* from a frontier teacher means transfer at
+  large k could be teacher priors surviving, not RL-under-isolation). Escalation ladder, in order:
+  (1) primary defense is **curriculum, not estimator or warm-up** — start at small k with leaves
+  from the high-pass-rate end of the band, where group degeneracy mostly doesn't arise;
+  (2) format-compliance-only warm-up (wire format + well-formed statements, no strategy content);
+  (3) strategy distillation only if GRPO still flatlines on in-band tasks at small k. MaxRL stays
+  a fallback estimator, not a substitute for (1). **Scope is decided by Phase-2 data** — the 100%
+  restatement figure is n=3 from one model; the zero-shot study measures decomposition rates
+  across roots and k, which is the datum that sets warm-up scope. **Any warm-up adopted
+  re-registers the affected §4 priors in this document, dated, before the run.**
 - **Phase 4:** Hierarchical GRPO (role-aware credit in multi-agent episodes) removes the
   infrastructure argument for deferring joint root+leaf training; the attribution argument for
   root-only-first stands unchanged. Far-future note: their proposer-solver learnability reward
