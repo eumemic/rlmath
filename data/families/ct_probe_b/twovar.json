@@ -1,0 +1,216 @@
+{
+ "directions": {
+  "two_var": {
+   "n_instances": 12,
+   "exactness": [
+    {
+     "label": "two_var/max/lo-7w8o0a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo-7w8o0a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/max/lo-3w6o1a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo-3w6o1a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/max/lo5w8o-1a3s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo5w8o-1a3s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/max/lo13w6o0a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo13w6o0a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/max/lo-25w8o1a3s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo-25w8o1a3s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/max/lo21w6o-1a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "two_var/min/lo21w6o-1a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": null,
+     "verdict": "EXACT (iff)"
+    }
+   ],
+   "exactness_summary": {
+    "under": 0,
+    "over": 0,
+    "coverage_failures": 0,
+    "max_spill": null
+   },
+   "necessity": {
+    "2x2": {
+     "k": 4,
+     "cells": 48,
+     "redundant": 0,
+     "redundant_frac": 0.0,
+     "min_private_points": 11,
+     "redundant_frac_energy_balanced": 0.0,
+     "redundant_frac_energy_lopsided": 0.0,
+     "n_balanced": 40,
+     "n_lopsided": 8,
+     "max_abs_coeff": 96
+    },
+    "2x4": {
+     "k": 8,
+     "cells": 96,
+     "redundant": 3,
+     "redundant_frac": 0.0312,
+     "min_private_points": 0,
+     "redundant_frac_energy_balanced": 0.0411,
+     "redundant_frac_energy_lopsided": 0.0,
+     "n_balanced": 73,
+     "n_lopsided": 23,
+     "max_abs_coeff": 483
+    },
+    "4x4": {
+     "k": 16,
+     "cells": 192,
+     "redundant": 32,
+     "redundant_frac": 0.1667,
+     "min_private_points": 0,
+     "redundant_frac_energy_balanced": 0.1736,
+     "redundant_frac_energy_lopsided": 0.1458,
+     "n_balanced": 144,
+     "n_lopsided": 48,
+     "max_abs_coeff": 747
+    },
+    "4x8": {
+     "k": 32,
+     "cells": 384,
+     "redundant": 64,
+     "redundant_frac": 0.1667,
+     "min_private_points": 0,
+     "redundant_frac_energy_balanced": 0.1507,
+     "redundant_frac_energy_lopsided": 0.2174,
+     "n_balanced": 292,
+     "n_lopsided": 92,
+     "max_abs_coeff": 2097
+    }
+   },
+   "flatness": {
+    "skipped": "2-D tiling; see the note's assembly section"
+   },
+   "example_prop": "∀ x y : ℝ, -7 ≤ x → x ≤ 1 → 4 ≤ y → y ≤ 10 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 6 * x + 2 * y ^ 2 - 28 * y + 109)",
+   "example_witness": "by\n  intro x y hx1 hx2 hy1 hy2\n  have h : Real.sqrt (x ^ 2 + 6 * x + 2 * y ^ 2 - 28 * y + 109) ≤ 6 := Real.sqrt_le_iff.mpr ⟨by norm_num, by\n    nlinarith [mul_nonneg (sub_nonneg.mpr hx1) (sub_nonneg.mpr hx2),\n               mul_nonneg (sub_nonneg.mpr hy1) (sub_nonneg.mpr hy2)]⟩\n  linarith"
+  }
+ },
+ "skipped_specs": [],
+ "control_prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2 * x ^ 2 - 12 * x + 17"
+}

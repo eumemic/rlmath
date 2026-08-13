@@ -1,0 +1,834 @@
+{
+ "directions": {
+  "floor_product": {
+   "n_instances": 12,
+   "exactness": [
+    {
+     "label": "floor_product/max/lo-7w8o0a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.027704566188249912,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo-7w8o0a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.027704566188249912,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/max/lo-3w6o1a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 2.009343088977326,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo-3w6o1a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 2.009343088977326,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/max/lo5w8o-1a3s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.031523993106538785,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo5w8o-1a3s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.031523993106538785,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/max/lo13w6o0a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.022740607445804046,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo13w6o0a2s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.022740607445804046,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/max/lo-25w8o1a3s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 2.014774507221904,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo-25w8o1a3s1",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 2.014774507221904,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/max/lo21w6o-1a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.027704566188249912,
+     "verdict": "EXACT (iff)"
+    },
+    {
+     "label": "floor_product/min/lo21w6o-1a1s0",
+     "exact_kind_claimed": "iff",
+     "n_mismatch_under": 0,
+     "n_mismatch_over": 0,
+     "mismatch_under_sample": [],
+     "mismatch_over_sample": [],
+     "coverage_failures": 0,
+     "coverage_fail_sample": [],
+     "real_spill_past_band": 0.027704566188249912,
+     "verdict": "EXACT (iff)"
+    }
+   ],
+   "exactness_summary": {
+    "under": 0,
+    "over": 0,
+    "coverage_failures": 0,
+    "max_spill": 2.014774507221904
+   },
+   "necessity": {
+    "2": {
+     "pieces": 80,
+     "redundant": 0,
+     "redundant_frac": 0.0,
+     "min_private_points": 4
+    },
+    "4": {
+     "pieces": 160,
+     "redundant": 0,
+     "redundant_frac": 0.0,
+     "min_private_points": 1
+    },
+    "8": {
+     "pieces": 320,
+     "redundant": 0,
+     "redundant_frac": 0.0,
+     "min_private_points": 1
+    },
+    "16": {
+     "pieces": 640,
+     "redundant": 0,
+     "redundant_frac": 0.0,
+     "min_private_points": 1
+    }
+   },
+   "flatness": {
+    "2": {
+     "leaves": 16,
+     "leaf_len_mean": 113.1,
+     "leaf_len_max": 117,
+     "outer_const_max": 62,
+     "outer_const_mean": 38.6,
+     "max_abs_coeff": 76
+    },
+    "4": {
+     "leaves": 32,
+     "leaf_len_mean": 115.0,
+     "leaf_len_max": 120,
+     "outer_const_max": 62,
+     "outer_const_mean": 39.5,
+     "max_abs_coeff": 508
+    },
+    "8": {
+     "leaves": 64,
+     "leaf_len_mean": 116.1,
+     "leaf_len_max": 124,
+     "outer_const_max": 62,
+     "outer_const_mean": 31.0,
+     "max_abs_coeff": 2029
+    },
+    "16": {
+     "leaves": 128,
+     "leaf_len_mean": 118.5,
+     "leaf_len_max": 125,
+     "outer_const_max": 62,
+     "outer_const_mean": 34.6,
+     "max_abs_coeff": 9409
+    },
+    "32": {
+     "leaves": 256,
+     "leaf_len_mean": 120.9,
+     "leaf_len_max": 129,
+     "outer_const_max": 62,
+     "outer_const_mean": 35.1,
+     "max_abs_coeff": 38308
+    }
+   },
+   "example_prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 26 - (⌊Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19)⌋ : ℝ)",
+   "example_witness": "by\n  intro x hl hr\n  have hb := mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)\n  have hu0 : (0:ℝ) ≤ x ^ 2 + 6 * x + 10 := by nlinarith [sq_nonneg (x + 3)]\n  have hw0 : (0:ℝ) ≤ 2 * x ^ 2 + 12 * x + 19 := by nlinarith [sq_nonneg (x + 3)]\n  have hu : x ^ 2 + 6 * x + 10 ≤ 17 := by nlinarith\n  have hw : 2 * x ^ 2 + 12 * x + 19 ≤ 33 := by nlinarith\n  have hp : (x ^ 2 + 6 * x + 10) * (2 * x ^ 2 + 12 * x + 19) < 576 := by nlinarith\n  have heq : Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19) = Real.sqrt ((x ^ 2 + 6 * x + 10) * (2 * x ^ 2 + 12 * x + 19)) :=\n    (Real.sqrt_mul hu0 (2 * x ^ 2 + 12 * x + 19)).symm\n  have hs : Real.sqrt ((x ^ 2 + 6 * x + 10) * (2 * x ^ 2 + 12 * x + 19)) < 24 := (Real.sqrt_lt' (by norm_num)).mpr (by nlinarith)\n  have hlt : Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19) < 24 := by rw [heq]; exact hs\n  have hf : ⌊Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19)⌋ < (24:ℤ) :=\n    Int.floor_lt.mpr (by push_cast; linarith)\n  have hf2 : (⌊Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19)⌋ : ℝ) ≤ 23 := by\n    exact_mod_cast Int.lt_add_one_iff.mp hf\n  linarith",
+   "lean": {
+    "floor_product/max/lo-7w8o0a1s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 h₁ : 0 ≤ √(x ^ 2 + 6 * x + 10) h₂ : √(x ^ 2 + 6 * x + 10) ≤ 23 a✝ : 26 - ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ < ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hfl : ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ ≤ √(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19) h1 : √(x ^ 2 + 6",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hu : 0 ≤ x ^ 2 + 6 * x + 10 hw : 0 ≤ 2 * x ^ 2 + 12 * x + 19 a✝ : 23 + 1 ≤ √(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19) ⊢ F",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hu : 0 ≤ x ^ 2 + 6 * x + 10 hw : 0 ≤ 2 * x ^ 2 + 12 * x + 19 a✝ : 26 - ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ < 3 "
+     }
+    },
+    "floor_product/min/lo-7w8o0a1s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 h₁ : 0 ≤ √(x ^ 2 + 6 * x + 10) h₂ : √(x ^ 2 + 6 * x + 10) ≤ 23 a✝ : 3 < ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ - 2",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hfl : ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ ≤ √(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19) h1 : √(x ^ 2 + 6",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hu : 0 ≤ x ^ 2 + 6 * x + 10 hw : 0 ≤ 2 * x ^ 2 + 12 * x + 19 a✝ : 23 + 1 ≤ √(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19) ⊢ F",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -7 ≤ x hx2 : x ≤ 1 hu : 0 ≤ x ^ 2 + 6 * x + 10 hw : 0 ≤ 2 * x ^ 2 + 12 * x + 19 a✝ : 3 < ↑⌊√(x ^ 2 + 6 * x + 10) * √(2 * x ^ 2 + 12 * x + 19)⌋ - 20 "
+     }
+    },
+    "floor_product/max/lo-3w6o1a2s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 h₁ : 0 ≤ √(2 * x ^ 2 - 4 * x + 4) h₂ : √(2 * x ^ 2 - 4 * x + 4) ≤ 40 a✝ : 43 - ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x +",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hfl : ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4)⌋ ≤ √(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4) h1 : √(2 * x ^",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hu : 0 ≤ 2 * x ^ 2 - 4 * x + 4 hw : 0 ≤ 3 * x ^ 2 - 6 * x + 4 a✝ : 40 + 1 ≤ √(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4) ⊢",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hu : 0 ≤ 2 * x ^ 2 - 4 * x + 4 hw : 0 ≤ 3 * x ^ 2 - 6 * x + 4 a✝ : 43 - ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4)⌋ < "
+     }
+    },
+    "floor_product/min/lo-3w6o1a2s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 h₁ : 0 ≤ √(2 * x ^ 2 - 4 * x + 4) h₂ : √(2 * x ^ 2 - 4 * x + 4) ≤ 40 a✝ : 3 < ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hfl : ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4)⌋ ≤ √(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4) h1 : √(2 * x ^",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hu : 0 ≤ 2 * x ^ 2 - 4 * x + 4 hw : 0 ≤ 3 * x ^ 2 - 6 * x + 4 a✝ : 40 + 1 ≤ √(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4) ⊢",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -3 ≤ x hx2 : x ≤ 3 hu : 0 ≤ 2 * x ^ 2 - 4 * x + 4 hw : 0 ≤ 3 * x ^ 2 - 6 * x + 4 a✝ : 3 < ↑⌊√(2 * x ^ 2 - 4 * x + 4) * √(3 * x ^ 2 - 6 * x + 4)⌋ - 3"
+     }
+    },
+    "floor_product/max/lo5w8o-1a3s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 h₁ : 0 ≤ √(3 * x ^ 2 - 48 * x + 193) h₂ : √(3 * x ^ 2 - 48 * x + 193) ≤ 44 a✝ : 47 - ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hfl : ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)⌋ ≤ √(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65) h1 : √(3 * x",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hu : 0 ≤ 3 * x ^ 2 - 48 * x + 193 hw : 0 ≤ x ^ 2 - 16 * x + 65 a✝ : 44 + 1 ≤ √(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hu : 0 ≤ 3 * x ^ 2 - 48 * x + 193 hw : 0 ≤ x ^ 2 - 16 * x + 65 a✝ : 47 - ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)⌋ "
+     }
+    },
+    "floor_product/min/lo5w8o-1a3s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 h₁ : 0 ≤ √(3 * x ^ 2 - 48 * x + 193) h₂ : √(3 * x ^ 2 - 48 * x + 193) ≤ 44 a✝ : 3 < ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hfl : ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)⌋ ≤ √(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65) h1 : √(3 * x",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hu : 0 ≤ 3 * x ^ 2 - 48 * x + 193 hw : 0 ≤ x ^ 2 - 16 * x + 65 a✝ : 44 + 1 ≤ √(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 5 ≤ x hx2 : x ≤ 13 hu : 0 ≤ 3 * x ^ 2 - 48 * x + 193 hw : 0 ≤ x ^ 2 - 16 * x + 65 a✝ : 3 < ↑⌊√(3 * x ^ 2 - 48 * x + 193) * √(x ^ 2 - 16 * x + 65)⌋ -"
+     }
+    },
+    "floor_product/max/lo13w6o0a2s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 h₁ : 0 ≤ √(2 * x ^ 2 - 64 * x + 514) h₂ : √(2 * x ^ 2 - 64 * x + 514) ≤ 23 a✝ : 26 - ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hfl :   ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 * x + 769)⌋ ≤     √(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 * x + ",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hu : 0 ≤ 2 * x ^ 2 - 64 * x + 514 hw : 0 ≤ 3 * x ^ 2 - 96 * x + 769 a✝ : 23 + 1 ≤ √(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hu : 0 ≤ 2 * x ^ 2 - 64 * x + 514 hw : 0 ≤ 3 * x ^ 2 - 96 * x + 769 a✝ : 26 - ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 *"
+     }
+    },
+    "floor_product/min/lo13w6o0a2s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 h₁ : 0 ≤ √(2 * x ^ 2 - 64 * x + 514) h₂ : √(2 * x ^ 2 - 64 * x + 514) ≤ 23 a✝ : 3 < ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hfl :   ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 * x + 769)⌋ ≤     √(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 * x + ",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hu : 0 ≤ 2 * x ^ 2 - 64 * x + 514 hw : 0 ≤ 3 * x ^ 2 - 96 * x + 769 a✝ : 23 + 1 ≤ √(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 13 ≤ x hx2 : x ≤ 19 hu : 0 ≤ 2 * x ^ 2 - 64 * x + 514 hw : 0 ≤ 3 * x ^ 2 - 96 * x + 769 a✝ : 3 < ↑⌊√(2 * x ^ 2 - 64 * x + 514) * √(3 * x ^ 2 - 96 * "
+     }
+    },
+    "floor_product/max/lo-25w8o1a3s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 h₁ : 0 ≤ √(3 * x ^ 2 + 120 * x + 1202) h₂ : √(3 * x ^ 2 + 120 * x + 1202) ≤ 44 a✝ : 47 - ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hfl :   ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x + 401)⌋ ≤ √(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x + 401) h",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hu : 0 ≤ 3 * x ^ 2 + 120 * x + 1202 hw : 0 ≤ x ^ 2 + 40 * x + 401 a✝ : 44 + 1 ≤ √(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 *",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hu : 0 ≤ 3 * x ^ 2 + 120 * x + 1202 hw : 0 ≤ x ^ 2 + 40 * x + 401 a✝ : 47 - ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x"
+     }
+    },
+    "floor_product/min/lo-25w8o1a3s1": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 h₁ : 0 ≤ √(3 * x ^ 2 + 120 * x + 1202) h₂ : √(3 * x ^ 2 + 120 * x + 1202) ≤ 44 a✝ : 3 < ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hfl :   ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x + 401)⌋ ≤ √(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x + 401) h",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hu : 0 ≤ 3 * x ^ 2 + 120 * x + 1202 hw : 0 ≤ x ^ 2 + 40 * x + 401 a✝ : 44 + 1 ≤ √(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 *",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : -25 ≤ x hx2 : x ≤ -17 hu : 0 ≤ 3 * x ^ 2 + 120 * x + 1202 hw : 0 ≤ x ^ 2 + 40 * x + 401 a✝ : 3 < ↑⌊√(3 * x ^ 2 + 120 * x + 1202) * √(x ^ 2 + 40 * x "
+     }
+    },
+    "floor_product/max/lo21w6o-1a1s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 h₁ : 0 ≤ √(x ^ 2 - 46 * x + 530) h₂ : √(x ^ 2 - 46 * x + 530) ≤ 23 a✝ : 26 - ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + ",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hfl : ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 1059)⌋ ≤ √(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 1059) h1 : √(",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hu : 0 ≤ x ^ 2 - 46 * x + 530 hw : 0 ≤ 2 * x ^ 2 - 92 * x + 1059 a✝ : 23 + 1 ≤ √(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + ",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hu : 0 ≤ x ^ 2 - 46 * x + 530 hw : 0 ≤ 2 * x ^ 2 - 92 * x + 1059 a✝ : 26 - ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 10"
+     }
+    },
+    "floor_product/min/lo21w6o-1a1s0": {
+     "battery_kills": [],
+     "witness": true,
+     "idioms": {
+      "I0_verbatim": false,
+      "I1_floor_le_two_bounds": false,
+      "I2_floor_le_iff": false,
+      "I3_sq_sqrt": false
+     },
+     "alt_witnesses": {},
+     "witness_err": "",
+     "idiom_errs": {
+      "I0_verbatim": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 h₁ : 0 ≤ √(x ^ 2 - 46 * x + 530) h₂ : √(x ^ 2 - 46 * x + 530) ≤ 23 a✝ : 3 < ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 1",
+      "I1_floor_le_two_bounds": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hfl : ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 1059)⌋ ≤ √(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 1059) h1 : √(",
+      "I2_floor_le_iff": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hu : 0 ≤ x ^ 2 - 46 * x + 530 hw : 0 ≤ 2 * x ^ 2 - 92 * x + 1059 a✝ : 23 + 1 ≤ √(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + ",
+      "I3_sq_sqrt": "linarith failed to find a contradiction x : ℝ hx1 : 21 ≤ x hx2 : x ≤ 27 hu : 0 ≤ x ^ 2 - 46 * x + 530 hw : 0 ≤ 2 * x ^ 2 - 92 * x + 1059 a✝ : 3 < ↑⌊√(x ^ 2 - 46 * x + 530) * √(2 * x ^ 2 - 92 * x + 105"
+     }
+    }
+   },
+   "witness_ok": 12,
+   "battery_survivors": 12,
+   "battery_kill_tactics": [],
+   "idiom_closed": {
+    "I0_verbatim": 0,
+    "I1_floor_le_two_bounds": 0,
+    "I2_floor_le_iff": 0,
+    "I3_sq_sqrt": 0
+   },
+   "idiom_any_closed": 0
+  }
+ },
+ "skipped_specs": [],
+ "control_prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2 * x ^ 2 - 12 * x + 17",
+ "goal_props": {
+  "floor_product/max": "∀ x : ℝ, -14 ≤ x → x ≤ 14 → 3 ≤ max (max (47 - (⌊Real.sqrt (3 * x ^ 2 + 66 * x + 364) * Real.sqrt (x ^ 2 + 22 * x + 122)⌋ : ℝ)) (19 - (⌊Real.sqrt (3 * x ^ 2 + 18 * x + 28) * Real.sqrt (x ^ 2 + 6 * x + 10)⌋ : ℝ))) (max (39 - (⌊Real.sqrt (x ^ 2 - 10 * x + 26) * Real.sqrt (2 * x ^ 2 - 20 * x + 51)⌋ : ℝ)) (43 - (⌊Real.sqrt (2 * x ^ 2 - 40 * x + 202) * Real.sqrt (3 * x ^ 2 - 60 * x + 301)⌋ : ℝ)))",
+  "floor_product/min": "∀ x : ℝ, -14 ≤ x → x ≤ 14 → min (min ((⌊Real.sqrt (3 * x ^ 2 + 66 * x + 364) * Real.sqrt (x ^ 2 + 22 * x + 122)⌋ : ℝ) - 41) ((⌊Real.sqrt (3 * x ^ 2 + 18 * x + 28) * Real.sqrt (x ^ 2 + 6 * x + 10)⌋ : ℝ) - 13)) (min ((⌊Real.sqrt (x ^ 2 - 10 * x + 26) * Real.sqrt (2 * x ^ 2 - 20 * x + 51)⌋ : ℝ) - 33) ((⌊Real.sqrt (2 * x ^ 2 - 40 * x + 202) * Real.sqrt (3 * x ^ 2 - 60 * x + 301)⌋ : ℝ) - 37)) ≤ 3"
+ },
+ "control": {
+  "killers": [
+   "by intros; nlinarith"
+  ],
+  "expected": "by intros; nlinarith"
+ },
+ "goal_v0": {
+  "floor_product/max": {
+   "killers": [],
+   "elaborates": true
+  },
+  "floor_product/min": {
+   "killers": [],
+   "elaborates": true
+  }
+ },
+ "calibration": {
+  "bank_leaves_total": 68,
+  "parsed": 68,
+  "unparsed": 0,
+  "idiom_closed_any": 68,
+  "idiom_closed_any_frac": 1.0,
+  "per_probe_closed": {
+   "I0_verbatim": 68,
+   "I1_sq_sqrt": 68,
+   "I2_sqrt_le_iff": 68
+  },
+  "measured_pass8_mean": 0.923,
+  "per_leaf": {
+   "bank0": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank1": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank2": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank3": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank4": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank5": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank6": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank7": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank8": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank9": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank10": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank11": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank12": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank13": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank14": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank15": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank16": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank17": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank18": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank19": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank20": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank21": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank22": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank23": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank24": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank25": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank26": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank27": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank28": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank29": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank30": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank31": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank32": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank33": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank34": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank35": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank36": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank37": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank38": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank39": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank40": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank41": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank42": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank43": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank44": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank45": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank46": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank47": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank48": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank49": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank50": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank51": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank52": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank53": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank54": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank55": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank56": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank57": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank58": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank59": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank60": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank61": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank62": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank63": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank64": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank65": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank66": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   },
+   "bank67": {
+    "I0_verbatim": true,
+    "I1_sq_sqrt": true,
+    "I2_sqrt_le_iff": true
+   }
+  }
+ }
+}
