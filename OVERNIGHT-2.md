@@ -95,3 +95,56 @@ call the strategist has caught before:
   Also fixed: `gen_families.py` wrote `k{k}.jsonl` with no preset component while `append_row`
   appends, so materializing a second rung at the same k would have silently interleaved two
   distributions into one file that every consumer reads as one. Default-preset paths unchanged.
+- 04:10 — **Pod A done and TERMINATED. Invoice $6.51** (wallet $38.45 → $31.93). 254 statements,
+  0 errors. Spent $6.52 of the $12 cap; $5.48 left above the $26.45 floor.
+
+  **My estimate was $3.50; the invoice is $6.51 — 86% low, after I had already added margin for
+  setup specifically because the estimates run low.** Cause identified: the pod was up **2h12m**,
+  not the ~80 min projected. The install alone took 13 min, and the measurement ran ~1h45m rather
+  than the ~35 min the 430–480 rows/hr figure implies. The k=32 rows are the reason — they carry
+  4-decade coefficients and much longer statements, so both generation and Lean verification are
+  several times slower per row than the k≤8 baseline that throughput number came from. **Lesson for
+  the runbook: throughput measured at k≤8 does not transfer to a k-grid that includes 32.**
+
+  **RESULT: no rung reaches the corridor, and the reason is a finding.** Full write-up in
+  `research/case-tree-hardening.md` §12. Headlines:
+  - R0c: no drift (paired, t=+0.48). The $0.11 replication cell did its job.
+  - Means: v2 0.847 | r2_prod 0.219 | r3_floor 0.169 | r2_sum 0.091 | r4_floorprod 0.025 |
+    **r1_recip 0.000**. No rung passes R2.
+  - **The corridor sits in a gap.** Nothing between 0.22 and 0.85. Difficulty w.r.t. this prover is
+    a step function of idiom match, not a continuum. `r1_recip` — projected 0.62, the highest of any
+    candidate — measured 0 of 312 attempts, diagnosed as a real capability result
+    (elaborates=True, n_attempts=8, status leaf_failed on all 39).
+  - **R3′ PASSES: coefficient magnitude is difficulty-neutral over four decades** (+0.0053/decade,
+    z=+0.55, support 0.60–4.59). Staging k=32 is what bought this. It re-opens the quartic rungs
+    (§3.8's exclusion was over-cautious) and restates the objection to bridge_chain's 3^k multiplier
+    as "unmeasured at 10¹⁵" rather than "known to break flatness".
+  - **R5 independently disqualifies the ladder**: no candidate meets DIRECTION §5.5(b) at any k>2
+    even at 8 attempts/leaf. Added last night as a *reporting* requirement; it turned out to be a
+    gate, and without it `r2_prod` would have shipped.
+  - Projections: MAE 0.253 (registered 0.15–0.20), **all six errors negative** — systematic
+    optimism, not noise. Rank order refuted.
+
+  Registered escalation fires: **FAMILIES.md direction 1 (bank-drawn leaves)**. Phase 1 does not
+  close for case_tree on this ladder.
+
+- 04:15 — bridge_chain growth-law workflow (task #18) running locally, $0. Two candidate tracks →
+  design → two adversarial lenses. Its brief was written before R3′ landed, so **R3′'s flat result
+  is new information for it** — noted here for the morning; the design should be re-read against it
+  rather than taken as final.
+
+## MORNING DECISIONS FOR THE USER (do not need waking, but these are yours)
+
+1. **Direction.** The synthetic-schema route is measured out for case_tree: the prover's competence
+   is idiom-shaped and the corridor is in the gap. The escalation is bank-drawn leaves, which needs
+   the wide sweep (#12, ~$45 — and note my estimates run ~50–90% low, so budget accordingly). That
+   exceeds the remaining balance ($31.93) and was explicitly out of scope for tonight.
+2. **The one cheap synthetic option R3′ re-opened**: reinstate `H2_quartic` (§3.8), which carried
+   the highest projection of anything and was excluded on a flatness fear the data has now
+   contradicted. One pod, ~$4–7 at realistic rates.
+3. **#22 attempt budget** — R5 makes this urgent rather than theoretical. No corridor-target family
+   can satisfy DIRECTION §5.5(b) at k>2 under the shipped `Budgets`. Raising it costs Phase-2/3 GPU
+   linearly and touches a frozen core contract.
+4. **#21 maxHeartbeats** — still open, still blocks the k=128 tier and DIRECTION §5.4(e).
+5. Two contract reinterpretations from last night still want reviewer eyes: R3→R3′ and the
+   leaf-disjointness leaf-level reading.
