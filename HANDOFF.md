@@ -17,7 +17,7 @@ deep notes (papers, families, retune levers, verifiers API).
 | Phase | State |
 |---|---|
 | **0** | **CLOSED** — all gates. Repo public (MIT), Hub env `eumemic/rlmath-decomp` v0.1.2 PUBLIC. Bank: 4,102 rows / 401 band (299 train / 102 eval) / 0 errors. |
-| **1** | **OPEN on case_tree only.** bridge_chain DONE at preset `e3_lowdeg` (measured 0.429 vs 0.404 projected; band-fit 0.83; 15/15 full-battery valid). case_tree measures 0.85/0.97/0.92 — **above** the 0.9 ceiling, i.e. too easy for DSV2. |
+| **1** | **OPEN on BOTH families** (corrected 2026-08-12). bridge_chain at `e3_lowdeg` passes R1 (0.429 vs 0.404 projected) and R2 (band-fit 0.83) but **FAILS R3, the flatness gate** — per-k means 0.575/0.463/0.250, spread 0.325 = 6.5× the ±0.05 tolerance, and all five presets fail the same way. R3 was never evaluated at the session close; the earlier "DONE" was premature. Mechanism identified and structural: `research/retune-notes.md` §8. case_tree measures 0.923 — **above** the 0.9 ceiling, too easy, and the cause is idiom recall not calibration (`research/case-tree-forensics.md`). |
 | **2** | Instrument validated; **cold-start question answered** — few-shot (rung 1.5) flips qwen3-30b from 0/5 to 5/5 stage-1-passing decompositions. Full study not yet run. |
 | **3** | Design only. Not started. |
 
@@ -81,32 +81,44 @@ attempts/hr. Fresh-pod setup ≈20 min (models + Mathlib cache).
 
 ## 3. Next moves, in order
 
-1. **case_tree hardening ladder** (local, $0 until the confirm measurement). Mirror the bridge
-   playbook exactly, since it worked: mine `data/bank/family_leaf_calibration.jsonl` for which
-   knobs move difficulty → register 3–4 *harder* presets with projections **before** measuring →
-   local battery gate (with planted control) → one GPU pass (~$2) → pick by the rule in
-   `research/retune-notes.md` → regenerate + revalidate → **Phase 1 closes**.
-   The tell for why it's too easy: every case_tree leaf uses the same
-   `nlinarith [mul_nonneg …]` witness template.
-2. **Re-fit the difficulty-lever model** on the 150 fresh `data/bank/retune_measure.jsonl` rows
-   (currently fitted on 58, validated in-sample). Nearly free, improves every future preset
-   projection. Retune agent called this the next session's first move.
-3. **Confirm bridge's within-chain gradient at e3** (flag §4.3) during that same GPU pass.
-4. **Phase-2 full study** once a leaf endpoint exists: few-shot arms as default (rung 1.5 is
+*Reordered 2026-08-12: Phase 1 is open on **both** families and bridge_chain's defect is the more
+serious of the two, because it is the flatness property the whole k-axis rests on.*
+
+1. **bridge_chain flatness fix (#18) — highest value, local, $0 until the confirm pass.**
+   R3 fails for all five presets; the growth law is the cause (`research/retune-notes.md` §8).
+   Stage a bounded-degree schema (candidate: growth by integer multiplier, `M_i = 3^i · x^p y^q z^r`)
+   → local battery gate with planted control → register projections → GPU confirm → apply R0–R4
+   **including R3 this time**. Note the process lesson: R1/R2 were applied at the close and R3 was
+   silently skipped, which is how a failing family got written up as DONE.
+2. **case_tree hardening ladder (#16)** — in flight as a workflow. The playbook does **not** transfer
+   from bridge_chain: there is no lever inside the knob support (every marginal 0.87–0.99; 50/68
+   leaves at a perfect 8/8), because 68/68 successful proofs run one memorized idiom
+   (`Real.sqrt_le_iff` + `nlinarith [sq_nonneg …]`). So this is a *schema* ladder, and the
+   coverage/necessity soundness asymmetry has to be re-derived per rung.
+   See `research/case-tree-forensics.md`, `research/case-tree-hardening.md`.
+3. ~~Re-fit the difficulty-lever model~~ **DONE** — `research/lever-model-refit.md`. Levers replicate
+   out of sample; §5's projections scored MAE 0.044, r=0.83, and picked the right preset under R1.
+4. ~~Confirm bridge's within-chain gradient~~ **DONE — confirmed**, see flag 1 and item 1 above.
+5. **Phase-2 full study** once a leaf endpoint exists: few-shot arms as default (rung 1.5 is
    settled), roots per the roster, k-grid across both families, `--max-usd` per cell.
-5. **Wide sweep (#12, ~$45)** the moment credits land — machinery proven, `--repair` first to
+6. **Wide sweep (#12, ~$45)** the moment credits land — machinery proven, `--repair` first to
    re-run the 222 quarantined error rows.
 
 ---
 
-## 4. Unresolved flags (from build agents; none blocking, all real)
+## 4. Unresolved flags (from build agents; flag 1 is now BLOCKING)
 
 **Science-relevant**
-1. **Within-chain flatness risk (highest value).** Measured leaf pass rate falls with left
-   exponent sum (0.233 → 0.114 → 0.054 for es ≤4 / 5–7 / ≥8), and exponent sum grows with chain
-   *position* by construction. So per-node difficulty may not be flat *within* a chain even when
-   flat *across* k. Confirm at e3; if real, it's a schema fix (bounded exponent growth), and
-   DIRECTION §5.4(a) should state both flatness axes.
+1. ~~Within-chain flatness risk (highest value).~~ **CONFIRMED 2026-08-12 — now a blocker, not a
+   risk.** The gradient is real (es coef −0.0353/unit, SE 0.0079, **z = −4.48** controlling for
+   preset) and exponent sum grows linearly with chain position by construction (e3_lowdeg's max es
+   *equals k*), so chain-aggregate difficulty falls with k and **R3 fails for all five presets**.
+   The per-position draw *is* flat in k (structural check, n=300 per k, no measurement), so the fix
+   is bounded degree growth rather than a resampler change — leading candidate: carry growth in an
+   integer multiplier (`M_i = 3^i · x^p y^q z^r`) so degree, and hence the measured blocker `1 ≤ M`,
+   stays constant along the chain. Verdict + tables + mechanism: `research/retune-notes.md` §8;
+   statistics: `research/lever-model-refit.md`. DIRECTION §5.4(a) still needs its second flatness
+   axis (draft text in the refit note §4).
 2. **Opus roster cell never ran** (budget deadline) — the ceiling datapoint is missing, so the
    rung-1.5 verdict is marked provisional for that root only. The **direct**-arm opus cell needs
    no leaf and costs ~$0.50 over Prime Inference; the decomp cell needs a leaf endpoint.
@@ -117,8 +129,19 @@ attempts/hr. Fresh-pod setup ≈20 min (models + Mathlib cache).
    leaf-disjointness contract closes.
 
 **Engineering**
-5. `results/` is **not** in `.gitignore` and zero-shot rows store full root completions — decide
-   track-vs-ignore before a large sweep (tens of MB of model text).
+5. ~~`results/` is not in `.gitignore` and zero-shot rows store full root completions — decide
+   track-vs-ignore before a large sweep.~~ **RESOLVED 2026-08-12: keep tracking, unsplit.**
+   Measured on the 56 existing rows: 74% of row bytes is the `completion` field, 4,435 B/row raw —
+   but model text is highly repetitive and **packs 8.6×** (514 B/row). A full Phase-2 study
+   (6 roots × 2 arms × 2 families × 4 k × 30 problems × 2 few-shot variants ≈ 5,760 rows) is
+   therefore **~25 MB of working tree but only ~3 MB packed**; a second pass doubles it to ~6 MB.
+   That does not justify splitting completions into a sibling `.raw.jsonl`, which would add a
+   two-file sync invariant to a script that already carries resume + `--repair` semantics — real
+   complexity against a non-problem. `roster_analyze.py` reads `usage.completion_tokens`, never the
+   text, so nothing downstream depends on the choice either way.
+   **Re-check trigger:** completions are long-tailed by design (`run_zeroshot.py:422`) and a CoT root
+   at k=32 can emit ~10× the tokens. Re-measure if `git count-objects -vH` attributes more than
+   ~25 MB packed to `results/`, or before the beyond-window tier (§5.4e) runs.
 6. `--max-usd` caps *successful* spend: a row that errors records no usage, so a repeatedly-failing
    cell can exceed the cap. Watch the provider dashboard on long runs.
 7. Direct-arm kernel failures are recorded as `leaf_failed` (the harness's flat-arm baseline names

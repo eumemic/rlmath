@@ -375,3 +375,88 @@ Phase 1 on the number.
    The lever table in §2 is therefore fitted on bridge_chain only, and cells hold 3–8
    leaves each. Re-fitting it on the retune run's 150 rows is nearly free and should be the
    first thing the next session does with the data.
+
+---
+
+## 8. R3 verdict (2026-08-12, post-hoc) — **e3_lowdeg FAILS the flatness gate, and so do all five presets**
+
+§6 specified four decision rules. At the session close, R1 (level nearest 0.45) and R2 (band fit
+≥0.60, zeros ≤0.20) were evaluated and e3_lowdeg was selected on them. **R3 — "per-k means within
+±0.05 of each other" — was never evaluated**, and `HANDOFF.md`'s "bridge_chain DONE at preset
+`e3_lowdeg`" was written without it. That is the gap; this section closes it.
+
+Measured on `data/bank/retune_measure.jsonl` (the same 150 rows R1/R2 used):
+
+| preset | mean | band-fit | zero | k=2 | k=4 | k=8 | spread | R3 (±0.05) |
+|---|---|---|---|---|---|---|---|---|
+| v2 | 0.196 | 0.27 | 0.57 | 0.237 | 0.113 | 0.237 | 0.125 | **FAIL** |
+| e1_sqrt | 0.283 | 0.57 | 0.10 | 0.350 | 0.338 | 0.163 | 0.187 | **FAIL** |
+| e2_flatstep | 0.267 | 0.60 | 0.20 | 0.325 | 0.325 | 0.150 | 0.175 | **FAIL** |
+| **e3_lowdeg** | **0.429** | **0.83** | **0.07** | **0.575** | **0.463** | **0.250** | **0.325** | **FAIL (6.5×)** |
+| e4_slack | 0.312 | 0.60 | 0.17 | 0.425 | 0.325 | 0.188 | 0.237 | **FAIL** |
+
+e3_lowdeg's k=2-vs-k=8 difference is ~3σ on the conservative leaf-clustered SE
+(`research/lever-model-refit.md`). **R3 fails for every preset, in the same direction** (k=8
+lowest), so this is not a property of the chosen rung — it is a property of the schema. R1 and R2
+remain correct and e3_lowdeg is still the best rung; it is simply not shippable yet.
+
+### The mechanism — structural, not statistical
+
+Two facts compose:
+
+1. **Leaf difficulty falls with left exponent sum.** Pooled over all 150 rows:
+   es=1 → 0.475, 2 → 0.463, 3 → 0.414, 4 → 0.287, 5 → 0.188, 6–8 → ~0.147, 9+ → 0.106.
+   Controlling for preset: coef −0.0353 per es unit, SE 0.0079, **z = −4.48**.
+2. **Exponent sum grows linearly with chain position by construction**, because `M' ≥ 3^δ M` with
+   `M` a bare monomial can only be satisfied by raising a degree. Generated locally at n=300 per k,
+   no measurement needed:
+
+   | preset | | k=2 | k=4 | k=8 | k=16 | k=32 |
+   |---|---|---|---|---|---|---|
+   | v2 | mean es over leaves | 3.77 | 5.30 | 8.13 | 14.32 | 26.09 |
+   | | max es | 4.54 | 7.61 | 13.31 | 25.59 | 49.32 |
+   | e3_lowdeg | mean es over leaves | 1.50 | 2.50 | 4.50 | 8.50 | 16.50 |
+   | | max es | 2.00 | 4.00 | 8.00 | 16.00 | 32.00 |
+
+   e3_lowdeg's max es **equals k exactly** (δ=1, start degree 1, +1 per step).
+
+A distribution that shifts right with k, crossed with a difficulty that falls in that variable,
+forces the chain mean down as k rises. The per-k means are that arithmetic.
+
+### What is NOT wrong — the per-position draw is flat in k
+
+The position-1 leaf's knob and degree distribution is **structurally identical at every k**
+(n=300 per k, free, no Lean):
+
+| preset | | k=2 | k=4 | k=8 | k=16 | k=32 |
+|---|---|---|---|---|---|---|
+| v2 | c / d / o at position 1 | 7.18/6.21/6.22 | 7.26/6.46/6.57 | 7.20/6.27/6.22 | 7.35/5.93/6.34 | 7.12/6.38/6.21 |
+| | es at position 1 | 3.00 | 3.00 | 3.00 | 3.00 | 3.00 |
+| e3_lowdeg | es at position 1 | 1.00 | 1.00 | 1.00 | 1.00 | 1.00 |
+
+So `FAMILIES.md`'s per-position flatness claim holds; what fails is flatness of the **chain
+aggregate**, which is the quantity the transfer plot actually integrates over. (An earlier reading
+of these data as a per-position k-dependence was drawn from an n=2 cell and does not survive.)
+
+**How much of the k effect does es explain?** Direct-standardising each k to the k=2 es
+distribution: k=2 0.383 → 0.383, k=4 0.312 → **0.394**, k=8 0.198 → **0.286**. es removes the k=4
+gap entirely and about half the k=8 gap; the ~0.10 residual at k=8 is not separable from noise at
+n=13–37 per cell. Treat es as the dominant, confirmed mediator and the residual as open.
+
+### Consequence
+
+**DIRECTION §5.4(a) needs two flatness axes** — flat *across* k (per-position draw: passes) and flat
+*within* a chain (position gradient: fails). Draft replacement text is in
+`research/lever-model-refit.md` §4. Extrapolating e3_lowdeg's slope puts k=16 near 0.16 — below the
+corridor floor — so the k-grid the experiment needs is exactly where this breaks worst.
+
+**The fix is schema, not preset.** Growth must stop being carried by the exponent. The candidate
+worth staging first is **growth by integer multiple**: `M_i = 3^i · x^p y^q z^r` with exponents
+fixed, which satisfies `M' ≥ 3^δ M` at δ=1 while holding degree — and therefore `1 ≤ M`, the
+measured blocker — constant along the chain. It costs one witness line and a full re-measure (a
+large numeral inside `√` may change what `norm_num`/`positivity` do, so the local battery gate must
+be re-run). Alternatives: cap es and let the offset carry the drop; or bank-drawn leaves
+(`FAMILIES.md` direction 1), which sidesteps the generator's growth law entirely.
+
+**Until then bridge_chain is NOT Phase-1 complete.** R1/R2 pass; R3 fails; the family needs the
+schema fix and a re-measure.
