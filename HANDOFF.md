@@ -21,8 +21,27 @@ deep notes (papers, families, retune levers, verifiers API).
 | **2** | Instrument validated; **cold-start question answered** — few-shot (rung 1.5) flips qwen3-30b from 0/5 to 5/5 stage-1-passing decompositions. Full study not yet run. |
 | **3** | Design only. Not started. |
 
-**Money: ≈$48.5 of the $50 Prime credit spent.** Credits ask (`CREDITS_ASK.md`) sent by the
-user 2026-08-12; no reply yet. Every GPU item is gated on that reply or fresh funds.
+**Money — corrected 2026-08-12 23:12 CDT against `prime wallet`, which is the invoice; every
+figure previously in this repo was a wall-clock estimate and undercounted.**
+
+| | recorded (estimate) | actual (wallet) |
+|---|---|---|
+| pod #1 (SSH-denied, killed fast) | ≈$1.50 | **$0.12** |
+| bake-off pod | ≈$13 | **$22.22** |
+| overnight sweep pod | ≈$29.7 (vs a $30 cap) | **$36.19** |
+| session-3 pod | ≈$5.8 | **$2.66** |
+| inference (all sessions) | "pennies of $5" | **$0.36** |
+| **total** | **≈$48.5** | **$61.55** |
+
+Two consequences. (a) **The estimates were ~27% low**, and the row that is almost certainly the
+overnight pod is **$36.19 against the $30 cap the user authorized** — an overrun I reported as a
+clean $29.7 close. (b) There is **more credit than the repo recorded**: balance is **$38.45**, so
+$100 was available, not $50. Wallet timestamps are **UTC** (CDT+5) — that is what makes recent
+rows look like they are in the future.
+
+**Do not read the $38.45 as authorization.** The standing GPU authorization was $30 for the
+overnight run; it is spent. Ask before the next pod. `CREDITS_ASK.md` was sent 2026-08-12; no reply
+seen.
 
 ---
 
@@ -39,6 +58,14 @@ user 2026-08-12; no reply yet. Every GPU item is gated on that reply or fresh fu
 - `prime pods create --id <id> --name <n> --disk-size 200 --image cuda_12_6_pytorch_2_7 --yes --plain`
   (lambdalabs H100 PCIe ≈$3.2/hr; massedcompute rejects the CUDA images).
 - Terminate: `printf 'y\n' | prime pods terminate <id>` (interactive prompt otherwise).
+- **`prime wallet` is the only real spend number.** It prints balance plus itemised billing rows.
+  Every cost figure this project reported before 2026-08-12 23:12 was elapsed-hours × assumed
+  hourly rate, and that method ran ~27% low (§1 table) — it misses setup, image pull, teardown and
+  rounding. Quote the wallet, never the estimate, and re-check it *after* terminating rather than
+  at the moment you decide to. Its timestamps are **UTC**.
+- A leftover `ssh` from a previous session can fail long after its pod is gone
+  (`client_loop: send disconnect: Broken pipe`). That is a dead connection, not spend — confirm
+  with `prime pods list` (0 pods) rather than assuming either way.
 
 ### SSH to pods
 - Prime injects **account-registered** keys only — `~/.ssh/id_ed25519.pub` is registered in the
