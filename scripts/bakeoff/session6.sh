@@ -57,13 +57,21 @@ cell() {   # cell <k> <arm> <root> <price_in> <price_out> <max_usd>
   [ "$rc" != "0" ] && { echo "   CELL FAILED rc=$rc" >> "$LOG"; FAILED+=("$tag"); }
 }
 
+# ORDER MATTERS FOR A BUDGET STOP-OUT, and the obvious ordering is the wrong one.
+# Interleaving roots within each k means an early kill leaves BOTH roots missing their largest
+# k — i.e. no complete slope for anyone, which is the one thing this run must not fail to
+# produce. Roots OUTER, k inner: qwen (the Phase-3 RL target, and the primary result) finishes
+# its whole k-grid before haiku starts, so the worst case is "a complete qwen slope and no
+# haiku" rather than "two truncated slopes".
 # decomp before direct at each k: decomp is the measurement, direct is its paired baseline.
-# k ascending so a budget stop-out loses the largest k rather than the whole grid.
-for k in 2 4 8; do
-  cell "$k" decomp "qwen/qwen3-30b-a3b-instruct-2507" 0.2 0.8 0.40
-  cell "$k" direct "qwen/qwen3-30b-a3b-instruct-2507" 0.2 0.8 0.40
-  cell "$k" decomp "anthropic/claude-haiku-4.5" 1 5 0.50
-  cell "$k" direct "anthropic/claude-haiku-4.5" 1 5 0.50
+for root_spec in "qwen/qwen3-30b-a3b-instruct-2507|0.2|0.8|0.40" \
+                 "anthropic/claude-haiku-4.5|1|5|0.50"; do
+  IFS='|' read -r root pin pout cap <<< "$root_spec"
+  for k in 2 4 8; do
+    cell "$k" decomp "$root" "$pin" "$pout" "$cap"
+    cell "$k" direct "$root" "$pin" "$pout" "$cap"
+  done
+  echo "== root complete: $root" >> "$LOG"
 done
 
 echo "== cells failed: ${#FAILED[@]} ${FAILED[*]:-none}" >> "$LOG"
