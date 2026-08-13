@@ -14,7 +14,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -74,6 +74,24 @@
         "distinct_leaf_props": 32,
         "repaired_frac": 0.0,
         "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "v2"
+        ],
+        "leaf_len_mean": 72.5,
+        "leaf_len_min": 61,
+        "leaf_len_max": 79,
+        "goal_len_mean": 1606.0,
+        "max_abs_coeff": 36306,
+        "median_abs_coeff": 36301,
+        "max_outer_const": 12,
+        "distinct_knob_tuples": 35,
+        "distinct_leaf_props": 128,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
       }
     }
   },
@@ -92,7 +110,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -152,6 +170,24 @@
         "distinct_leaf_props": 32,
         "repaired_frac": 0.0,
         "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "r1_recip"
+        ],
+        "leaf_len_mean": 66.2,
+        "leaf_len_min": 56,
+        "leaf_len_max": 74,
+        "goal_len_mean": 1404.8,
+        "max_abs_coeff": 38989,
+        "median_abs_coeff": 36301,
+        "max_outer_const": 231,
+        "distinct_knob_tuples": 35,
+        "distinct_leaf_props": 128,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
       }
     }
   },
@@ -172,7 +208,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -232,6 +268,24 @@
         "distinct_leaf_props": 32,
         "repaired_frac": 0.0,
         "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "r2_prod"
+        ],
+        "leaf_len_mean": 113.0,
+        "leaf_len_min": 101,
+        "leaf_len_max": 121,
+        "goal_len_mean": 2904.5,
+        "max_abs_coeff": 35658,
+        "median_abs_coeff": 35001,
+        "max_outer_const": 75,
+        "distinct_knob_tuples": 63,
+        "distinct_leaf_props": 128,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
       }
     }
   },
@@ -252,7 +306,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -312,6 +366,24 @@
         "distinct_leaf_props": 32,
         "repaired_frac": 0.0,
         "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "r2_sum"
+        ],
+        "leaf_len_mean": 112.5,
+        "leaf_len_min": 89,
+        "leaf_len_max": 121,
+        "goal_len_mean": 2888.5,
+        "max_abs_coeff": 35644,
+        "median_abs_coeff": 35644,
+        "max_outer_const": 20,
+        "distinct_knob_tuples": 63,
+        "distinct_leaf_props": 127,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
       }
     }
   },
@@ -330,7 +402,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -390,6 +462,24 @@
         "distinct_leaf_props": 31,
         "repaired_frac": 0.0,
         "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "r3_floor"
+        ],
+        "leaf_len_mean": 80.4,
+        "leaf_len_min": 69,
+        "leaf_len_max": 87,
+        "goal_len_mean": 1860.8,
+        "max_abs_coeff": 37647,
+        "median_abs_coeff": 36321,
+        "max_outer_const": 12,
+        "distinct_knob_tuples": 34,
+        "distinct_leaf_props": 128,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
       }
     }
   },
@@ -410,7 +500,7 @@
       "ok": true
     },
     "predicate_audit": {
-      "points": 406,
+      "points": 1334,
       "under": 0,
       "over": 0,
       "ok": true
@@ -468,6 +558,24 @@
         "max_outer_const": 65,
         "distinct_knob_tuples": 23,
         "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "32": {
+        "problems": 4,
+        "leaves": 128,
+        "presets": [
+          "r4_floorprod"
+        ],
+        "leaf_len_mean": 121.0,
+        "leaf_len_min": 92,
+        "leaf_len_max": 129,
+        "goal_len_mean": 3159.0,
+        "max_abs_coeff": 37634,
+        "median_abs_coeff": 36965,
+        "max_outer_const": 65,
+        "distinct_knob_tuples": 58,
+        "distinct_leaf_props": 128,
         "repaired_frac": 0.0,
         "knob_support_ok": true
       }

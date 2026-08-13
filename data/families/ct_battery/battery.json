@@ -47,6 +47,15 @@
       },
       {
         "kind": "leaf",
+        "id": "v2-k32-p17-131f9b",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 14)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "v2-k2-p2-7d8627",
         "k": 2,
         "position": 2,
@@ -73,11 +82,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "v2-k32-p32-4e0d28",
+        "k": 32,
+        "position": 32,
+        "prop": "∀ x : ℝ, 107 ≤ x → x ≤ 115 → 3 ≤ 12 - Real.sqrt (3 * x ^ 2 - 660 * x + 36306)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "v2-k8-goal",
-        "k": 8,
+        "id": "v2-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -30 ≤ x → x ≤ 30 → 3 ≤ max (max (max (9 - Real.sqrt (x ^ 2 + 50 * x + 636)) (9 - Real.sqrt (2 * x ^ 2 + 72 * x + 651))) (max (11 - Real.sqrt (2 * x ^ 2 + 52 * x + 351)) (9 - Real.sqrt (x ^ 2 + 6 * x + 20)))) (max (max (9 - Real.sqrt (x ^ 2 - 10 * x + 35)) (9 - Real.sqrt (x ^ 2 - 22 * x + 132))) (max (7 - Real.sqrt (x ^ 2 - 38 * x + 367)) (9 - Real.sqrt (2 * x ^ 2 - 104 * x + 1356))))",
+        "prop": "∀ x : ℝ, -110 ≤ x → x ≤ 110 → 3 ≤ max (max (max (max (max (9 - Real.sqrt (2 * x ^ 2 + 424 * x + 22476)) (9 - Real.sqrt (x ^ 2 + 194 * x + 9420))) (max (9 - Real.sqrt (2 * x ^ 2 + 360 * x + 16203)) (8 - Real.sqrt (x ^ 2 + 168 * x + 7065)))) (max (max (9 - Real.sqrt (x ^ 2 + 158 * x + 6252)) (11 - Real.sqrt (2 * x ^ 2 + 276 * x + 9536))) (max (8 - Real.sqrt (x ^ 2 + 124 * x + 3852)) (10 - Real.sqrt (3 * x ^ 2 + 336 * x + 9409))))) (max (max (max (9 - Real.sqrt (2 * x ^ 2 + 200 * x + 5003)) (7 - Real.sqrt (x ^ 2 + 86 * x + 1856))) (max (9 - Real.sqrt (3 * x ^ 2 + 222 * x + 4116)) (11 - Real.sqrt (3 * x ^ 2 + 180 * x + 2715)))) (max (max (9 - Real.sqrt (x ^ 2 + 50 * x + 635)) (11 - Real.sqrt (3 * x ^ 2 + 96 * x + 783))) (max (11 - Real.sqrt (2 * x ^ 2 + 36 * x + 176)) (9 - Real.sqrt (2 * x ^ 2 + 8 * x + 12)))))) (max (max (max (max (11 - Real.sqrt (2 * x ^ 2 - 20 * x + 63)) (11 - Real.sqrt (2 * x ^ 2 - 60 * x + 463))) (max (10 - Real.sqrt (3 * x ^ 2 - 120 * x + 1201)) (12 - Real.sqrt (3 * x ^ 2 - 174 * x + 2529)))) (max (max (9 - Real.sqrt (2 * x ^ 2 - 144 * x + 2596)) (9 - Real.sqrt (2 * x ^ 2 - 168 * x + 3532))) (max (7 - Real.sqrt (x ^ 2 - 94 * x + 2215)) (9 - Real.sqrt (2 * x ^ 2 - 208 * x + 5411))))) (max (max (max (7 - Real.sqrt (x ^ 2 - 118 * x + 3487)) (9 - Real.sqrt (3 * x ^ 2 - 390 * x + 12684))) (max (10 - Real.sqrt (3 * x ^ 2 - 432 * x + 15553)) (11 - Real.sqrt (3 * x ^ 2 - 456 * x + 17343)))) (max (max (11 - Real.sqrt (2 * x ^ 2 - 340 * x + 14464)) (12 - Real.sqrt (3 * x ^ 2 - 546 * x + 24848))) (max (9 - Real.sqrt (x ^ 2 - 198 * x + 9812)) (9 - Real.sqrt (2 * x ^ 2 - 432 * x + 23332))))))",
         "killers": [],
         "witness_ok": null
       }
@@ -116,6 +134,15 @@
       },
       {
         "kind": "leaf",
+        "id": "r1_recip-k32-p17-be4eac",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → 3 ≤ 102 / (2 * x ^ 2 - 4 * x + 3)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "r1_recip-k2-p2-73b432",
         "k": 2,
         "position": 2,
@@ -142,11 +169,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "r1_recip-k32-p1-c0392b",
+        "k": 32,
+        "position": 1,
+        "prop": "∀ x : ℝ, -119 ≤ x → x ≤ -111 → 6 - 228 / (3 * x ^ 2 + 684 * x + 38989) ≤ 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "r1_recip-k8-goal",
-        "k": 8,
+        "id": "r1_recip-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -30 ≤ x → x ≤ 30 → 3 ≤ max (max (max (228 / (3 * x ^ 2 + 150 * x + 1876)) (147 / (3 * x ^ 2 + 108 * x + 973))) (max (51 / (x ^ 2 + 24 * x + 145)) (153 / (2 * x ^ 2 + 12 * x + 19)))) (max (max (81 / (x ^ 2 - 10 * x + 26)) (84 / (3 * x ^ 2 - 66 * x + 364))) (max (156 / (2 * x ^ 2 - 68 * x + 579)) (81 / (x ^ 2 - 50 * x + 626))))",
+        "prop": "∀ x : ℝ, -113 ≤ x → x ≤ 113 → 3 ≤ max (max (max (max (max (153 / (2 * x ^ 2 + 432 * x + 23329)) (60 / (2 * x ^ 2 + 408 * x + 20809))) (max (102 / (2 * x ^ 2 + 380 * x + 18051)) (60 / (2 * x ^ 2 + 352 * x + 15489)))) (max (max (99 / (2 * x ^ 2 + 324 * x + 13123)) (51 / (x ^ 2 + 150 * x + 5626))) (max (54 / (x ^ 2 + 138 * x + 4762)) (231 / (3 * x ^ 2 + 372 * x + 11533))))) (max (max (max (228 / (3 * x ^ 2 + 312 * x + 8113)) (150 / (3 * x ^ 2 + 270 * x + 6076))) (max (87 / (3 * x ^ 2 + 240 * x + 4801)) (153 / (2 * x ^ 2 + 136 * x + 2313)))) (max (max (99 / (2 * x ^ 2 + 108 * x + 1459)) (87 / (3 * x ^ 2 + 120 * x + 1201))) (max (228 / (3 * x ^ 2 + 84 * x + 589)) (54 / (x ^ 2 + 10 * x + 26)))))) (max (max (max (max (102 / (2 * x ^ 2 - 4 * x + 3)) (30 / (x ^ 2 - 16 * x + 65))) (max (231 / (3 * x ^ 2 - 96 * x + 769)) (87 / (3 * x ^ 2 - 132 * x + 1453)))) (max (max (147 / (3 * x ^ 2 - 174 * x + 2524)) (156 / (2 * x ^ 2 - 152 * x + 2889))) (max (99 / (2 * x ^ 2 - 180 * x + 4051)) (60 / (2 * x ^ 2 - 208 * x + 5409))))) (max (max (max (51 / (x ^ 2 - 118 * x + 3482)) (51 / (x ^ 2 - 130 * x + 4226))) (max (153 / (2 * x ^ 2 - 296 * x + 10953)) (99 / (2 * x ^ 2 - 324 * x + 13123)))) (max (max (81 / (x ^ 2 - 172 * x + 7397)) (99 / (2 * x ^ 2 - 380 * x + 18051))) (max (147 / (3 * x ^ 2 - 606 * x + 30604)) (102 / (2 * x ^ 2 - 436 * x + 23763))))))",
         "killers": [],
         "witness_ok": null
       }
@@ -185,6 +221,15 @@
       },
       {
         "kind": "leaf",
+        "id": "r2_prod-k32-p17-acced4",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, 1 ≤ x → x ≤ 7 → 3 ≤ 33 - Real.sqrt (x ^ 2 - 10 * x + 34) * Real.sqrt (2 * x ^ 2 - 20 * x + 54)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "r2_prod-k2-p1-320dee",
         "k": 2,
         "position": 1,
@@ -211,11 +256,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "r2_prod-k32-p1-2ca03d",
+        "k": 32,
+        "position": 1,
+        "prop": "∀ x : ℝ, -113 ≤ x → x ≤ -105 → Real.sqrt (2 * x ^ 2 + 436 * x + 23765) * Real.sqrt (3 * x ^ 2 + 654 * x + 35658) - 45 ≤ 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "r2_prod-k8-goal",
-        "k": 8,
+        "id": "r2_prod-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -28 ≤ x → x ≤ 28 → 3 ≤ max (max (max (75 - Real.sqrt (3 * x ^ 2 + 150 * x + 1880) * Real.sqrt (2 * x ^ 2 + 100 * x + 1263)) (43 - Real.sqrt (x ^ 2 + 32 * x + 264) * Real.sqrt (3 * x ^ 2 + 96 * x + 783))) (max (33 - Real.sqrt (x ^ 2 + 16 * x + 72) * Real.sqrt (2 * x ^ 2 + 32 * x + 131)) (57 - Real.sqrt (x ^ 2 + 6 * x + 19) * Real.sqrt (3 * x ^ 2 + 18 * x + 32)))) (max (max (51 - Real.sqrt (3 * x ^ 2 - 36 * x + 123) * Real.sqrt (2 * x ^ 2 - 24 * x + 75)) (57 - Real.sqrt (3 * x ^ 2 - 66 * x + 368) * Real.sqrt (x ^ 2 - 22 * x + 131))) (max (33 - Real.sqrt (x ^ 2 - 36 * x + 333) * Real.sqrt (2 * x ^ 2 - 72 * x + 652)) (43 - Real.sqrt (x ^ 2 - 48 * x + 584) * Real.sqrt (3 * x ^ 2 - 144 * x + 1743))))",
+        "prop": "∀ x : ℝ, -113 ≤ x → x ≤ 113 → 3 ≤ max (max (max (max (max (33 - Real.sqrt (x ^ 2 + 218 * x + 11890) * Real.sqrt (2 * x ^ 2 + 436 * x + 23766)) (33 - Real.sqrt (2 * x ^ 2 + 416 * x + 21638) * Real.sqrt (3 * x ^ 2 + 624 * x + 32456))) (max (27 - Real.sqrt (x ^ 2 + 196 * x + 9611) * Real.sqrt (3 * x ^ 2 + 588 * x + 28821)) (57 - Real.sqrt (x ^ 2 + 184 * x + 8475) * Real.sqrt (3 * x ^ 2 + 552 * x + 25398)))) (max (max (75 - Real.sqrt (2 * x ^ 2 + 328 * x + 13461) * Real.sqrt (3 * x ^ 2 + 492 * x + 20177)) (57 - Real.sqrt (3 * x ^ 2 + 456 * x + 17333) * Real.sqrt (x ^ 2 + 152 * x + 5786))) (max (38 - Real.sqrt (x ^ 2 + 134 * x + 4498) * Real.sqrt (3 * x ^ 2 + 402 * x + 13468)) (51 - Real.sqrt (x ^ 2 + 120 * x + 3611) * Real.sqrt (2 * x ^ 2 + 240 * x + 7214))))) (max (max (max (51 - Real.sqrt (2 * x ^ 2 + 200 * x + 5013) * Real.sqrt (x ^ 2 + 100 * x + 2510)) (57 - Real.sqrt (3 * x ^ 2 + 252 * x + 5298) * Real.sqrt (x ^ 2 + 84 * x + 1775))) (max (75 - Real.sqrt (2 * x ^ 2 + 136 * x + 2326) * Real.sqrt (3 * x ^ 2 + 204 * x + 3474)) (38 - Real.sqrt (x ^ 2 + 58 * x + 850) * Real.sqrt (3 * x ^ 2 + 174 * x + 2524)))) (max (max (33 - Real.sqrt (2 * x ^ 2 + 84 * x + 886) * Real.sqrt (x ^ 2 + 42 * x + 450)) (43 - Real.sqrt (x ^ 2 + 34 * x + 297) * Real.sqrt (3 * x ^ 2 + 102 * x + 882))) (max (51 - Real.sqrt (3 * x ^ 2 + 66 * x + 378) * Real.sqrt (2 * x ^ 2 + 44 * x + 245)) (45 - Real.sqrt (2 * x ^ 2 + 12 * x + 22) * Real.sqrt (3 * x ^ 2 + 18 * x + 28)))))) (max (max (max (max (33 - Real.sqrt (x ^ 2 - 10 * x + 34) * Real.sqrt (2 * x ^ 2 - 20 * x + 54)) (51 - Real.sqrt (2 * x ^ 2 - 36 * x + 165) * Real.sqrt (3 * x ^ 2 - 54 * x + 258))) (max (33 - Real.sqrt (2 * x ^ 2 - 60 * x + 453) * Real.sqrt (x ^ 2 - 30 * x + 233)) (33 - Real.sqrt (3 * x ^ 2 - 132 * x + 1461) * Real.sqrt (2 * x ^ 2 - 88 * x + 975)))) (max (max (38 - Real.sqrt (3 * x ^ 2 - 174 * x + 2524) * Real.sqrt (x ^ 2 - 58 * x + 850)) (51 - Real.sqrt (x ^ 2 - 76 * x + 1454) * Real.sqrt (2 * x ^ 2 - 152 * x + 2901))) (max (33 - Real.sqrt (x ^ 2 - 90 * x + 2034) * Real.sqrt (2 * x ^ 2 - 180 * x + 4054)) (23 - Real.sqrt (2 * x ^ 2 - 200 * x + 5006) * Real.sqrt (x ^ 2 - 100 * x + 2506))))) (max (max (max (45 - Real.sqrt (2 * x ^ 2 - 228 * x + 6502) * Real.sqrt (3 * x ^ 2 - 342 * x + 9748)) (43 - Real.sqrt (3 * x ^ 2 - 390 * x + 12690) * Real.sqrt (x ^ 2 - 130 * x + 4233))) (max (57 - Real.sqrt (3 * x ^ 2 - 432 * x + 15557) * Real.sqrt (x ^ 2 - 144 * x + 5194)) (51 - Real.sqrt (2 * x ^ 2 - 320 * x + 12814) * Real.sqrt (x ^ 2 - 160 * x + 6411)))) (max (max (51 - Real.sqrt (2 * x ^ 2 - 348 * x + 15141) * Real.sqrt (3 * x ^ 2 - 522 * x + 22722)) (45 - Real.sqrt (3 * x ^ 2 - 570 * x + 27076) * Real.sqrt (2 * x ^ 2 - 380 * x + 18054))) (max (38 - Real.sqrt (3 * x ^ 2 - 606 * x + 30604) * Real.sqrt (x ^ 2 - 202 * x + 10210)) (51 - Real.sqrt (2 * x ^ 2 - 440 * x + 24214) * Real.sqrt (x ^ 2 - 220 * x + 12111))))))",
         "killers": [],
         "witness_ok": null
       }
@@ -254,6 +308,15 @@
       },
       {
         "kind": "leaf",
+        "id": "r2_sum-k32-p17-c955f7",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 5 → 3 ≤ 14 - Real.sqrt (2 * x ^ 2 - 4 * x + 5) - Real.sqrt (x ^ 2 - 2 * x + 9)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "r2_sum-k2-p2-623a1c",
         "k": 2,
         "position": 2,
@@ -280,11 +343,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "r2_sum-k32-p32-cc966b",
+        "k": 32,
+        "position": 32,
+        "prop": "∀ x : ℝ, 107 ≤ x → x ≤ 113 → 3 ≤ 16 - Real.sqrt (3 * x ^ 2 - 654 * x + 35644) - Real.sqrt (2 * x ^ 2 - 436 * x + 23766)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "r2_sum-k8-goal",
-        "k": 8,
+        "id": "r2_sum-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -29 ≤ x → x ≤ 29 → 3 ≤ max (max (max (18 - Real.sqrt (3 * x ^ 2 + 156 * x + 2034) - Real.sqrt (x ^ 2 + 52 * x + 687)) (17 - Real.sqrt (2 * x ^ 2 + 72 * x + 661) - Real.sqrt (x ^ 2 + 36 * x + 334))) (max (20 - Real.sqrt (3 * x ^ 2 + 60 * x + 305) - Real.sqrt (2 * x ^ 2 + 40 * x + 213)) (14 - Real.sqrt (2 * x ^ 2 + 4 * x + 6) - Real.sqrt (x ^ 2 + 2 * x + 10)))) (max (max (12 - Real.sqrt (2 * x ^ 2 - 16 * x + 39) - Real.sqrt (x ^ 2 - 8 * x + 23)) (16 - Real.sqrt (x ^ 2 - 22 * x + 129) - Real.sqrt (3 * x ^ 2 - 66 * x + 378))) (max (17 - Real.sqrt (x ^ 2 - 40 * x + 410) - Real.sqrt (2 * x ^ 2 - 80 * x + 813)) (15 - Real.sqrt (3 * x ^ 2 - 162 * x + 2188) - Real.sqrt (x ^ 2 - 54 * x + 738))))",
+        "prop": "∀ x : ℝ, -113 ≤ x → x ≤ 113 → 3 ≤ max (max (max (max (max (16 - Real.sqrt (3 * x ^ 2 + 654 * x + 35644) - Real.sqrt (2 * x ^ 2 + 436 * x + 23766)) (17 - Real.sqrt (2 * x ^ 2 + 420 * x + 22053) - Real.sqrt (3 * x ^ 2 + 630 * x + 33090))) (max (16 - Real.sqrt (3 * x ^ 2 + 594 * x + 29404) - Real.sqrt (2 * x ^ 2 + 396 * x + 19606)) (17 - Real.sqrt (3 * x ^ 2 + 546 * x + 24858) - Real.sqrt (2 * x ^ 2 + 364 * x + 16565)))) (max (max (14 - Real.sqrt (2 * x ^ 2 + 332 * x + 13782) - Real.sqrt (x ^ 2 + 166 * x + 6898)) (18 - Real.sqrt (3 * x ^ 2 + 456 * x + 17333) - Real.sqrt (x ^ 2 + 152 * x + 5786))) (max (12 - Real.sqrt (x ^ 2 + 136 * x + 4630) - Real.sqrt (2 * x ^ 2 + 272 * x + 9254)) (16 - Real.sqrt (x ^ 2 + 122 * x + 3729) - Real.sqrt (3 * x ^ 2 + 366 * x + 11178))))) (max (max (max (18 - Real.sqrt (x ^ 2 + 108 * x + 2926) - Real.sqrt (3 * x ^ 2 + 324 * x + 8753)) (17 - Real.sqrt (2 * x ^ 2 + 192 * x + 4621) - Real.sqrt (x ^ 2 + 96 * x + 2314))) (max (12 - Real.sqrt (2 * x ^ 2 + 160 * x + 3207) - Real.sqrt (x ^ 2 + 80 * x + 1607)) (16 - Real.sqrt (2 * x ^ 2 + 140 * x + 2454) - Real.sqrt (3 * x ^ 2 + 210 * x + 3676)))) (max (max (20 - Real.sqrt (2 * x ^ 2 + 112 * x + 1581) - Real.sqrt (3 * x ^ 2 + 168 * x + 2357)) (16 - Real.sqrt (2 * x ^ 2 + 76 * x + 726) - Real.sqrt (3 * x ^ 2 + 114 * x + 1084))) (max (16 - Real.sqrt (3 * x ^ 2 + 90 * x + 676) - Real.sqrt (2 * x ^ 2 + 60 * x + 454)) (18 - Real.sqrt (3 * x ^ 2 + 36 * x + 114) - Real.sqrt (x ^ 2 + 12 * x + 47)))))) (max (max (max (max (20 - Real.sqrt (2 * x ^ 2 + 13) - Real.sqrt (3 * x ^ 2 + 5)) (14 - Real.sqrt (x ^ 2 - 18 * x + 90) - Real.sqrt (2 * x ^ 2 - 36 * x + 166))) (max (16 - Real.sqrt (3 * x ^ 2 - 90 * x + 676) - Real.sqrt (2 * x ^ 2 - 60 * x + 454)) (18 - Real.sqrt (3 * x ^ 2 - 132 * x + 1458) - Real.sqrt (x ^ 2 - 44 * x + 495)))) (max (max (16 - Real.sqrt (x ^ 2 - 62 * x + 969) - Real.sqrt (3 * x ^ 2 - 186 * x + 2898)) (14 - Real.sqrt (x ^ 2 - 74 * x + 1377) - Real.sqrt (2 * x ^ 2 - 148 * x + 2741))) (max (18 - Real.sqrt (x ^ 2 - 88 * x + 1946) - Real.sqrt (3 * x ^ 2 - 264 * x + 5813)) (14 - Real.sqrt (x ^ 2 - 102 * x + 2609) - Real.sqrt (2 * x ^ 2 - 204 * x + 5205))))) (max (max (max (18 - Real.sqrt (x ^ 2 - 116 * x + 3374) - Real.sqrt (3 * x ^ 2 - 348 * x + 10097)) (14 - Real.sqrt (2 * x ^ 2 - 264 * x + 8719) - Real.sqrt (3 * x ^ 2 - 396 * x + 13077))) (max (14 - Real.sqrt (2 * x ^ 2 - 284 * x + 10085) - Real.sqrt (x ^ 2 - 142 * x + 5049)) (13 - Real.sqrt (x ^ 2 - 156 * x + 6091) - Real.sqrt (3 * x ^ 2 - 468 * x + 18261)))) (max (max (17 - Real.sqrt (3 * x ^ 2 - 510 * x + 21690) - Real.sqrt (2 * x ^ 2 - 340 * x + 14453)) (18 - Real.sqrt (x ^ 2 - 184 * x + 8474) - Real.sqrt (3 * x ^ 2 - 552 * x + 25397))) (max (18 - Real.sqrt (3 * x ^ 2 - 600 * x + 30006) - Real.sqrt (x ^ 2 - 200 * x + 10011)) (17 - Real.sqrt (2 * x ^ 2 - 440 * x + 24213) - Real.sqrt (x ^ 2 - 220 * x + 12110))))))",
         "killers": [],
         "witness_ok": null
       }
@@ -323,6 +395,15 @@
       },
       {
         "kind": "leaf",
+        "id": "r3_floor-k32-p17-4ef23f",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, -2 ≤ x → x ≤ 4 → 3 ≤ 10 - (⌊Real.sqrt (3 * x ^ 2 + 15)⌋ : ℝ)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "r3_floor-k2-p1-7faa7e",
         "k": 2,
         "position": 1,
@@ -349,11 +430,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "r3_floor-k32-p32-bcf151",
+        "k": 32,
+        "position": 32,
+        "prop": "∀ x : ℝ, 107 ≤ x → x ≤ 113 → (⌊Real.sqrt (3 * x ^ 2 - 660 * x + 36321)⌋ : ℝ) - 3 ≤ 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "r3_floor-k8-goal",
-        "k": 8,
+        "id": "r3_floor-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -27 ≤ x → x ≤ 27 → 3 ≤ max (max (max (11 - (⌊Real.sqrt (3 * x ^ 2 + 132 * x + 1457)⌋ : ℝ)) (9 - (⌊Real.sqrt (2 * x ^ 2 + 68 * x + 594)⌋ : ℝ))) (max (8 - (⌊Real.sqrt (x ^ 2 + 20 * x + 126)⌋ : ℝ)) (8 - (⌊Real.sqrt (2 * x ^ 2 + 12 * x + 21)⌋ : ℝ)))) (max (max (11 - (⌊Real.sqrt (2 * x ^ 2 - 16 * x + 62)⌋ : ℝ)) (10 - (⌊Real.sqrt (3 * x ^ 2 - 78 * x + 522)⌋ : ℝ))) (max (10 - (⌊Real.sqrt (3 * x ^ 2 - 102 * x + 882)⌋ : ℝ)) (7 - (⌊Real.sqrt (x ^ 2 - 48 * x + 591)⌋ : ℝ))))",
+        "prop": "∀ x : ℝ, -114 ≤ x → x ≤ 114 → 3 ≤ max (max (max (max (max (11 - (⌊Real.sqrt (3 * x ^ 2 + 654 * x + 35648)⌋ : ℝ)) (12 - (⌊Real.sqrt (3 * x ^ 2 + 606 * x + 30627)⌋ : ℝ))) (max (11 - (⌊Real.sqrt (3 * x ^ 2 + 558 * x + 25952)⌋ : ℝ)) (11 - (⌊Real.sqrt (2 * x ^ 2 + 348 * x + 15168)⌋ : ℝ)))) (max (max (8 - (⌊Real.sqrt (x ^ 2 + 158 * x + 6251)⌋ : ℝ)) (7 - (⌊Real.sqrt (x ^ 2 + 142 * x + 5056)⌋ : ℝ))) (max (11 - (⌊Real.sqrt (3 * x ^ 2 + 390 * x + 12680)⌋ : ℝ)) (12 - (⌊Real.sqrt (3 * x ^ 2 + 330 * x + 9099)⌋ : ℝ))))) (max (max (max (8 - (⌊Real.sqrt (2 * x ^ 2 + 196 * x + 4819)⌋ : ℝ)) (8 - (⌊Real.sqrt (x ^ 2 + 86 * x + 1875)⌋ : ℝ))) (max (8 - (⌊Real.sqrt (x ^ 2 + 70 * x + 1235)⌋ : ℝ)) (7 - (⌊Real.sqrt (x ^ 2 + 56 * x + 792)⌋ : ℝ)))) (max (max (8 - (⌊Real.sqrt (2 * x ^ 2 + 88 * x + 971)⌋ : ℝ)) (10 - (⌊Real.sqrt (3 * x ^ 2 + 84 * x + 603)⌋ : ℝ))) (max (8 - (⌊Real.sqrt (2 * x ^ 2 + 40 * x + 203)⌋ : ℝ)) (8 - (⌊Real.sqrt (x ^ 2 + 8 * x + 35)⌋ : ℝ)))))) (max (max (max (max (10 - (⌊Real.sqrt (2 * x ^ 2 - 12 * x + 31)⌋ : ℝ)) (7 - (⌊Real.sqrt (x ^ 2 - 20 * x + 108)⌋ : ℝ))) (max (11 - (⌊Real.sqrt (3 * x ^ 2 - 102 * x + 872)⌋ : ℝ)) (8 - (⌊Real.sqrt (x ^ 2 - 52 * x + 695)⌋ : ℝ)))) (max (max (11 - (⌊Real.sqrt (3 * x ^ 2 - 210 * x + 3680)⌋ : ℝ)) (10 - (⌊Real.sqrt (3 * x ^ 2 - 252 * x + 5307)⌋ : ℝ))) (max (12 - (⌊Real.sqrt (3 * x ^ 2 - 282 * x + 6651)⌋ : ℝ)) (12 - (⌊Real.sqrt (3 * x ^ 2 - 342 * x + 9771)⌋ : ℝ))))) (max (max (max (7 - (⌊Real.sqrt (x ^ 2 - 126 * x + 3984)⌋ : ℝ)) (10 - (⌊Real.sqrt (3 * x ^ 2 - 408 * x + 13887)⌋ : ℝ))) (max (8 - (⌊Real.sqrt (2 * x ^ 2 - 304 * x + 11555)⌋ : ℝ)) (10 - (⌊Real.sqrt (3 * x ^ 2 - 492 * x + 20187)⌋ : ℝ)))) (max (max (10 - (⌊Real.sqrt (2 * x ^ 2 - 356 * x + 15855)⌋ : ℝ)) (8 - (⌊Real.sqrt (x ^ 2 - 196 * x + 9623)⌋ : ℝ))) (max (10 - (⌊Real.sqrt (2 * x ^ 2 - 412 * x + 21231)⌋ : ℝ)) (8 - (⌊Real.sqrt (x ^ 2 - 222 * x + 12347)⌋ : ℝ))))))",
         "killers": [],
         "witness_ok": null
       }
@@ -392,6 +482,15 @@
       },
       {
         "kind": "leaf",
+        "id": "r4_floorprod-k32-p17-e558c3",
+        "k": 32,
+        "position": 17,
+        "prop": "∀ x : ℝ, -5 ≤ x → x ≤ 1 → 3 ≤ 32 - (⌊Real.sqrt (x ^ 2 + 2 * x + 3) * Real.sqrt (3 * x ^ 2 + 6 * x + 4)⌋ : ℝ)",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
+        "kind": "leaf",
         "id": "r4_floorprod-k2-p1-22d196",
         "k": 2,
         "position": 1,
@@ -418,11 +517,20 @@
         "witness_ok": true
       },
       {
+        "kind": "leaf",
+        "id": "r4_floorprod-k32-p1-ac1b85",
+        "k": 32,
+        "position": 1,
+        "prop": "∀ x : ℝ, -117 ≤ x → x ≤ -109 → (⌊Real.sqrt (3 * x ^ 2 + 672 * x + 37634) * Real.sqrt (x ^ 2 + 224 * x + 12545)⌋ : ℝ) - 41 ≤ 3",
+        "killers": [],
+        "witness_ok": true
+      },
+      {
         "kind": "goal",
-        "id": "r4_floorprod-k8-goal",
-        "k": 8,
+        "id": "r4_floorprod-k32-goal",
+        "k": 32,
         "position": 0,
-        "prop": "∀ x : ℝ, -29 ≤ x → x ≤ 29 → 3 ≤ max (max (max (31 - (⌊Real.sqrt (3 * x ^ 2 + 162 * x + 2188) * Real.sqrt (x ^ 2 + 54 * x + 730)⌋ : ℝ)) (47 - (⌊Real.sqrt (3 * x ^ 2 + 120 * x + 1202) * Real.sqrt (x ^ 2 + 40 * x + 401)⌋ : ℝ))) (max (47 - (⌊Real.sqrt (x ^ 2 + 20 * x + 101) * Real.sqrt (3 * x ^ 2 + 60 * x + 301)⌋ : ℝ)) (65 - (⌊Real.sqrt (2 * x ^ 2 + 16 * x + 34) * Real.sqrt (3 * x ^ 2 + 24 * x + 49)⌋ : ℝ)))) (max (max (31 - (⌊Real.sqrt (x ^ 2 - 10 * x + 26) * Real.sqrt (3 * x ^ 2 - 30 * x + 76)⌋ : ℝ)) (26 - (⌊Real.sqrt (2 * x ^ 2 - 48 * x + 289) * Real.sqrt (3 * x ^ 2 - 72 * x + 433)⌋ : ℝ))) (max (16 - (⌊Real.sqrt (2 * x ^ 2 - 72 * x + 649) * Real.sqrt (x ^ 2 - 36 * x + 325)⌋ : ℝ)) (65 - (⌊Real.sqrt (2 * x ^ 2 - 104 * x + 1353) * Real.sqrt (3 * x ^ 2 - 156 * x + 2029)⌋ : ℝ))))",
+        "prop": "∀ x : ℝ, -109 ≤ x → x ≤ 109 → 3 ≤ max (max (max (max (max (31 - (⌊Real.sqrt (3 * x ^ 2 + 642 * x + 34348) * Real.sqrt (x ^ 2 + 214 * x + 11450)⌋ : ℝ)) (43 - (⌊Real.sqrt (3 * x ^ 2 + 606 * x + 30604) * Real.sqrt (2 * x ^ 2 + 404 * x + 20403)⌋ : ℝ))) (max (43 - (⌊Real.sqrt (2 * x ^ 2 + 372 * x + 17300) * Real.sqrt (3 * x ^ 2 + 558 * x + 25948)⌋ : ℝ)) (32 - (⌊Real.sqrt (x ^ 2 + 178 * x + 7923) * Real.sqrt (3 * x ^ 2 + 534 * x + 23764)⌋ : ℝ)))) (max (max (16 - (⌊Real.sqrt (x ^ 2 + 164 * x + 6725) * Real.sqrt (2 * x ^ 2 + 328 * x + 13449)⌋ : ℝ)) (26 - (⌊Real.sqrt (2 * x ^ 2 + 300 * x + 11251) * Real.sqrt (x ^ 2 + 150 * x + 5626)⌋ : ℝ))) (max (17 - (⌊Real.sqrt (x ^ 2 + 136 * x + 4626) * Real.sqrt (2 * x ^ 2 + 272 * x + 9249)⌋ : ℝ)) (43 - (⌊Real.sqrt (2 * x ^ 2 + 244 * x + 7443) * Real.sqrt (3 * x ^ 2 + 366 * x + 11164)⌋ : ℝ))))) (max (max (max (16 - (⌊Real.sqrt (x ^ 2 + 108 * x + 2917) * Real.sqrt (2 * x ^ 2 + 216 * x + 5833)⌋ : ℝ)) (65 - (⌊Real.sqrt (2 * x ^ 2 + 192 * x + 4609) * Real.sqrt (3 * x ^ 2 + 288 * x + 6913)⌋ : ℝ))) (max (43 - (⌊Real.sqrt (2 * x ^ 2 + 156 * x + 3044) * Real.sqrt (3 * x ^ 2 + 234 * x + 4564)⌋ : ℝ)) (26 - (⌊Real.sqrt (3 * x ^ 2 + 204 * x + 3469) * Real.sqrt (2 * x ^ 2 + 136 * x + 2313)⌋ : ℝ)))) (max (max (39 - (⌊Real.sqrt (x ^ 2 + 52 * x + 677) * Real.sqrt (2 * x ^ 2 + 104 * x + 1353)⌋ : ℝ)) (43 - (⌊Real.sqrt (2 * x ^ 2 + 76 * x + 724) * Real.sqrt (3 * x ^ 2 + 114 * x + 1084)⌋ : ℝ))) (max (26 - (⌊Real.sqrt (3 * x ^ 2 + 84 * x + 590) * Real.sqrt (2 * x ^ 2 + 56 * x + 393)⌋ : ℝ)) (43 - (⌊Real.sqrt (3 * x ^ 2 + 42 * x + 149) * Real.sqrt (2 * x ^ 2 + 28 * x + 99)⌋ : ℝ)))))) (max (max (max (max (32 - (⌊Real.sqrt (x ^ 2 + 2 * x + 3) * Real.sqrt (3 * x ^ 2 + 6 * x + 4)⌋ : ℝ)) (65 - (⌊Real.sqrt (2 * x ^ 2 - 16 * x + 33) * Real.sqrt (3 * x ^ 2 - 24 * x + 49)⌋ : ℝ))) (max (43 - (⌊Real.sqrt (3 * x ^ 2 - 78 * x + 509) * Real.sqrt (2 * x ^ 2 - 52 * x + 339)⌋ : ℝ)) (43 - (⌊Real.sqrt (2 * x ^ 2 - 84 * x + 883) * Real.sqrt (3 * x ^ 2 - 126 * x + 1324)⌋ : ℝ)))) (max (max (39 - (⌊Real.sqrt (2 * x ^ 2 - 112 * x + 1570) * Real.sqrt (x ^ 2 - 56 * x + 785)⌋ : ℝ)) (43 - (⌊Real.sqrt (3 * x ^ 2 - 222 * x + 4109) * Real.sqrt (2 * x ^ 2 - 148 * x + 2739)⌋ : ℝ))) (max (43 - (⌊Real.sqrt (3 * x ^ 2 - 246 * x + 5045) * Real.sqrt (2 * x ^ 2 - 164 * x + 3363)⌋ : ℝ)) (20 - (⌊Real.sqrt (3 * x ^ 2 - 288 * x + 6914) * Real.sqrt (x ^ 2 - 96 * x + 2305)⌋ : ℝ))))) (max (max (max (65 - (⌊Real.sqrt (3 * x ^ 2 - 324 * x + 8749) * Real.sqrt (2 * x ^ 2 - 216 * x + 5833)⌋ : ℝ)) (65 - (⌊Real.sqrt (2 * x ^ 2 - 256 * x + 8193) * Real.sqrt (3 * x ^ 2 - 384 * x + 12289)⌋ : ℝ))) (max (32 - (⌊Real.sqrt (3 * x ^ 2 - 414 * x + 14285) * Real.sqrt (x ^ 2 - 138 * x + 4762)⌋ : ℝ)) (16 - (⌊Real.sqrt (x ^ 2 - 152 * x + 5777) * Real.sqrt (2 * x ^ 2 - 304 * x + 11553)⌋ : ℝ)))) (max (max (27 - (⌊Real.sqrt (2 * x ^ 2 - 332 * x + 13780) * Real.sqrt (x ^ 2 - 166 * x + 6890)⌋ : ℝ)) (31 - (⌊Real.sqrt (x ^ 2 - 182 * x + 8282) * Real.sqrt (3 * x ^ 2 - 546 * x + 24844)⌋ : ℝ))) (max (31 - (⌊Real.sqrt (3 * x ^ 2 - 582 * x + 28228) * Real.sqrt (x ^ 2 - 194 * x + 9410)⌋ : ℝ)) (26 - (⌊Real.sqrt (2 * x ^ 2 - 420 * x + 22051) * Real.sqrt (x ^ 2 - 210 * x + 11026)⌋ : ℝ))))))",
         "killers": [],
         "witness_ok": null
       }
