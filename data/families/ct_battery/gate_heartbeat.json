@@ -1,0 +1,122 @@
+{
+  "rows": [
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "maxHeartbeats": 400000,
+      "ok": false,
+      "seconds": 48.3,
+      "artifact_chars": 57966,
+      "err": [
+        "(deterministic) timeout at `whnf`, maximum number of heartbeats (400000) has bee"
+      ]
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "maxHeartbeats": 1600000,
+      "ok": true,
+      "seconds": 86.9,
+      "artifact_chars": 57966,
+      "err": []
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "maxHeartbeats": 6400000,
+      "ok": true,
+      "seconds": 87.4,
+      "artifact_chars": 57966,
+      "err": []
+    },
+    {
+      "rung": "r2_sum",
+      "k": 64,
+      "maxHeartbeats": 1600000,
+      "ok": true,
+      "seconds": 95.9,
+      "artifact_chars": 51305,
+      "err": []
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 64,
+      "maxHeartbeats": 6400000,
+      "ok": true,
+      "seconds": 347.7,
+      "artifact_chars": 118495,
+      "err": []
+    },
+    {
+      "rung": "v2",
+      "k": 128,
+      "maxHeartbeats": 400000,
+      "ok": false,
+      "seconds": 22.3,
+      "artifact_chars": 73124,
+      "err": [
+        "(deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (4"
+      ]
+    },
+    {
+      "rung": "r2_prod",
+      "k": 64,
+      "maxHeartbeats": 400000,
+      "ok": false,
+      "seconds": 31.1,
+      "artifact_chars": 58306,
+      "err": [
+        "(deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (4"
+      ]
+    },
+    {
+      "rung": "r2_prod",
+      "k": 64,
+      "maxHeartbeats": 1600000,
+      "ok": true,
+      "seconds": 123.3,
+      "artifact_chars": 58306,
+      "err": []
+    },
+    {
+      "rung": "r1_recip",
+      "k": 64,
+      "maxHeartbeats": 400000,
+      "ok": true,
+      "seconds": 13.3,
+      "artifact_chars": 39579,
+      "err": []
+    },
+    {
+      "rung": "r3_floor",
+      "k": 64,
+      "maxHeartbeats": 400000,
+      "ok": true,
+      "seconds": 48.4,
+      "artifact_chars": 54375,
+      "err": []
+    },
+    {
+      "rung": "v2",
+      "k": 128,
+      "maxHeartbeats": 1600000,
+      "ok": true,
+      "seconds": 103.0,
+      "artifact_chars": 73124,
+      "err": []
+    },
+    {
+      "rung": "r1_recip",
+      "k": 128,
+      "maxHeartbeats": 400000,
+      "ok": false,
+      "seconds": 15.8,
+      "artifact_chars": 82501,
+      "err": [
+        "(deterministic) timeout at `isDefEq`, maximum number of heartbeats (40"
+      ]
+    }
+  ],
+  "note": "PREAMBLE sets maxHeartbeats 400000",
+  "seconds": 1050.5
+}

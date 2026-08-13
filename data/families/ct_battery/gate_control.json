@@ -1,0 +1,9 @@
+{
+  "prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2 * x ^ 2 - 12 * x + 17",
+  "killers": [
+    "by intros; nlinarith"
+  ],
+  "alive": false,
+  "n_battery_proofs": 20,
+  "seconds": 0.14
+}

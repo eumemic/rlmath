@@ -60,6 +60,22 @@ function symbols, real Mathlib lemma steps).
   (leaf prop length, step type mix) is checked at generation time and reported in the datasheet.
 - The top of the k-grid must eventually exceed single-context feasibility (§5.4(e)); the schema
   should not break at k=128 even if Phase 1 only ships k≤32.
+  **Measured 2026-08-13: this clause is already violated, by the SHIPPED family, and the cause is
+  the harness rather than any schema.** At the shipped `PREAMBLE` (`maxHeartbeats 400000`), V4 —
+  full oracle compose — exhausts heartbeats for `v2` and `r1_recip` at **k=128**, for `r2_prod`
+  and `r2_sum` at **k=64**, and for `r4_floorprod` at **k=32** (3/3 seeds). V1/V2 pass at every k;
+  V3 passes except at k=64. Raising to 1,600,000 clears everything observed up to k=64
+  (`r4_floorprod` at k=64 needs 6,400,000). So the k-axis is bounded today by elaboration budget,
+  not by any property the families were designed around, and DIRECTION §5.4(e)'s beyond-window
+  tier cannot be reached without addressing it.
+
+  **The bump is not free, and the reason is the trap worth remembering: `maxHeartbeats` is shared
+  by the compose check and the automation battery.** V5 says "no battery tactic closes this leaf"
+  — but `nlinarith`/`aesop` are searching under the same budget, so *raising the budget arms the
+  adversary too*. Any change to this constant **retroactively invalidates every V0/V5 verdict in
+  the repo** and requires re-running the full gate with the planted control attached. The corridor's
+  floor is therefore a function of the heartbeat budget, not an absolute property of a statement,
+  and the budget belongs in the datasheet alongside the tactic list.
 
 ## Status (2026-08-11 evening): v1 schemas fail the strengthened V5 — by design, iterate
 

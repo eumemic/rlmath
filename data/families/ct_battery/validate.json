@@ -1,0 +1,356 @@
+{
+  "v2": {
+    "problems": [
+      {
+        "id": "case_tree-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  },
+  "r1_recip": {
+    "problems": [
+      {
+        "id": "case_tree-r1_recip-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r1_recip-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  },
+  "r2_prod": {
+    "problems": [
+      {
+        "id": "case_tree-r2_prod-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_prod-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  },
+  "r2_sum": {
+    "problems": [
+      {
+        "id": "case_tree-r2_sum-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r2_sum-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  },
+  "r3_floor": {
+    "problems": [
+      {
+        "id": "case_tree-r3_floor-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r3_floor-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  },
+  "r4_floorprod": {
+    "problems": [
+      {
+        "id": "case_tree-r4_floorprod-k2-s5150-0",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k2-s5150-1",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k2-s5150-2",
+        "k": 2,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k4-s5150-0",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k4-s5150-1",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k4-s5150-2",
+        "k": 4,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k8-s5150-0",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k8-s5150-1",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      },
+      {
+        "id": "case_tree-r4_floorprod-k8-s5150-2",
+        "k": 8,
+        "ok": true,
+        "failed": []
+      }
+    ],
+    "ok": true
+  }
+}

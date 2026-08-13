@@ -1,0 +1,52 @@
+{
+  "v2": {
+    "id": "case_tree-k32-s5150-0",
+    "ok": true,
+    "seconds": 10.0,
+    "goal_chars": 1613,
+    "failed": []
+  },
+  "r1_recip": {
+    "id": "case_tree-r1_recip-k32-s5150-0",
+    "ok": true,
+    "seconds": 10.6,
+    "goal_chars": 1468,
+    "failed": []
+  },
+  "r2_prod": {
+    "id": "case_tree-r2_prod-k32-s5150-0",
+    "ok": true,
+    "seconds": 40.9,
+    "goal_chars": 2916,
+    "failed": []
+  },
+  "r2_sum": {
+    "id": "case_tree-r2_sum-k32-s5150-0",
+    "ok": true,
+    "seconds": 35.7,
+    "goal_chars": 2890,
+    "failed": []
+  },
+  "r3_floor": {
+    "id": "case_tree-r3_floor-k32-s5150-0",
+    "ok": true,
+    "seconds": 17.7,
+    "goal_chars": 1875,
+    "failed": []
+  },
+  "r4_floorprod": {
+    "id": "case_tree-r4_floorprod-k32-s5150-0",
+    "ok": false,
+    "seconds": 72.5,
+    "goal_chars": 3158,
+    "failed": [
+      [
+        "V4_oracle_replay",
+        "(deterministic) timeout at `whnf`, maximum number of heartbeats (400000) has been reached\n\nNote: Use `set_option maxHeartbeats <num>` to set the limit.\n\nHint: Additional diagnostic information may be available using the `set_option diagnostics true` command.; (deterministic) timeout at `whnf`, maxim"
+      ]
+    ]
+  },
+  "_meta": {
+    "seconds": 187.45
+  }
+}

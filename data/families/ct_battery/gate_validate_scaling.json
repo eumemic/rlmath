@@ -1,0 +1,207 @@
+{
+  "rows": [
+    {
+      "rung": "r4_floorprod",
+      "k": 16,
+      "idx": 0,
+      "ok": true,
+      "seconds": 28.7,
+      "goal_chars": 1568,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 16,
+      "idx": 1,
+      "ok": true,
+      "seconds": 30.7,
+      "goal_chars": 1575,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 16,
+      "idx": 2,
+      "ok": true,
+      "seconds": 28.2,
+      "goal_chars": 1550,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "idx": 0,
+      "ok": false,
+      "seconds": 66.5,
+      "goal_chars": 3158,
+      "failed": [
+        "V4_oracle_replay"
+      ],
+      "detail": "(deterministic) timeout at `whnf`, maximum number of heartbeats (400000) has been reached\n\nNote: Use `set_option maxHear"
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "idx": 1,
+      "ok": false,
+      "seconds": 66.7,
+      "goal_chars": 3148,
+      "failed": [
+        "V4_oracle_replay"
+      ],
+      "detail": "(deterministic) timeout at `«synthesize pending MVars»`, maximum number of heartbeats (400000) has been reached\n\nNote: U"
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 32,
+      "idx": 2,
+      "ok": false,
+      "seconds": 66.0,
+      "goal_chars": 3173,
+      "failed": [
+        "V4_oracle_replay"
+      ],
+      "detail": "(deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (400000) has been reached\n\nNote: Use `set_"
+    },
+    {
+      "rung": "r2_prod",
+      "k": 32,
+      "idx": 1,
+      "ok": true,
+      "seconds": 39.6,
+      "goal_chars": 2894,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r2_prod",
+      "k": 32,
+      "idx": 2,
+      "ok": true,
+      "seconds": 43.0,
+      "goal_chars": 2899,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r2_sum",
+      "k": 32,
+      "idx": 1,
+      "ok": true,
+      "seconds": 34.7,
+      "goal_chars": 2874,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r2_sum",
+      "k": 32,
+      "idx": 2,
+      "ok": true,
+      "seconds": 35.6,
+      "goal_chars": 2910,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "v2",
+      "k": 32,
+      "idx": 1,
+      "ok": true,
+      "seconds": 10.0,
+      "goal_chars": 1588,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "v2",
+      "k": 32,
+      "idx": 2,
+      "ok": true,
+      "seconds": 9.9,
+      "goal_chars": 1600,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r1_recip",
+      "k": 32,
+      "idx": 1,
+      "ok": true,
+      "seconds": 16.5,
+      "goal_chars": 1351,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r1_recip",
+      "k": 32,
+      "idx": 2,
+      "ok": true,
+      "seconds": 21.6,
+      "goal_chars": 1353,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r3_floor",
+      "k": 32,
+      "idx": 1,
+      "ok": true,
+      "seconds": 17.4,
+      "goal_chars": 1873,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r3_floor",
+      "k": 32,
+      "idx": 2,
+      "ok": true,
+      "seconds": 17.2,
+      "goal_chars": 1844,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r4_floorprod",
+      "k": 64,
+      "idx": 0,
+      "ok": false,
+      "seconds": 57.0,
+      "goal_chars": 6376,
+      "failed": [
+        "V3_plan_check",
+        "V4_oracle_replay"
+      ],
+      "detail": "(deterministic) timeout at `whnf`, maximum number of heartbeats (400000) has been reached\n\nNote: Use `set_option maxHear"
+    },
+    {
+      "rung": "v2",
+      "k": 64,
+      "idx": 0,
+      "ok": true,
+      "seconds": 39.8,
+      "goal_chars": 3314,
+      "failed": [],
+      "detail": ""
+    },
+    {
+      "rung": "r2_sum",
+      "k": 64,
+      "idx": 0,
+      "ok": false,
+      "seconds": 58.4,
+      "goal_chars": 5873,
+      "failed": [
+        "V3_plan_check",
+        "V4_oracle_replay"
+      ],
+      "detail": "(deterministic) timeout at `«synthesize pending MVars»`, maximum number of heartbeats (400000) has been reached\n\nNote: U"
+    }
+  ],
+  "seconds": 696.7
+}

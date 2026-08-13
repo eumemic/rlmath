@@ -1,0 +1,476 @@
+{
+  "v2": {
+    "rung": "v2",
+    "schema": "sqrt_capped_quadratic_bands",
+    "rationale": "shipped schema; measured pass@8 0.923 over 68 leaves × 8 DSV2 attempts — above the corridor ceiling, and the control every rung is read against",
+    "n_atoms": 1,
+    "extra_knobs": [],
+    "necessity_sweep": {
+      "rung": "v2",
+      "cells": 36,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "v2"
+        ],
+        "leaf_len_mean": 67.2,
+        "leaf_len_min": 64,
+        "leaf_len_max": 70,
+        "goal_len_mean": 113.2,
+        "max_abs_coeff": 80,
+        "median_abs_coeff": 26,
+        "max_outer_const": 12,
+        "distinct_knob_tuples": 9,
+        "distinct_leaf_props": 10,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "v2"
+        ],
+        "leaf_len_mean": 68.1,
+        "leaf_len_min": 63,
+        "leaf_len_max": 72,
+        "goal_len_mean": 210.5,
+        "max_abs_coeff": 433,
+        "median_abs_coeff": 251,
+        "max_outer_const": 11,
+        "distinct_knob_tuples": 13,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "v2"
+        ],
+        "leaf_len_mean": 69.2,
+        "leaf_len_min": 64,
+        "leaf_len_max": 75,
+        "goal_len_mean": 399.0,
+        "max_abs_coeff": 2192,
+        "median_abs_coeff": 1883,
+        "max_outer_const": 11,
+        "distinct_knob_tuples": 21,
+        "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  },
+  "r1_recip": {
+    "rung": "r1_recip",
+    "schema": "reciprocal_quadratic_bands",
+    "rationale": "the piece IS a quotient, so `Real.sqrt_le_iff` is inapplicable and `le_div_iff₀` is the retarget; the lightest possible schema change, in the ladder to test whether 'one extra lemma' is a difficulty lever at all",
+    "n_atoms": 1,
+    "extra_knobs": [],
+    "necessity_sweep": {
+      "rung": "r1_recip",
+      "cells": 36,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "r1_recip"
+        ],
+        "leaf_len_mean": 57.5,
+        "leaf_len_min": 53,
+        "leaf_len_max": 65,
+        "goal_len_mean": 95.0,
+        "max_abs_coeff": 51,
+        "median_abs_coeff": 17,
+        "max_outer_const": 150,
+        "distinct_knob_tuples": 6,
+        "distinct_leaf_props": 9,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "r1_recip"
+        ],
+        "leaf_len_mean": 61.4,
+        "leaf_len_min": 55,
+        "leaf_len_max": 66,
+        "goal_len_mean": 183.0,
+        "max_abs_coeff": 364,
+        "median_abs_coeff": 301,
+        "max_outer_const": 156,
+        "distinct_knob_tuples": 13,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "r1_recip"
+        ],
+        "leaf_len_mean": 63.5,
+        "leaf_len_min": 54,
+        "leaf_len_max": 71,
+        "goal_len_mean": 353.8,
+        "max_abs_coeff": 1876,
+        "median_abs_coeff": 1729,
+        "max_outer_const": 231,
+        "distinct_knob_tuples": 23,
+        "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  },
+  "r2_prod": {
+    "rung": "r2_prod",
+    "schema": "sqrt_product_quadratic_bands",
+    "rationale": "a second atom, multiplicatively: one `sqrt_le_iff` cannot reach the goal, so the visible budget T must be split into a divisor pair and the two bounds recombined with `mul_le_mul` — two memorised steps, composed",
+    "n_atoms": 2,
+    "extra_knobs": [
+      "curvature2"
+    ],
+    "necessity_sweep": {
+      "rung": "r2_prod",
+      "cells": 72,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "r2_prod"
+        ],
+        "leaf_len_mean": 103.8,
+        "leaf_len_min": 102,
+        "leaf_len_max": 108,
+        "goal_len_mean": 187.2,
+        "max_abs_coeff": 90,
+        "median_abs_coeff": 76,
+        "max_outer_const": 75,
+        "distinct_knob_tuples": 8,
+        "distinct_leaf_props": 10,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "r2_prod"
+        ],
+        "leaf_len_mean": 105.7,
+        "leaf_len_min": 101,
+        "leaf_len_max": 112,
+        "goal_len_mean": 360.2,
+        "max_abs_coeff": 447,
+        "median_abs_coeff": 372,
+        "max_outer_const": 57,
+        "distinct_knob_tuples": 13,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "r2_prod"
+        ],
+        "leaf_len_mean": 108.8,
+        "leaf_len_min": 85,
+        "leaf_len_max": 117,
+        "goal_len_mean": 715.0,
+        "max_abs_coeff": 1890,
+        "median_abs_coeff": 1880,
+        "max_outer_const": 75,
+        "distinct_knob_tuples": 24,
+        "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  },
+  "r2_sum": {
+    "rung": "r2_sum",
+    "schema": "sqrt_sum_quadratic_bands",
+    "rationale": "the same two atoms, added: the memorised one-shot fails for a LOGICAL reason (it bounds √u₁ ≤ t and the goal needs √u₁+√u₂ ≤ t), so the prover must invent a budget split — anchored near t/2, which is the ladder's only continuous, measured difficulty lever (|cap₁ − t/2|)",
+    "n_atoms": 2,
+    "extra_knobs": [
+      "curvature2"
+    ],
+    "necessity_sweep": {
+      "rung": "r2_sum",
+      "cells": 72,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "r2_sum"
+        ],
+        "leaf_len_mean": 105.0,
+        "leaf_len_min": 101,
+        "leaf_len_max": 109,
+        "goal_len_mean": 189.6,
+        "max_abs_coeff": 81,
+        "median_abs_coeff": 57,
+        "max_outer_const": 20,
+        "distinct_knob_tuples": 9,
+        "distinct_leaf_props": 10,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "r2_sum"
+        ],
+        "leaf_len_mean": 106.2,
+        "leaf_len_min": 101,
+        "leaf_len_max": 112,
+        "goal_len_mean": 362.2,
+        "max_abs_coeff": 371,
+        "median_abs_coeff": 364,
+        "max_outer_const": 20,
+        "distinct_knob_tuples": 13,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "r2_sum"
+        ],
+        "leaf_len_mean": 107.5,
+        "leaf_len_min": 100,
+        "leaf_len_max": 116,
+        "goal_len_mean": 705.2,
+        "max_abs_coeff": 2188,
+        "median_abs_coeff": 2029,
+        "max_outer_const": 20,
+        "distinct_knob_tuples": 27,
+        "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  },
+  "r3_floor": {
+    "rung": "r3_floor",
+    "schema": "floor_sqrt_quadratic_bands",
+    "rationale": "integrality and strictness: the cap is TIGHT (u_max = (T+1)²−1), so the memorised sub-goal `√u ≤ T` is not merely unfound but FALSE on part of the band; a strict bound plus a floor/cast step is forced. S2's loose-vs-tight control isolates the cause exactly (0/12 tight, 12/12 loose)",
+    "n_atoms": 1,
+    "extra_knobs": [],
+    "necessity_sweep": {
+      "rung": "r3_floor",
+      "cells": 36,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "r3_floor"
+        ],
+        "leaf_len_mean": 75.1,
+        "leaf_len_min": 72,
+        "leaf_len_max": 78,
+        "goal_len_mean": 129.8,
+        "max_abs_coeff": 56,
+        "median_abs_coeff": 48,
+        "max_outer_const": 10,
+        "distinct_knob_tuples": 9,
+        "distinct_leaf_props": 10,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "r3_floor"
+        ],
+        "leaf_len_mean": 76.0,
+        "leaf_len_min": 71,
+        "leaf_len_max": 80,
+        "goal_len_mean": 241.5,
+        "max_abs_coeff": 512,
+        "median_abs_coeff": 447,
+        "max_outer_const": 10,
+        "distinct_knob_tuples": 14,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "r3_floor"
+        ],
+        "leaf_len_mean": 78.3,
+        "leaf_len_min": 72,
+        "leaf_len_max": 84,
+        "goal_len_mean": 472.2,
+        "max_abs_coeff": 1890,
+        "median_abs_coeff": 1883,
+        "max_outer_const": 12,
+        "distinct_knob_tuples": 23,
+        "distinct_leaf_props": 31,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  },
+  "r4_floorprod": {
+    "rung": "r4_floorprod",
+    "schema": "floor_sqrt_product_quadratic_bands",
+    "rationale": "the join of r2_prod and r3_floor: `Real.sqrt_mul` must be applied BEFORE the floor step, an ordering no probed adaptation found (0 of 4 close it). Hardest cell in either survey; projected below the corridor floor",
+    "n_atoms": 2,
+    "extra_knobs": [
+      "curvature2"
+    ],
+    "necessity_sweep": {
+      "rung": "r4_floorprod",
+      "cells": 72,
+      "max_spill": 2,
+      "threshold": 3,
+      "cells_at_threshold": [],
+      "ok": true
+    },
+    "predicate_audit": {
+      "points": 406,
+      "under": 0,
+      "over": 0,
+      "ok": true
+    },
+    "violations": [],
+    "leaf_stats": {
+      "2": {
+        "problems": 5,
+        "leaves": 10,
+        "presets": [
+          "r4_floorprod"
+        ],
+        "leaf_len_mean": 112.1,
+        "leaf_len_min": 110,
+        "leaf_len_max": 117,
+        "goal_len_mean": 203.8,
+        "max_abs_coeff": 76,
+        "median_abs_coeff": 50,
+        "max_outer_const": 47,
+        "distinct_knob_tuples": 10,
+        "distinct_leaf_props": 10,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "4": {
+        "problems": 4,
+        "leaves": 16,
+        "presets": [
+          "r4_floorprod"
+        ],
+        "leaf_len_mean": 114.5,
+        "leaf_len_min": 110,
+        "leaf_len_max": 120,
+        "goal_len_mean": 395.0,
+        "max_abs_coeff": 433,
+        "median_abs_coeff": 364,
+        "max_outer_const": 65,
+        "distinct_knob_tuples": 15,
+        "distinct_leaf_props": 16,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      },
+      "8": {
+        "problems": 4,
+        "leaves": 32,
+        "presets": [
+          "r4_floorprod"
+        ],
+        "leaf_len_mean": 117.6,
+        "leaf_len_min": 111,
+        "leaf_len_max": 125,
+        "goal_len_mean": 786.5,
+        "max_abs_coeff": 2188,
+        "median_abs_coeff": 2188,
+        "max_outer_const": 65,
+        "distinct_knob_tuples": 23,
+        "distinct_leaf_props": 32,
+        "repaired_frac": 0.0,
+        "knob_support_ok": true
+      }
+    }
+  }
+}
