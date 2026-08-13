@@ -190,3 +190,60 @@ call the strategist has caught before:
 
 **MORNING DECISION LIST IS REVISED** — item 1 (wide sweep) is withdrawn; the n=32 filter-validation
 pod (#23) replaces it as the recommended next spend. Items 2–5 stand.
+
+- 05:40 — **bridge_chain workflow done (4/5 agents; C2 lost to repeated API 529s). It found
+  something that outranks its own brief, and I verified it independently.**
+
+  **bridge_chain's GOAL collapses.** A fixed, k-independent 15-line proof closes the shipped
+  `e3_lowdeg` goal at **k=2, 4, 8 and 32** — run by the agent, then re-run by me
+  (`research/bc_growth_a/collapse_orchestrator_verify.json`). The route exists because
+  `endpoints_resist_naive_collapse`'s docstring is **wrong** where it says a flat prover needs a
+  ratio "which `gcongr` cannot produce": `gcongr <;> linarith` produces it in one line, and the
+  generator's own per-step witness already does this.
+
+  Why it outranks everything else in `retune-notes.md`: DIRECTION §5.4(d) requires the flat-prover
+  solve rate to **decay in k**. It doesn't. The crude relaxations (`√M ≤ M`, `1 ≤ M`) are
+  **scale-free**, so applying them once at the endpoints is never weaker than applying them k times.
+  The size axis is decorative at the goal level and the control arm never needs the decomposition —
+  the exact confound this experiment exists to rule out. Everything §§1–8 did was tuning **leaf**
+  difficulty on a family whose **goal** the control solves directly.
+
+  **V0 cannot see it**, and that is a contract gap: V0 is the single-tactic battery and these goals
+  survive it 91/91. The flat arm wins by a fixed *idiom*, one level above a tactic. case_tree has an
+  instrument for this (its idiom probe — the thing that made its ladder readable); bridge_chain has
+  none. A registry of generator-derived flat routes, run like the battery, belongs beside V0.
+
+  Scope, precisely: **verified twice** for `e3_lowdeg` at k=2/4/8/32 (decisive — that is the rung
+  Phase 1 selected). `v2` closes at only 1 of 4 tested k, so it is rung-dependent, not universal.
+  The theorem that collapse is unavoidable for this term family, its ~2,000-chain numerical check,
+  and the slack growth (49 / 39,354 / 1.5×10¹⁶ at k=2/8/32) are **attributed, not re-derived by
+  me** — though an anti-collapse gate whose acceptance set measured *empty* at every budget is
+  strong corroboration.
+
+  **#18 re-scoped**: from "bound degree growth" to **"make the goal require the decomposition, or
+  retire the family."** Note that case_tree does **not** have this defect — its goals are piecewise
+  extrema, not endpoint inequalities between two terms of one algebraic family. If no escape works,
+  the transfer experiment runs on case_tree alone.
+
+  **The flatness fix §8.2 asked for was nevertheless delivered**: `g6_tight` holds total degree at 5
+  and `es_left` at exactly **4.00** at k=2/8/32/128 with max|coef| ≤ 100 (**0.04 decades** across
+  the whole grid), 51/51 witnesses, 19/19 battery survivals with two planted controls dying. It also
+  proves the exponent sawtooth **impossible** and that the flat step must be **tight**. Keep it for
+  whenever the collapse is solved.
+
+  Two shipped-code defects to fix regardless: the false docstring above, and
+  `check_preset_invariants` hard-coding non-strictly-increasing exponent sums as a violation — so
+  the invariant checker **rejects the cure for the disease it was written beside**.
+
+## REVISED HEADLINE FOR THE MORNING
+
+Both families now have structural problems, and they are different problems:
+- **case_tree**: sound, but the corridor is only reachable by **measure-and-filter** (`r3_floor`
+  filtered → 0.448 vs a 0.45 target). Needs the n=32 selection-bias test (#23). **No goal-collapse
+  defect.**
+- **bridge_chain**: the leaf-difficulty gradient is *solved* (`g6_tight`), but the **goal collapses**,
+  so the family as selected cannot support the k-axis at all (#18).
+
+If bridge_chain has no escape, the experiment proceeds on case_tree alone — which is survivable
+(DIRECTION's design needs *a* size axis, not two) but halves the generality of any transfer claim,
+and that should be stated in DIRECTION §5 rather than discovered at write-up.
