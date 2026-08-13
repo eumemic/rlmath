@@ -624,3 +624,10 @@ terms of the same algebraic family.
 2. `check_preset_invariants` hard-codes non-strictly-increasing exponent sums as a **violation**, so
    it would reject any bounded-degree fix — the invariant checker forbids the cure for the disease
    it was written beside.
+
+
+> **Stale-flag correction (2026-08-13):** the bridge_chain growth survey lists
+> "`gen_families.py` cannot select a preset" as an open blocker. It is **resolved** — `--preset`
+> was plumbed through in commit `33a6df4` (`gen_families.py:188`, `_gen` at :494), and as of
+> 2026-08-13 the rung is in the output filename too. The survey was citing this file's friction
+> list rather than the code.

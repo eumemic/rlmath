@@ -317,8 +317,7 @@ def endpoints_resist_naive_collapse(first: Term, last: Term) -> bool:
 
     makes the left side *negative* and the right side non-negative, so **no** lower bound
     on `M₀`, however sharp, can rescue it: a flat prover must instead establish a
-    quantitative ratio `M_k ≥ r·M₀` with `r ≥ c₀/c_k > 1`, which is exactly the
-    multiplicative content the chain carries and which `gcongr` cannot produce. The
+    quantitative ratio `M_k ≥ r·M₀` with `r ≥ c₀/c_k > 1`. The
     `d_k ≤ d₀` conjunct extends the same argument to the named-function term (whose
     coefficient a prover could otherwise trade against, since `F(M) ≤ M`).
 
@@ -326,6 +325,24 @@ def endpoints_resist_naive_collapse(first: Term, last: Term) -> bool:
     fell to that route in 8 lines; after it, all five flat routes we know of close 0/3
     goals at every k ∈ {2,4,8,16,32}. The gate touches only the endpoints, so leaf
     difficulty is untouched. It defeats a *family* of routes, not collapse in general.
+
+    **CORRECTION 2026-08-13 — this docstring used to claim the ratio was one `gcongr`
+    cannot produce. That was false, and it was load-bearing.** `gcongr <;> linarith`
+    produces `3^Δ ≤ v^Δ` in one line, and `mul_le_mul_of_nonneg_right` + `ring` finish the
+    ratio — which is precisely what this module's own `_witness_proof` does per step. The
+    resulting fixed, **k-independent** route closes the shipped `e3_lowdeg` goal at
+    k = 2, 4, 8 **and 32** (verified twice: survey agent and orchestrator, see
+    `research/bc_growth_a/collapse_orchestrator_verify.json`).
+
+    So this gate does *not* establish what its final sentence implies. It still defeats the
+    five routes it was measured against — that much is real — but the goal is collapsible
+    anyway, which means DIRECTION §5.4(d) ("flat-prover solve rate decays in k") does not
+    hold for this family as shipped. The underlying reason is that the crude relaxations
+    (`√M ≤ M`, `1 ≤ M`) are **scale-free**: applying them once at the endpoints is never
+    weaker than applying them k times, so no endpoint condition can make the chain
+    necessary. See `research/retune-notes.md` §9; the family's fate is task #18.
+
+    Do not read a `True` from this function as "the goal requires the decomposition".
     """
     c0, _exps0, d0, o0, _f0 = first
     ck, _expsk, dk, ok, _fk = last
