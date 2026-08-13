@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Datacrunch prelude — run BEFORE pod_sweep_setup.sh on a datacrunch pod.
+#
+# WHY THIS EXISTS. `cuda_12_6_pytorch_2_7` (the lambdalabs image the runbook pins) is
+# **lambdalabs-only**: massedcompute rejects it, and datacrunch rejects it too
+# (`HTTP 400: Provider Datacrunch is not supported for image CUDA_12_6_PYTORCH_2_7`).
+# When lambdalabs is out of stock — `HTTP 503: Lambdalabs doesn't have gpu_1x_h100_pcie`,
+# which happened 2026-08-13 — the fallback is datacrunch on its DEFAULT image
+# `ubuntu_22_cuda_12` (omit `--image` entirely and the CLI picks it).
+#
+# That image is bare where the lambdalabs one is not:
+#   * **no pip** (Python 3.10.12 and git and curl are present, pip is not)
+#   * no preinstalled torch — irrelevant, the pinned recipe installs its own anyway
+#   * **SSH is on port 22**, not lambdalabs' 1234 — the ~/.ssh/config alias must match
+#   * driver 580.126.09 (CUDA 13 capable). cu126 wheels are fine: NVIDIA drivers are
+#     backward compatible with older CUDA runtimes, so the pinned torch 2.7.0+cu126 runs.
+#
+# Success marker: PRELUDE_OK
+set -euo pipefail
+
+if ! command -v pip3 >/dev/null 2>&1 && ! python3 -m pip --version >/dev/null 2>&1; then
+  echo "== no pip on this image; bootstrapping"
+  # Download THEN run. Never `curl … | python3 -` or `| sh -s` — the latter reads its script
+  # from stdin, so a `< /dev/null` redirect hands it an empty program (bit this project twice).
+  if ! curl -sSf https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py; then
+    echo "== bootstrap.pypa.io unreachable; falling back to apt"
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -qq && apt-get install -y -qq python3-pip < /dev/null
+  else
+    python3 /tmp/get-pip.py --quiet < /dev/null
+  fi
+fi
+python3 -m pip --version
+echo "PRELUDE_OK"
