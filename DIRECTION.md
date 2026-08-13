@@ -616,3 +616,83 @@ run measures the **mechanism**, not the final calibrated experiment.
 
 Registered before any Phase-2 datum exists. Whatever comes back, the numbers go in the repo
 against these lines.
+
+### §7.1 MEASURED — Phase 2 (2026-08-13, pod `ct-phase2`, invoice $12.83)
+
+215 episodes, case_tree v2, 11 of 12 cells (haiku k=8 direct not run — the pod was terminated
+after haiku k=4 direct measured 0/20, so that cell was near-certainly 0.000 and not worth $4).
+
+**Solve rate by (root, arm, k):**
+
+| root | arm | k=2 | k=4 | k=8 |
+|---|---|---|---|---|
+| qwen3-30b | direct | 0.150 | **0.000** | **0.000** |
+| qwen3-30b | **decomp** | **0.500** | 0.000 | 0.000 |
+| haiku-4.5 | direct | 0.350 | 0.000 | — |
+| haiku-4.5 | decomp | 0.300 | 0.000 | 0.000 |
+
+**1. The k-axis is real for case_tree.** The direct arm decays to zero by k=4 for both roots.
+DIRECTION §5.4(d) — "flat-prover solve rate decays in k" — **holds**, which is exactly what
+bridge_chain failed. The family supports the experiment.
+
+**2. Decomposition beats the flat arm at k=2 for the RL target, by a lot**: 0.500 vs 0.150,
+**+0.35**. It does *not* help the stronger root (haiku 0.300 vs 0.350, −0.05). Decomposition
+helps the model that cannot do it alone — which is the interesting direction, since qwen3-30b is
+the Phase-3 training target.
+
+**3. Above k=2 everything is zero, through TWO distinct bottlenecks — and neither is "the harness
+does not work".**
+
+*(a) Stage-1 plan validity collapses with k, and it is root-dependent:*
+
+| root | k=2 | k=4 | k=8 |
+|---|---|---|---|
+| qwen3-30b | 14/20 (70%) | 3/20 (15%) | **0/20 (0%)** |
+| haiku-4.5 | 14/20 (70%) | 10/20 (50%) | 6/15 (40%) |
+
+*(b) Even valid plans do not close.* Of the 19 stage-1-valid plans at k≥4 across both roots,
+**0 verified**. The reason is visible in `n_lemmas`: asked for a k=4 problem the root emits
+**[2, 4]** lemmas; asked for k=8 it emits **[4, 5, 8, 13]**. **The root under-decomposes**, so
+each invented lemma spans several bands and is far harder than a calibrated oracle leaf.
+
+**4. The finding that reframes Phase 1: the corridor work has been calibrating the wrong
+distribution.** Every oracle-ceiling number in this repo — R5, §5.4(b′), the [0.25, 0.9] band, the
+whole measure-and-filter effort — is computed over *the generator's* leaves at pass rate 0.847.
+But a policy invents *its own* lemmas, drawn from a different and much harder distribution.
+Measured: policy-invented leaves close **10/14 at k=2** and **0/19 at k≥4**. Oracle-replay tells
+you what happens if the policy reproduces the generator's decomposition exactly; it says nothing
+about the difficulty of what a policy actually proposes, and that is the binding constraint.
+
+**5. Registered predictions: 1 of 5 hit.**
+
+| predicted | measured | |
+|---|---|---|
+| qwen direct 0.35/0.10/0.02 | 0.150/0.000/0.000 | MISS — faster |
+| haiku direct 0.60/0.25/0.05 | 0.350/0.000/— | MISS — faster |
+| decomp 0.35/0.25/0.20, decaying *slower* | 0.500/0.000/0.000 | MISS — collapsed |
+| gap 0.0/+0.10/+0.20, widening | +0.35/0.000/0.000 | MISS — largest at k=2 |
+| dominant k=8 decomp failure is `plan_invalid` | 19/20 (qwen) | **HIT** |
+
+Four misses, all in the same direction — everything is harder than predicted, the same systematic
+optimism the ladder projections showed (all six errors negative there too). The one hit is the
+diagnostic, which is the one that decides whether the rest is interpretable.
+
+### What this means for the project
+
+**Phase 3 is viable, and the design already anticipated this.** RL needs reward signal, and at
+k=8 qwen scores literally zero on every episode — GRPO cannot learn from that. But there *is*
+strong signal at k=2 (decomp 0.500, with 70% valid plans), and the whole point of the RLM result
+being tested is **train short, test long**. So: train at k=2, evaluate transfer at k=4/8. That is
+the registered design, and Phase 2 has just confirmed the training regime has signal and the
+evaluation regime has headroom.
+
+**And the thing training must fix is precisely what reward shapes.** The measured failure is
+under-decomposition — the root proposes too few, too-large lemmas. A reward that pays only for a
+fully closed proof pushes directly against that. This is a much more specific and more tractable
+target than "learn to decompose".
+
+**What must change:** leaf calibration should be re-pointed from oracle leaves to
+*policy-invented* lemma difficulty. The corridor as defined is a property of the generator, not of
+the task the policy actually faces. #23's measure-and-filter machinery is still useful, but the
+distribution it should be filtering is the one measured *from policy proposals*, which nothing in
+the repo currently measures.
