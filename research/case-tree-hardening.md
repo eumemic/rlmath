@@ -1607,3 +1607,63 @@ measured rather than argued.
 sweep (#12) to turn the 401 in-band statements into a real bank, then bank-drawn leaves for both
 families. Reinstating `H2_quartic` (§3.8) is the one cheap synthetic option R3′ has re-opened, and
 it is the only one worth a further pod before direction 1.
+
+## §12.1 CORRECTION — the corridor is reachable; I applied the wrong statistic
+
+§12 concluded "the corridor sits in a gap" and recommended escalating to bank-drawn leaves. Both
+claims need correcting, and the second is wrong for two independent reasons.
+
+**The corridor criterion was applied to the wrong object.** R1/R2 read the *unfiltered generated*
+distribution. But the leaf bank's whole design is **measure-then-filter**: generate a surplus,
+measure pass@8, keep what lands in band (that is how `bank_dsv2.jsonl`'s 401 in-band statements
+were produced from 4,085 measured). The families were being held to a stricter standard than the
+bank — "everything you generate must be in band" versus "keep what is." Applying the bank's own
+discipline to these same synthetic leaves:
+
+| rung | in band | surplus needed | **filtered mean** | band-fit | zero-rate | attempts for oracle ≥0.70 (k=8 / k=32) |
+|---|---|---|---|---|---|---|
+| `v2` | 15/40 | 2.7× | 0.708 | 1.00 | 0.00 | 3 / 4 |
+| **`r3_floor`** | 12/40 | 3.3× | **0.448** | 1.00 | 0.00 | 6 / 8 |
+| `r2_sum` | 7/40 | 5.7× | 0.411 | 1.00 | 0.00 | 6 / 9 |
+| `r2_prod` | 21/40 | 1.9× | 0.363 | 1.00 | 0.00 | 7 / 10 |
+
+`r3_floor`'s filtered pool lands at **0.448 against a 0.45 target**, with band-fit 1.00 and
+zero-rate 0.00 *by construction*, and it clears DIRECTION §5.5(b) at every k up to 32 with **8
+attempts per leaf** — a modest raise from the shipped 4, far short of the 19 the unfiltered mean
+implied. R5 does not disqualify the ladder; it disqualifies shipping *unfiltered* leaves.
+
+**Caveats, stated because this is a lead and not a closed result:**
+1. **n is small.** The filtered means rest on 12 (`r3_floor`) to 21 (`r2_prod`) leaves; ~±0.04.
+2. **Per-k structure is unresolvable.** Filtered cells hold 1–7 leaves, so the apparent per-k
+   spreads (0.219 / 0.104 / 0.219) are noise. Keep rates also swing by k (`r3_floor`
+   40/10/50/20%) at ±15% SE. Flatness of the *filtered* pool is untested, and R3′ on the filtered
+   subset has no power at this n.
+3. **Filtering at n=8 selects on noise.** A leaf whose true rate is 0.95 can measure 0.875 and be
+   kept; one at 0.5 can measure 1.0 and be dropped. The filtered pool's *true* rates are therefore
+   regression-biased toward the band edges, so band-fit 1.00 is a property of the measurement, not
+   of the leaves. The bank carries the same bias — FAMILIES.md already notes ~32 attempts are
+   needed for per-leaf claims. Re-measuring a filtered pool at n=32 would shrink apparent band-fit.
+
+**And the escalation I recommended does not work as written, independently of the above.**
+FAMILIES.md direction 1 says "draw leaf content from the calibrated bank." Inspected: the 401
+in-band statements are **self-contained competition inequalities with their own bound variables and
+hypotheses**, e.g. `∀ (a b c : ℝ) (ha : 0 < a) … (habc : a + b + c = 1), 10*(a³+b³+c³) − 9*(a⁵+b⁵+c⁵) ≥ 1`
+(272 of 401 are `∀`-over-ℝ of this shape). Neither shipped family can host them:
+- `bridge_chain` leaves are **relational steps over shared variables** — transitivity is what
+  composes them into the goal. Independent statements do not chain.
+- `case_tree` leaves are **band claims over the goal's shared `x`**. Independent statements have no
+  common domain.
+
+So direction 1 needs a *new assembly* able to compose structurally independent statements — and the
+obvious one (a conjunctive goal `L₁ ∧ … ∧ L_k`) fails **V6 by construction**, because every leaf
+prop is then a substring of the goal and nothing is invented. **Leaf content and assembly are
+coupled: what makes a leaf battery-resistant and difficulty-calibrated (independence) is what makes
+it uncomposable.** That tension is the real obstacle, and it was not visible in FAMILIES.md's
+"directions in preference order," which assumed leaf content is swappable.
+
+**Revised recommendation.** The wide sweep (#12) should **not** be the next spend — it buys
+calibrated *statements*, not usable *leaves*, until a family exists that can host them. The cheap,
+high-information next measurement is instead: generate surplus `r3_floor` and `r2_prod` leaves,
+measure, filter, and re-measure the filtered pool at **n=32** to test whether the corridor survives
+the selection bias — plus reinstating `H2_quartic`, which R3′ has re-legitimised. That is one pod
+and it tests the thing everything now rests on.
