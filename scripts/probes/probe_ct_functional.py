@@ -306,7 +306,12 @@ def d_baseline(s: Spec, variant: str) -> Inst | None:
     if t - C < 1:
         return None
     prop = _binder(s.lo, s.hi) + _side(f"Real.sqrt ({u})", variant, t)
-    piece = ct.Piece(lo=s.lo, hi=s.hi, a=s.a, m=s.m, d=d, width=s.w,
+    # `schema` became a REQUIRED first field when the rung ladder landed, deliberately with
+    # no default: a defaulted schema would let a piece silently carry v2's `holds_at` into a
+    # rung whose predicate differs, which is the false-necessity hole the ladder exists to
+    # make structurally impossible. This probe builds the BASELINE shape, so v2 is correct
+    # here — but it has to say so.
+    piece = ct.Piece(ct.RUNGS["v2"], lo=s.lo, hi=s.hi, a=s.a, m=s.m, d=d, width=s.w,
                      offset=s.off, slack=s.slack)
     witness = ct.leaf_proof(piece)          # the family's own template, verbatim
 
