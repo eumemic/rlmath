@@ -31,17 +31,25 @@ figure previously in this repo was a wall-clock estimate and undercounted.**
 | overnight sweep pod | ≈$29.7 (vs a $30 cap) | **$36.19** |
 | session-3 pod | ≈$5.8 | **$2.66** |
 | inference (all sessions) | "pennies of $5" | **$0.36** |
-| **total** | **≈$48.5** | **$61.55** |
+| ct-ladder pod (2026-08-13) | ≈$3.50 | **$6.51** |
+| **total** | **≈$52** | **$68.06** |
 
-Two consequences. (a) **The estimates were ~27% low**, and the row that is almost certainly the
-overnight pod is **$36.19 against the $30 cap the user authorized** — an overrun I reported as a
-clean $29.7 close. (b) There is **more credit than the repo recorded**: balance is **$38.45**, so
-$100 was available, not $50. Wallet timestamps are **UTC** (CDT+5) — that is what makes recent
-rows look like they are in the future.
+Consequences. (a) **The estimates run low, persistently and by a lot** — ~27% across the first four
+pods, and **86% on the ct-ladder pod even after I explicitly padded for setup.** (b) The row that is
+almost certainly the overnight sweep is **$36.19 against the $30 cap the user authorized**, an
+overrun reported at the time as a clean $29.7 close. (c) Wallet timestamps are **UTC** (CDT+5),
+which is what makes recent rows look like they are in the future.
 
-**Do not read the $38.45 as authorization.** The standing GPU authorization was $30 for the
-overnight run; it is spent. Ask before the next pod. `CREDITS_ASK.md` was sent 2026-08-12; no reply
-seen.
+**Why ct-ladder missed by 86%, because the cause generalises:** the pod was up **2h12m**, not the
+~80 min projected. Install alone took 13 min, and the measurement ran ~1h45m rather than the ~35 min
+that 430–480 rows/hr implies. **That throughput figure was measured at k ≤ 8 and does not transfer
+to a k-grid containing 32** — those rows carry 4-decade coefficients and much longer statements, so
+both generation and Lean verification are several times slower per row. Budget k=32 work at roughly
+**3× the k ≤ 8 rate**.
+
+**Balance $31.93 as of 2026-08-13 06:00.** Do not read it as authorization: the overnight
+authorization was $12 and $6.52 of it is spent. Ask before the next pod. `CREDITS_ASK.md` was sent
+2026-08-12; no reply seen.
 
 ---
 
