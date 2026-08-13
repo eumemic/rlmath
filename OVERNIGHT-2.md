@@ -148,3 +148,45 @@ call the strategist has caught before:
 4. **#21 maxHeartbeats** — still open, still blocks the k=128 tier and DIRECTION §5.4(e).
 5. Two contract reinterpretations from last night still want reviewer eyes: R3→R3′ and the
    leaf-disjointness leaf-level reading.
+
+- 04:55 — **§12.1: I got the ladder verdict wrong an hour ago. Two corrections, both committed
+  (`0793c10`).**
+
+  **(a) The corridor IS reachable.** I applied R1/R2 to the *unfiltered generated* distribution,
+  but the leaf bank's entire design is **measure-then-filter** — its 401 in-band statements came
+  from 4,085 measured. I was holding the families to a stricter standard than the bank. Filtering
+  these same measured leaves:
+
+  | rung | in band | surplus | filtered mean | attempts for oracle ≥0.70 (k=8/k=32) |
+  |---|---|---|---|---|
+  | **`r3_floor`** | 12/40 | 3.3× | **0.448** (target 0.45) | 6 / 8 |
+  | `r2_sum` | 7/40 | 5.7× | 0.411 | 6 / 9 |
+  | `r2_prod` | 21/40 | 1.9× | 0.363 | 7 / 10 |
+
+  Band-fit 1.00 and zero-rate 0.00 by construction, and `r3_floor` clears DIRECTION §5.5(b) at
+  every k to 32 with **8 attempts/leaf** — not the 19 the unfiltered mean implied. So R5 does not
+  disqualify the ladder; it disqualifies shipping *unfiltered* leaves. **`r3_floor` measured 0.448
+  against a 0.45 target** — the closest this project has come to the corridor.
+
+  Held back deliberately: n is 12–21 leaves; filtered per-k cells hold 1–7 leaves so filtered
+  flatness is **untested**; and filtering at n=8 **selects on noise**, so band-fit 1.00 describes
+  the measurement rather than the leaves. That last one is the crux and it is now task **#23**.
+
+  **(b) The escalation I recommended cannot work as written.** The 401 in-band statements are
+  self-contained competition inequalities with their own variables and hypotheses (272/401 are
+  ∀-over-ℝ of that shape). `bridge_chain` leaves must be relational steps over *shared* variables;
+  `case_tree` leaves must be band claims over the goal's shared `x`. Independent statements fit
+  neither, and the obvious composing assembly (conjunctive goal) fails **V6** because every leaf is
+  then a substring of the goal. **Leaf content and assembly are coupled** — independence is what
+  makes a leaf calibrated *and* what makes it uncomposable. FAMILIES.md's "directions in preference
+  order" assumed swappable content; it should not.
+
+  **So the wide sweep (#12) is NOT the next spend** — it buys calibrated statements, not usable
+  leaves. Revised next measurement (#23): surplus-generate `r3_floor`/`r2_prod`, filter, and
+  **re-measure the filtered pool at n=32** to see how much band-fit survives the selection bias,
+  plus `H2_quartic` which R3′ re-legitimised. One pod, and it tests the thing everything now rests
+  on. **Not launched — the remaining $5.48 of cap cannot safely cover it** given estimates ran 86%
+  low tonight.
+
+**MORNING DECISION LIST IS REVISED** — item 1 (wide sweep) is withdrawn; the n=32 filter-validation
+pod (#23) replaces it as the recommended next spend. Items 2–5 stand.
