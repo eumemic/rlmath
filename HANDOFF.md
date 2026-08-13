@@ -17,7 +17,7 @@ deep notes (papers, families, retune levers, verifiers API).
 | Phase | State |
 |---|---|
 | **0** | **CLOSED** — all gates. Repo public (MIT), Hub env `eumemic/rlmath-decomp` v0.1.2 PUBLIC. Bank: 4,102 rows / 401 band (299 train / 102 eval) / 0 errors. |
-| **1** | **OPEN on BOTH families** (corrected 2026-08-12). bridge_chain at `e3_lowdeg` passes R1 (0.429 vs 0.404 projected) and R2 (band-fit 0.83) but **FAILS R3, the flatness gate** — per-k means 0.575/0.463/0.250, spread 0.325 = 6.5× the ±0.05 tolerance, and all five presets fail the same way. R3 was never evaluated at the session close; the earlier "DONE" was premature. Mechanism identified and structural: `research/retune-notes.md` §8. case_tree measures 0.923 — **above** the 0.9 ceiling, too easy, and the cause is idiom recall not calibration (`research/case-tree-forensics.md`). |
+| **1** | **OPEN on both families, for two DIFFERENT structural reasons** (rewritten 2026-08-13 after the overnight session — read `OVERNIGHT-2.md` for the narrative). **case_tree: sound and close.** The hardening ladder measured (239 leaves × 8, invoice $6.51); no rung reaches the corridor *unfiltered*, but that judged the wrong object — the bank's own discipline is measure-then-filter, and filtering gives `r3_floor` **0.448 against a 0.45 target**, band-fit 1.00, clearing the oracle gate at every k to 32 with 8 attempts/leaf. One test stands between this and a Phase-1 close: filtering at n=8 selects on noise, so the filtered pool must be **re-measured at n=32** (task #23). **bridge_chain: the leaf-difficulty gradient is solved but the family may be unusable.** Its **goal collapses** — a fixed *k-independent* proof closes the shipped `e3_lowdeg` goal at k=2/4/8/**32** (verified twice), so DIRECTION §5.4(d) "flat-prover solve rate decays in k" fails and the control arm never needs the decomposition. `research/retune-notes.md` §9, task #18. |
 | **2** | Instrument validated; **cold-start question answered** — few-shot (rung 1.5) flips qwen3-30b from 0/5 to 5/5 stage-1-passing decompositions. Full study not yet run. |
 | **3** | Design only. Not started. |
 
@@ -108,30 +108,44 @@ attempts/hr. Fresh-pod setup ≈20 min (models + Mathlib cache).
 
 ## 3. Next moves, in order
 
-*Reordered 2026-08-12: Phase 1 is open on **both** families and bridge_chain's defect is the more
-serious of the two, because it is the flatness property the whole k-axis rests on.*
+*Rewritten 2026-08-13 after the overnight session. The two families now need different things, and
+the wide sweep is NO LONGER the recommended next spend — see the reason under (3).*
 
-1. **bridge_chain flatness fix (#18) — highest value, local, $0 until the confirm pass.**
-   R3 fails for all five presets; the growth law is the cause (`research/retune-notes.md` §8).
-   Stage a bounded-degree schema (candidate: growth by integer multiplier, `M_i = 3^i · x^p y^q z^r`)
-   → local battery gate with planted control → register projections → GPU confirm → apply R0–R4
-   **including R3 this time**. Note the process lesson: R1/R2 were applied at the close and R3 was
-   silently skipped, which is how a failing family got written up as DONE.
-2. **case_tree hardening ladder (#16)** — in flight as a workflow. The playbook does **not** transfer
-   from bridge_chain: there is no lever inside the knob support (every marginal 0.87–0.99; 50/68
-   leaves at a perfect 8/8), because 68/68 successful proofs run one memorized idiom
-   (`Real.sqrt_le_iff` + `nlinarith [sq_nonneg …]`). So this is a *schema* ladder, and the
-   coverage/necessity soundness asymmetry has to be re-derived per rung.
-   See `research/case-tree-forensics.md`, `research/case-tree-hardening.md`.
-3. ~~Re-fit the difficulty-lever model~~ **DONE** — `research/lever-model-refit.md`. Levers replicate
-   out of sample; §5's projections scored MAE 0.044, r=0.83, and picked the right preset under R1.
-4. ~~Confirm bridge's within-chain gradient~~ **DONE — confirmed**, see flag 1 and item 1 above.
-5. **Phase-2 full study** once a leaf endpoint exists: few-shot arms as default (rung 1.5 is
-   settled), roots per the roster, k-grid across both families, `--max-usd` per cell.
-6. **Wide sweep (#12, ~$45)** the moment credits land — machinery proven, `--repair` first to
-   re-run the 222 quarantined error rows.
+1. **#23 — the one measurement that matters: re-measure a FILTERED case_tree pool at n=32.**
+   Filtering at pass@8 selects on noise (a leaf whose true rate is 0.95 can measure 0.875 and be
+   kept), so `r3_floor`'s filtered 0.448 and band-fit 1.00 describe the *measurement*, not the
+   leaves. If most of the band-fit survives n=32, **Phase 1 closes for case_tree** and the whole
+   synthetic-leaf route is vindicated. If it collapses, synthetic leaves are out and direction 1
+   needs a new family. Stage surplus (`r3_floor` 3.3×, `r2_prod` 1.9×), filter, re-measure; put
+   `H2_quartic` in the same pod (R3′ re-legitimised it). Budget realistically — see the money note.
+2. **#18 — decide bridge_chain's fate.** Not a calibration job any more: make the goal *require* the
+   decomposition, or retire the family. Escapes named but untested in `research/retune-notes.md` §9.
+   If none work, run the transfer experiment on case_tree alone — survivable (the design needs *a*
+   size axis, not two) but it halves the generality of any transfer claim, and DIRECTION §5 should
+   say so up front rather than have it surface at write-up.
+3. ~~Wide sweep (#12)~~ **WITHDRAWN as the next spend.** It buys difficulty-calibrated *statements*,
+   not usable *leaves*: the 401 in-band statements are self-contained competition inequalities with
+   their own variables, while `bridge_chain` leaves must be relational steps over *shared* variables
+   and `case_tree` leaves must be band claims over the goal's `x`. Neither can host them, and the
+   obvious composing assembly (a conjunctive goal) fails V6 outright. **Leaf content and assembly
+   are coupled** — the independence that makes a leaf calibrated is what makes it uncomposable.
+   Revisit only once a family exists that can host independent statements.
+4. **#22 — the attempt budget.** R5 turned this from theory into a gate: no corridor-target family
+   satisfies DIRECTION §5.5(b) at k>2 under the shipped `Budgets`. A filtered `r3_floor` pool needs
+   only 8 attempts/leaf, so this may be cheap — but it touches a frozen core contract and costs
+   Phase-2/3 GPU linearly. User's call.
+5. **#21 — `maxHeartbeats`.** Still blocks the k=128 tier and DIRECTION §5.4(e). Remember the trap:
+   the same constant arms the automation battery, so any bump invalidates every V0/V5 verdict.
+6. **#19 / #20** — leaf-pool rejection sampling (needed by #23's filtered pool) and the datasheet
+   columns. Both local, free, small.
+7. **Phase-2 full study** once a leaf endpoint exists: few-shot arms as default, roster roots,
+   k-grid, `--max-usd` per cell.
 
----
+**A contract gap worth fixing before any new family:** V0 is a *single-tactic* battery, and
+bridge_chain's goals survive it 91/91 while falling to a fixed 15-line **idiom**. case_tree has an
+instrument for this (its idiom probe — the thing that made its ladder readable); bridge_chain had
+none, which is why the collapse went unseen for the whole retune. A registry of generator-derived
+flat routes, run like the battery, belongs in `validate.py` beside V0.
 
 ## 4. Unresolved flags (from build agents; flag 1 is now BLOCKING)
 
