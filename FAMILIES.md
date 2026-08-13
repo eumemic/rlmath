@@ -143,6 +143,17 @@ contamination channel the retrieval RLM never had (its content was inexhaustible
   that conditioning on the key nibble does not shift the knob marginals (the nibble is a
   hash of the rendered prop, so it should be independent of the knobs, but "should" is not
   "measured").
+  **MEASURED 2026-08-13 — the precondition holds, and how you count matters.** 2,520 case_tree
+  leaves over 3 rungs × k ∈ {2,4,8} × 60 seeds, χ² of pool membership against each knob:
+  width p=0.885, curvature p=0.348, **offset p=0.033**, slack p=0.744 — all clear at a
+  Bonferroni α of 0.0125. Eval share 0.259 against a 0.25 design.
+  *The first run said otherwise and was wrong.* Counting per leaf **instance** put offset at
+  χ²=11.885, p=0.0026 — apparently biased. The cause is that 17% of drawn leaves are duplicate
+  statements (the schema's distinct-leaf space saturates in the low thousands), and a duplicate
+  shares its nibble *and* its knobs, so it double-counts into exactly the cell that inflates χ².
+  **Test on DISTINCT statement keys** — which is also the unit pool membership is defined on.
+  Offset remains the closest to the line and is worth re-checking at larger n if this machinery
+  ships.
 - **Status: NOT YET IMPLEMENTED for family-generated leaves.** `scripts/gen_families.py`
   has no pool logic at all, so every currently-materialized family row is `unrecorded`
   rather than train/eval. This is not a contamination event — nothing has been trained —
