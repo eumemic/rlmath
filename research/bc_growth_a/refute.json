@@ -1,0 +1,14 @@
+{
+  "trade_x_for_y": {
+    "refuted": false,
+    "err": "unsolved goals\nh :\n  \u2200 (x y z : \u211d),\n    3 \u2264 x \u2192\n      3 \u2264 y \u2192\n        3 \u2264 z \u2192\n          2 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * \u221a(x ^ 2 * y ^ 1 * z ^ 1) + 1 \u2264\n            9 * x ^ 1 * y ^ 2 * z ^ 1 + 9 * \u221a(x ^"
+  },
+  "drop_degree": {
+    "refuted": true,
+    "err": ""
+  },
+  "trade_big_offset": {
+    "refuted": true,
+    "err": ""
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "per_leaf": {
+    "g6_tight/flat/k2/(61, 52, 17)->(62, 51, 17)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g6_tight/flat/k2/(56, 17, 40)->(57, 16, 40)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g6_tight/flat/k2/(40, 22, 5)->(41, 21, 5)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g6_tight/grow/k2/(97, 16, 24)->(46, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g6_tight/grow/k2/(53, 37, 5)->(32, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g6_tight/grow/k2/(62, 51, 17)->(43, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g4_deg4/flat/k2/(100, 7, 13)->(100, 8, 12)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g4_deg4/flat/k2/(69, 5, 19)->(70, 4, 19)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g4_deg4/flat/k2/(64, 88, 14)->(65, 87, 15)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": true,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": true
+    },
+    "g4_deg4/grow/k2/(100, 8, 12)->(40, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g4_deg4/grow/k2/(84, 33, 11)->(43, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    },
+    "g4_deg4/grow/k2/(72, 20, 4)->(32, 1, 1)": {
+      "nlinarith+sqrt_nonneg": false,
+      "nlinarith+sq_sqrt": false,
+      "nlinarith+one_le_sqrt": false,
+      "nlinarith+sqrt_le_self": false,
+      "gcongr+nlinarith": false,
+      "nlinarith+both": false
+    }
+  },
+  "closed_route_counts_by_kind": {
+    "flat": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      2
+    ],
+    "grow": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "n_routes": 6
+}

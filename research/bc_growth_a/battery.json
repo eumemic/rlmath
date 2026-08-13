@@ -1,0 +1,111 @@
+{
+  "planted_congruent": {
+    "killed_by": [
+      "by intros; gcongr <;> linarith"
+    ],
+    "survives": false,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 2 * x ^ 1 * y ^ 0 * z ^ 0 + 1 * Real.sqrt (x ^ 1 * y ^ 0 * z ^ 0) + 1 \u2264 9 * x ^ 1 * y ^ 0 * z ^ 0 + 9 * Real.sqrt (x ^ 1 * "
+  },
+  "planted_flat_nogate": {
+    "killed_by": [
+      "by intros; gcongr <;> linarith"
+    ],
+    "survives": false,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 4 * x ^ 2 * y ^ 1 * z ^ 0 + 2 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 0) + 3 \u2264 5 * x ^ 2 * y ^ 1 * z ^ 0 + 3 * Real.sqrt (x ^ 2 * "
+  },
+  "g6_tight/flat/k2/i1/(61, 52, 17)->(62, 51, 17)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 61 * x ^ 2 * y ^ 1 * z ^ 1 + 52 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 17 \u2264 62 * x ^ 2 * y ^ 1 * z ^ 1 + 51 * Real.sqrt (x ^"
+  },
+  "g6_tight/flat/k2/i1/(56, 17, 40)->(57, 16, 40)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 56 * x ^ 2 * y ^ 1 * z ^ 1 + 17 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 40 \u2264 57 * x ^ 2 * y ^ 1 * z ^ 1 + 16 * Real.sqrt (x ^"
+  },
+  "g6_tight/flat/k2/i1/(40, 22, 5)->(41, 21, 5)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 40 * x ^ 2 * y ^ 1 * z ^ 1 + 22 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5 \u2264 41 * x ^ 2 * y ^ 1 * z ^ 1 + 21 * Real.sqrt (x ^ "
+  },
+  "g6_tight/flat/k2/i1/(96, 17, 24)->(97, 16, 24)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 96 * x ^ 2 * y ^ 1 * z ^ 1 + 17 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 24 \u2264 97 * x ^ 2 * y ^ 1 * z ^ 1 + 16 * Real.sqrt (x ^"
+  },
+  "g6_tight/flat/k2/i1/(73, 71, 33)->(74, 70, 33)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 73 * x ^ 2 * y ^ 1 * z ^ 1 + 71 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 33 \u2264 74 * x ^ 2 * y ^ 1 * z ^ 1 + 70 * Real.sqrt (x ^"
+  },
+  "g6_tight/grow/k2/i2/(97, 16, 24)->(46, 1, 1)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 97 * x ^ 2 * y ^ 1 * z ^ 1 + 16 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 24 \u2264 46 * x ^ 2 * y ^ 1 * z ^ 2 + 1 * Real.sqrt (x ^ "
+  },
+  "g6_tight/grow/k2/i2/(53, 37, 5)->(32, 1, 1)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 53 * x ^ 2 * y ^ 1 * z ^ 1 + 37 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5 \u2264 32 * x ^ 2 * y ^ 2 * z ^ 1 + 1 * Real.sqrt (x ^ 2"
+  },
+  "g6_tight/grow/k2/i2/(62, 51, 17)->(43, 1, 1)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 62 * x ^ 2 * y ^ 1 * z ^ 1 + 51 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 17 \u2264 43 * x ^ 2 * y ^ 2 * z ^ 1 + 1 * Real.sqrt (x ^ "
+  },
+  "g6_tight/grow/k2/i2/(41, 21, 5)->(22, 1, 1)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 41 * x ^ 2 * y ^ 1 * z ^ 1 + 21 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5 \u2264 22 * x ^ 2 * y ^ 1 * z ^ 2 + 1 * Real.sqrt (x ^ 2"
+  },
+  "g6_tight/grow/k2/i2/(57, 16, 40)->(38, 1, 1)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 57 * x ^ 2 * y ^ 1 * z ^ 1 + 16 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 40 \u2264 38 * x ^ 2 * y ^ 2 * z ^ 1 + 1 * Real.sqrt (x ^ "
+  },
+  "g6_tight/GOAL/k8": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 28 * x ^ 2 * y ^ 1 * z ^ 1 + 5 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 12 \u2264 15 * x ^ 2 * y ^ 1 * z ^ 2 + 1 * Real.sqrt (x ^ 2"
+  },
+  "g6_tight/GOAL/k32": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 83 * x ^ 2 * y ^ 1 * z ^ 1 + 71 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 31 \u2264 62 * x ^ 2 * y ^ 2 * z ^ 1 + 1 * Real.sqrt (x ^ "
+  },
+  "g6_tight/GOAL/k128": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 37 * x ^ 2 * y ^ 1 * z ^ 1 + 4 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 66 \u2264 36 * x ^ 3 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 3"
+  },
+  "g3_k128/flat/k128/(40, 1, 66)->(40, 2, 65)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 40 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 66 \u2264 40 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2"
+  },
+  "g3_k128/flat/k128/(69, 1, 39)->(69, 2, 38)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 69 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 39 \u2264 69 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2"
+  },
+  "g3_k128/flat/k128/(100, 2, 5)->(100, 3, 4)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 100 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 5 \u2264 100 * x ^ 2 * y ^ 1 * z ^ 1 + 3 * Real.sqrt (x ^ "
+  },
+  "g3_k128/flat/k128/(67, 1, 38)->(67, 2, 37)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 67 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 38 \u2264 67 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2"
+  },
+  "g3_k128/flat/k128/(99, 1, 7)->(99, 2, 6)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 99 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 7 \u2264 99 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ 2 "
+  },
+  "g3_k128/flat/k128/(100, 1, 6)->(100, 2, 5)": {
+    "killed_by": [],
+    "survives": true,
+    "prop": "\u2200 x y z : \u211d, 3 \u2264 x \u2192 3 \u2264 y \u2192 3 \u2264 z \u2192 100 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * Real.sqrt (x ^ 2 * y ^ 1 * z ^ 1) + 6 \u2264 100 * x ^ 2 * y ^ 1 * z ^ 1 + 2 * Real.sqrt (x ^ "
+  }
+}

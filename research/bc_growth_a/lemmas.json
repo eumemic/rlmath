@@ -1,0 +1,22 @@
+{
+  "sqrt_le_sqrt+simpa": {
+    "ok": true,
+    "err": ""
+  },
+  "one_le_sqrt.mpr": {
+    "ok": true,
+    "err": ""
+  },
+  "one_le_sqrt(pos).mpr": {
+    "ok": false,
+    "err": "Function expected at\n  one_le_sqrt\nbut this term has type\n  1 \u2264 \u221a?m.327 \u2194 1 \u2264 ?m.327\n\nNote: Expected a function because this term is being applied to the argument\n  (by positivity)"
+  },
+  "le_sqrt": {
+    "ok": true,
+    "err": ""
+  },
+  "log_le_2sqrt-2": {
+    "ok": true,
+    "err": ""
+  }
+}

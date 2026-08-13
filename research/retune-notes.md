@@ -536,3 +536,91 @@ that trades multiplier against exponent so both stay bounded; or FAMILIES.md dir
 Registered before measuring: I expect the coefficient effect to be **real but much weaker per
 decade than the degree effect** (which measured −0.0353/unit of exponent sum, z = −4.48). If a
 staged comparison shows otherwise, that is the finding.
+
+---
+
+## 9. The family is unsuitable, not miscalibrated — the GOAL collapses (2026-08-13, verified twice)
+
+Everything in §§1–8 tuned **leaf** difficulty. It was the wrong object. bridge_chain's **goal** is
+closed by a fixed proof whose length does not depend on k, so the flat arm never needs the
+decomposition at all.
+
+`endpoints_resist_naive_collapse`'s docstring claims a flat prover "must instead establish a
+quantitative ratio `M_k ≥ r·M₀` … **which `gcongr` cannot produce**." That clause is load-bearing
+and **false**. The generator's own per-step witness produces exactly such a ratio, and the
+multi-variable version is one `gcongr <;> linarith`:
+
+```lean
+have hbase : (3:ℝ) ^ 0 * 3 ^ 0 * 3 ^ 1 ≤ x ^ 0 * y ^ 0 * z ^ 1 := by gcongr <;> linarith
+have hpow  : (3:ℝ) ≤ x ^ 0 * y ^ 0 * z ^ 1 := by linarith [hbase]
+have hstep : (3:ℝ) * (x^1*y^0*z^0) ≤ (x^0*y^0*z^1) * (x^1*y^0*z^0) :=
+  mul_le_mul_of_nonneg_right hpow (by positivity)
+have hring : (x^0*y^0*z^1) * (x^1*y^0*z^0) = x^1*y^0*z^1 := by ring
+rw [hring] at hstep
+linarith [hM, hfu, hfl, hstep]
+```
+
+**Measured on goals from the shipped generator — run by the survey agent and then re-run
+independently by the orchestrator** (`research/bc_growth_a/collapse_orchestrator_verify.json`):
+
+| preset | k=2 | k=4 | k=8 | k=32 | k=128 |
+|---|---|---|---|---|---|
+| **`e3_lowdeg`** — the rung R1/R2 selected | **closed** | **closed** | **closed** | **closed** | — |
+| `v2` | no | closed | no | no | — |
+| `s0_shipped`, `g1`–`g3` candidates | — | — | closed | closed | closed |
+
+**The k=32 `e3_lowdeg` goal — 32 hidden intermediates, the artifact the transfer plot integrates
+over — falls to a proof that does not grow with k.** Both runs agree.
+
+### Why this outranks every earlier finding here
+
+DIRECTION §5.4 requires **(d) flat-prover solve rate decays in k**. It does not decay; it is
+flat, because the crude relaxations (`√M ≤ M`, `1 ≤ M`) are **scale-free** — applying them once at
+the endpoints is never weaker than applying them k times. So the size axis is decorative at the
+goal level, and the flat arm gets the answer without decomposing, which is precisely the confound
+the whole experiment exists to rule out.
+
+**V0 cannot see this, and that is a contract gap.** V0 is the single-tactic battery and these goals
+*do* survive it (91/91 in the survey's passes). The flat arm wins by a **fixed idiom**, one level
+above a tactic. case_tree has an instrument for exactly this — its idiom probe, which is what made
+the case_tree ladder readable — and bridge_chain has none. A registry of generator-derived flat
+routes, run like the battery, belongs in `validate.py` next to V0.
+
+### Scope of the claim, stated precisely
+
+- **Verified by me, twice:** the route closes `e3_lowdeg` at k=2/4/8/32. That is decisive for the
+  rung Phase 1 selected.
+- **Rung-dependent, not universal:** `v2`'s goal closed at only 1 of 4 tested k. So the shipped
+  family is not uniformly collapsible — the *selected* rung is.
+- **Attributed, not independently re-derived:** the survey's theorem that collapse is unavoidable
+  for this term family (`3^δ·c_k ≥ c_end+d_end+(o_end−o_k)⁺` with the offset terms cancelling, so
+  crude slack `≥ Δ − (o₀−o_end) ≥ 0`), its numerical confirmation over ~2,000 chains, and the
+  reported slack growth (49 / 39,354 / 1.5×10¹⁶ at k=2/8/32). Consistent with an anti-collapse
+  gate whose acceptance set was measured **empty** at every budget — which is itself strong
+  evidence the theorem is right.
+
+### Consequence
+
+**bridge_chain is not a miscalibrated family; as selected it is an unsuitable one.** §8's flatness
+verdict, §8.1's resolution addendum and §8.2's refutation all stand, but they are subordinate: there
+is no point fixing the leaf-difficulty gradient of a family whose goals the control arm solves
+directly. Task #18 should be re-scoped from "bound degree growth" to **"make the goal require the
+decomposition, or retire the family."**
+
+The survey's `g6_tight` **does** solve the problem §8.2 posed — total degree 5 and `es_left` exactly
+4.00 at k=2/8/32/128 with max|coef| ≤ 100 (0.04 decades across the whole grid), 51/51 witnesses,
+19/19 battery survivals with two planted controls dying. It is a genuine and elegant flatness fix.
+It does not touch the collapse, and its author says so.
+
+Escapes named, none yet tested: mixed `log`-left/`√`-right endpoints (the cross bound
+`log M ≤ 2√M − 2` is available in two search-free lines, so this may fail too); a carrier that is
+not a bare monomial, so no `gcongr` ratio exists; or a goal that is not an inequality between two
+terms of the same algebraic family.
+
+**Two shipped-code defects to fix regardless:**
+1. `endpoints_resist_naive_collapse`'s docstring reason is false (above). The gate still defeats the
+   five routes it was measured against; its stated justification does not hold and the route it
+   misses closes the shipped k=32 goal.
+2. `check_preset_invariants` hard-codes non-strictly-increasing exponent sums as a **violation**, so
+   it would reject any bounded-degree fix — the invariant checker forbids the cure for the disease
+   it was written beside.

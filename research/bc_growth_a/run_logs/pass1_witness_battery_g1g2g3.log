@@ -1,0 +1,179 @@
+
+### stage witness
+{
+  "g1_reservoir": {
+    "n": 25,
+    "n_ok": 25,
+    "by_kind": {
+      "flat": [
+        13,
+        13
+      ],
+      "grow": [
+        12,
+        12
+      ]
+    },
+    "by_k": {
+      "2": [
+        12,
+        12
+      ],
+      "8": [
+        13,
+        13
+      ],
+      "32": [
+        0,
+        0
+      ],
+      "128": [
+        0,
+        0
+      ]
+    },
+    "failures": []
+  },
+  "g2_wide": {
+    "n": 39,
+    "n_ok": 39,
+    "by_kind": {
+      "flat": [
+        20,
+        20
+      ],
+      "grow": [
+        19,
+        19
+      ]
+    },
+    "by_k": {
+      "2": [
+        12,
+        12
+      ],
+      "8": [
+        13,
+        13
+      ],
+      "32": [
+        14,
+        14
+      ],
+      "128": [
+        0,
+        0
+      ]
+    },
+    "failures": []
+  },
+  "g3_k128": {
+    "n": 56,
+    "n_ok": 56,
+    "by_kind": {
+      "flat": [
+        29,
+        29
+      ],
+      "grow": [
+        27,
+        27
+      ]
+    },
+    "by_k": {
+      "2": [
+        12,
+        12
+      ],
+      "8": [
+        15,
+        15
+      ],
+      "32": [
+        15,
+        15
+      ],
+      "128": [
+        14,
+        14
+      ]
+    },
+    "failures": []
+  },
+  "s0_shipped": {
+    "n": 32,
+    "n_ok": 32,
+    "by_kind": {
+      "flat": [
+        0,
+        0
+      ],
+      "grow": [
+        32,
+        32
+      ]
+    },
+    "by_k": {
+      "2": [
+        8,
+        8
+      ],
+      "8": [
+        8,
+        8
+      ],
+      "32": [
+        8,
+        8
+      ],
+      "128": [
+        8,
+        8
+      ]
+    },
+    "failures": []
+  },
+  "g3_k128_full_k32": {
+    "n": 32,
+    "n_ok": 32,
+    "failures": []
+  }
+}
+
+### stage battery
+  battery planted_congruent: KILLED by ['by intros; gcongr <;> linarith']
+  battery planted_flat_nogate: KILLED by ['by intros; gcongr <;> linarith']
+  battery g1_reservoir/flat/k2/i1: SURVIVES
+  battery g1_reservoir/flat/k2/i1: SURVIVES
+  battery g1_reservoir/flat/k2/i1: SURVIVES
+  battery g1_reservoir/flat/k2/i1: SURVIVES
+  battery g1_reservoir/grow/k2/i2: SURVIVES
+  battery g1_reservoir/grow/k2/i2: SURVIVES
+  battery g1_reservoir/grow/k2/i2: SURVIVES
+  battery g1_reservoir/grow/k2/i2: SURVIVES
+  battery g3_k128/flat/k2/i1: SURVIVES
+  battery g3_k128/flat/k2/i1: SURVIVES
+  battery g3_k128/flat/k2/i1: SURVIVES
+  battery g3_k128/flat/k2/i1: SURVIVES
+  battery g3_k128/grow/k2/i2: SURVIVES
+  battery g3_k128/grow/k2/i2: SURVIVES
+  battery g3_k128/grow/k2/i2: SURVIVES
+  battery g3_k128/grow/k2/i2: SURVIVES
+  battery g1_reservoir/GOAL/k8: SURVIVES
+  battery g3_k128/GOAL/k8: SURVIVES
+  battery g3_k128/GOAL/k32: SURVIVES
+{
+  "planted_congruent": [
+    "by intros; gcongr <;> linarith"
+  ],
+  "planted_flat_nogate": [
+    "by intros; gcongr <;> linarith"
+  ],
+  "g1_reservoir/flat/k2/i1": "SURVIVES",
+  "g1_reservoir/grow/k2/i2": "SURVIVES",
+  "g3_k128/flat/k2/i1": "SURVIVES",
+  "g3_k128/grow/k2/i2": "SURVIVES",
+  "g1_reservoir/GOAL/k8": "SURVIVES",
+  "g3_k128/GOAL/k8": "SURVIVES",
+  "g3_k128/GOAL/k32": "SURVIVES"
+}

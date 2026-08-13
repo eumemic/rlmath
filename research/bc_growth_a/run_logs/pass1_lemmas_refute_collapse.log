@@ -1,0 +1,112 @@
+
+### stage lemmas
+{
+  "sqrt_le_sqrt+simpa": {
+    "ok": true,
+    "err": ""
+  },
+  "one_le_sqrt.mpr": {
+    "ok": true,
+    "err": ""
+  },
+  "one_le_sqrt(pos).mpr": {
+    "ok": false,
+    "err": "Function expected at\n  one_le_sqrt\nbut this term has type\n  1 \u2264 \u221a?m.327 \u2194 1 \u2264 ?m.327\n\nNote: Expected a function because this term is being applied to the argument\n  (by positivity)"
+  },
+  "le_sqrt": {
+    "ok": true,
+    "err": ""
+  },
+  "log_le_2sqrt-2": {
+    "ok": false,
+    "err": "Tactic `rewrite` failed: Did not find an occurrence of the pattern\n  Real.log (x ^ 1 * y ^ 0 * z ^ 0) / 2\nin the target expression\n  Real.log (x ^ 1 * y ^ 0 * z ^ 0) = 2 * Real.log \u221a(x ^ 1 * y ^ 0 * z"
+  }
+}
+
+### stage refute
+{
+  "trade_x_for_y": {
+    "refuted": false,
+    "err": "linarith failed to find a contradiction\nh :\n  \u2200 (x y z : \u211d),\n    3 \u2264 x \u2192\n      3 \u2264 y \u2192\n        3 \u2264 z \u2192\n          2 * x ^ 2 * y ^ 1 * z ^ 1 + 1 * \u221a(x ^ 2 * y ^ 1 * z ^ 1) + 1 \u2264\n            9 * x ^ 1 * "
+  },
+  "drop_degree": {
+    "refuted": false,
+    "err": "No goals to be solved"
+  },
+  "trade_big_offset": {
+    "refuted": false,
+    "err": "No goals to be solved"
+  }
+}
+
+### stage collapse
+{
+  "SHIPPED/e3_lowdeg/k2": {
+    "closed": true,
+    "err": ""
+  },
+  "SHIPPED/e3_lowdeg/k4": {
+    "closed": true,
+    "err": ""
+  },
+  "SHIPPED/e3_lowdeg/k8": {
+    "closed": true,
+    "err": ""
+  },
+  "SHIPPED/e3_lowdeg/k32": {
+    "closed": true,
+    "err": ""
+  },
+  "SHIPPED/v2/k2": {
+    "closed": false,
+    "err": "linarith failed to find a contradiction\nx y z : \u211d\nhx : 3 \u2264 x\nhy : 3 \u2264 y\nhz : 3 \u2264 z\nhp0 : 1 \u2264 x ^ 1\nhp1 : 1 \u2264 y ^ 1\nhp2 : 1 \u2264 z ^ 1\nhA : 1 \u2264 x ^ 1 * y ^ 1\nhM : 1 \u2264 x ^ 1 * y ^ 1 * z ^ 1\nhfu : \u221a(x ^ 1 *"
+  },
+  "SHIPPED/v2/k4": {
+    "closed": true,
+    "err": ""
+  },
+  "SHIPPED/v2/k8": {
+    "closed": false,
+    "err": "linarith failed to find a contradiction\nx y z : \u211d\nhx : 3 \u2264 x\nhy : 3 \u2264 y\nhz : 3 \u2264 z\nhp0 : 1 \u2264 x ^ 1\nhp1 : 1 \u2264 y ^ 1\nhp2 : 1 \u2264 z ^ 1\nhA : 1 \u2264 x ^ 1 * y ^ 1\nhM : 1 \u2264 x ^ 1 * y ^ 1 * z ^ 1\nhfu : \u221a(x ^ 1 *"
+  },
+  "SHIPPED/v2/k32": {
+    "closed": false,
+    "err": "linarith failed to find a contradiction\nx y z : \u211d\nhx : 3 \u2264 x\nhy : 3 \u2264 y\nhz : 3 \u2264 z\nhp0 : 1 \u2264 x ^ 1\nhp1 : 1 \u2264 y ^ 1\nhp2 : 1 \u2264 z ^ 1\nhA : 1 \u2264 x ^ 1 * y ^ 1\nhM : 1 \u2264 x ^ 1 * y ^ 1 * z ^ 1\nhfu : \u221a(x ^ 1 *"
+  },
+  "g1_reservoir/k8": {
+    "closed": true,
+    "err": ""
+  },
+  "g2_wide/k8": {
+    "closed": true,
+    "err": ""
+  },
+  "g2_wide/k32": {
+    "closed": true,
+    "err": ""
+  },
+  "g3_k128/k8": {
+    "closed": true,
+    "err": ""
+  },
+  "g3_k128/k32": {
+    "closed": true,
+    "err": ""
+  },
+  "g3_k128/k128": {
+    "closed": true,
+    "err": ""
+  },
+  "s0_shipped/k8": {
+    "closed": true,
+    "err": ""
+  },
+  "s0_shipped/k32": {
+    "closed": true,
+    "err": ""
+  },
+  "s0_shipped/k128": {
+    "closed": true,
+    "err": ""
+  }
+}
