@@ -1483,3 +1483,127 @@ V0/V5 across 54 problems, plus the per-rung goal probes).
    §10.7's failure mode. **Move them to `scripts/probes/` at the next commit that owns that
    directory** — otherwise a data directory carries executable code, which is exactly the kind of
    thing that rots.
+
+---
+
+# §12. MEASURED — the ladder result (2026-08-13, pod `ct-ladder`, invoice $6.51)
+
+254 statements × 8 DSV2 attempts, 239 ladder + 15 anchor, **0 errors**, leaf profile
+`deepseek-ai/DeepSeek-Prover-V2-7B|deepseek-prover-v2-non-cot|Mdef|Tdef` on both files.
+
+## R0c — no drift (the paired test earned its $0.11)
+
+15 already-measured statements, re-run on the same pod/profile: mean Δ **+0.025**, sd 0.202,
+SE 0.052, **t = +0.48**. Anchor mean 0.767 → 0.792. No drift, so every candidate number below is
+interpretable. Individual leaf deltas ranged ±0.375 — which is exactly why this had to be a paired
+test over 15 statements and not an eyeball of a redrawn control.
+
+## R1/R2/R3 — measured
+
+| rung | n | mean | SE | band-fit | zero-rate | k=2 | k=4 | k=8 | k=32 | spread | R2 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `v2` (control) | 40 | **0.847** | 0.040 | 0.38 | 0.00 | 0.887 | 0.738 | 0.850 | 0.912 | 0.175 | FAIL |
+| `r2_prod` | 40 | **0.219** | 0.028 | 0.53 | 0.25 | 0.188 | 0.212 | 0.250 | 0.225 | **0.062** | FAIL |
+| `r3_floor` | 40 | 0.169 | 0.033 | 0.30 | 0.42 | 0.175 | 0.113 | 0.237 | 0.150 | 0.125 | FAIL |
+| `r2_sum` | 40 | 0.091 | 0.028 | 0.17 | 0.68 | 0.000 | 0.200 | 0.062 | 0.100 | 0.200 | FAIL |
+| `r4_floorprod` | 40 | 0.025 | 0.009 | 0.03 | 0.82 | 0.037 | 0.037 | 0.013 | 0.013 | 0.025 | FAIL |
+| **`r1_recip`** | 39 | **0.000** | 0.000 | 0.00 | **1.00** | 0.000 | 0.000 | 0.000 | 0.000 | 0.000 | FAIL |
+
+**No rung passes R2.** `r2_prod` is nearest on every axis and still misses both clauses
+(band-fit 0.53 vs ≥0.60; zero-rate 0.25 vs ≤0.20). R1 nearest-0.45 selects `r2_prod` (0.219),
+with `r3_floor` inside the 0.08 tie band — so the tie rule added last night does fire, and the
+choice would have fallen through to R4, where `r2_prod` also wins on flatness (spread 0.062, the
+flattest of all six including the control).
+
+## The actual finding: the corridor sits in a GAP
+
+Measured levels are **0.847, then 0.219, 0.169, 0.091, 0.025**. Nothing lands between 0.22 and
+0.85 — and the corridor is [0.25, 0.9]. Six schemas, four decades of coefficient magnitude, four
+k values, and **not one leaf distribution in the corridor**.
+
+Difficulty with respect to this frozen prover is not a continuum that a schema knob slides along.
+It is a **step function of idiom match**: either the memorised route applies (≈0.85) or it does
+not (≤0.22). §11.6's idiom probe measured exactly this binary and was right to be binary; what the
+design got wrong was believing the *distance* to the first closing route would order the drop.
+
+**`r1_recip` is the proof, and it is the projection's worst failure.** Projected **0.62** — the
+highest of any candidate — on the strength of being idiom-distance 1 (`le_div_iff₀` closes it
+12/12 locally). Measured **0.000: 0 of 312 attempts**, all 39 leaves at 0/8. Diagnosed, not
+assumed: `elaborates = True` on all 39, `n_attempts = 8` on all 39, status `leaf_failed` (not
+`format_error`, not `error`), so the statements are well-formed and the prover really was called
+and really failed. A goal one lemma from DSV2's memorised route is *completely* unreachable when
+that lemma lives in a different family — division rather than `√`. The prover's competence is
+idiom-shaped, not difficulty-shaped.
+
+*Residual uncertainty, stated:* `first_proof` is only populated on success, so we have the failed
+count but not the failed text. We know DSV2 emitted proof-shaped output (else the status would be
+`format_error`); we do not know what it tried. Harvesting failed attempts would settle it.
+
+## R3′ — flatness PASSES, and it settles a question that was blocking two families
+
+`pass@8 ~ log10 max|coef| + rung fixed effects`, n=239, support **0.60–4.59 decades**:
+**slope +0.0053/decade, SE 0.0098, z = +0.55.** Restricted to the three rungs with variance
+(n=120): −0.0007/decade, z = −0.04. **Coefficient magnitude is measured difficulty-neutral over
+four decades** — the first real measurement of this, and it is why staging k=32 mattered.
+
+Two consequences beyond this ladder:
+1. **§3.8's exclusion of the quartic rungs was over-cautious.** They were dropped for 45,394×
+   growth (≈4.7 decades) as "bridge_chain's flatness failure with a different variable name." The
+   slope is flat with a tight SE across essentially that whole range. On this evidence a quartic
+   rung is a legitimate candidate — and `H2_quartic` carried the highest projection of anything.
+2. **`retune-notes.md` §8.2's consistency question is answered in the direction that mechanism
+   arguments *are* licensed here** — for coefficient magnitude specifically, and now with data
+   rather than an argument. bridge_chain's 3^k multiplier is still ~10 decades past the measured
+   support, so this does not rehabilitate it; it does mean the objection to it must be restated as
+   "unmeasured at 10¹⁵", not "known to break flatness".
+
+## R5 — oracle ceiling: decisive, and it disqualifies the whole ladder independently
+
+`(1 − (1−p)^a)^k`, shipped `Budgets` | flat a=8:
+
+| rung | k=2 | k=4 | k=8 | k=32 |
+|---|---|---|---|---|
+| `v2` 0.847 | 0.999 \| 1.000 | 0.998 \| 1.000 | 0.996 \| 1.000 | 0.468 \| 1.000 |
+| `r2_prod` 0.219 | 0.394 \| 0.742 | 0.155 \| 0.550 | 0.024 \| 0.303 | 0.000 \| 0.008 |
+| `r3_floor` 0.169 | 0.273 \| 0.596 | 0.075 \| 0.355 | 0.006 \| 0.126 | 0.000 \| 0.000 |
+
+**No candidate satisfies DIRECTION §5.5(b) (≥70% at every k) at any k > 2, even with the attempt
+budget raised to 8.** R5 was added last night as a reporting requirement; it turns out to be an
+independent disqualification. Had the ladder been read on R1/R2 alone, `r2_prod` would have been
+selected and the oracle ceiling discovered later — the failure mode §5.4(b′) was written to prevent.
+
+## Projections: MAE 0.253, and biased in one direction
+
+| rung | projected | measured | error |
+|---|---|---|---|
+| `v2` | 0.92 | 0.847 | −0.073 |
+| `r1_recip` | 0.62 | 0.000 | **−0.620** |
+| `r2_sum` | 0.48 | 0.091 | −0.389 |
+| `r2_prod` | 0.42 | 0.219 | −0.201 |
+| `r3_floor` | 0.28 | 0.169 | −0.111 |
+| `r4_floorprod` | 0.15 | 0.025 | −0.125 |
+
+MAE **0.253** against a registered expectation of 0.15–0.20 — and **all six errors are negative**.
+That is systematic optimism, not noise: every rung was harder than predicted. Rank order also
+failed (`r1_recip` projected first among candidates, measured last of six), so **L1 and L1c are both
+refuted**. The registered down-weighting relative to bridge_chain's fitted projections (MAE 0.044)
+was correct in direction and insufficient in size.
+
+## Verdict: escalate to bank-drawn leaves — the registered rule fires, now with a mechanism
+
+§7.1 step 1 registered: "read `r1_recip` first … if even `r1_recip` is below 0.25, the finding is
+that any schema change collapses this prover" → escalate to **FAMILIES.md direction 1 (bank-drawn
+leaves)**. `r1_recip` measured 0.000. The rule fires as written.
+
+It is worth being precise that the world is *not* quite the registered L3 ("all rungs collapse"):
+the schema axis clearly *does* move difficulty (0.847 → 0.025 is a real, ordered range) and
+`r2_prod` is both the best-levelled and the flattest thing this family has ever produced. What
+fails is that the range **skips the corridor**. Synthetic schema variation gives a binary because
+one template generates one idiom; real competition statements have a continuum precisely because
+they were not generated by a template. That is the mechanistic case for direction 1, and it is now
+measured rather than argued.
+
+**Phase 1 does not close for case_tree on this ladder.** Recommended next: the wide candidate
+sweep (#12) to turn the 401 in-band statements into a real bank, then bank-drawn leaves for both
+families. Reinstating `H2_quartic` (§3.8) is the one cheap synthetic option R3′ has re-opened, and
+it is the only one worth a further pod before direction 1.
