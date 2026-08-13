@@ -497,3 +497,42 @@ per unit, SE 0.0079, **z = −4.48** on 150 rows, which is decisive where the bi
 marginal. Adopt R3′ as the primary flatness gate for both families and keep per-k means as a
 descriptive table, not a gate. (For case_tree the analogous covariate is `log10 max|coef|`;
 see `research/case-tree-hardening.md` §7.)
+
+### 8.2 The fix proposed in §8 has the same disease it cures — do not build it as written
+
+§8 recommended carrying chain growth in an integer multiplier, `M_i = 3^i · x^p y^q z^r`, so degree
+(and hence the measured blocker `1 ≤ M`) stays constant. Checked before building, 2026-08-13:
+
+| k | multiplier `3^k` | growth vs k=2 |
+|---|---|---|
+| 2 | 9 | 1× |
+| 8 | 6,561 | 729× |
+| 32 | 1.85×10¹⁵ | **2.06×10¹⁴×** |
+
+The case_tree ladder **excluded its highest-projected rung** (`H2_quartic`, projected 0.60) for
+coefficient growth of 45,394× across the same grid, on the grounds that it is "bridge_chain's
+flatness failure with a different variable name." This proposal is **4.5 billion times worse than
+the thing that exclusion rejected.** Adopting it would trade a measured k-dependence for an
+unmeasured one and call it a fix.
+
+**The asymmetry that might still rescue it — and why it is not enough on its own.** The mechanism
+here is known: bridge_chain's blocker is `1 ≤ M = x^p y^q z^r`, and it is a *degree* problem
+(`nlinarith` multiplies hypothesis pairs, so a three-factor product is out of reach). A large
+constant multiplier does not make `1 ≤ 3^i · x` harder — plausibly it makes it easier. So the
+mechanism argument says coefficient growth is benign *here* even though degree growth is not.
+But that is precisely the argument the case_tree design **declined** to accept for the quartics,
+and consistency has to run both ways: either mechanism arguments license extrapolation past the
+measured support (in which case the quartic rungs deserve reinstating, §3.8), or they do not (in
+which case this proposal is dead). What is actually true is that **coefficient magnitude has been
+measured neutral only over 1–2,200** (F1), and 10¹⁵ is nine orders past that.
+
+**Therefore:** any bounded-degree candidate must either (a) keep the multiplier inside a
+defensible range — which means a growth law that is not exponential in k — or (b) ship a companion
+rung that varies the multiplier base so the coefficient effect is *identifiable* rather than
+assumed. Candidate directions to compare before staging: a sub-exponential growth law; a sawtooth
+that trades multiplier against exponent so both stay bounded; or FAMILIES.md direction 1
+(bank-drawn leaves), which sidesteps the generator's growth law entirely.
+
+Registered before measuring: I expect the coefficient effect to be **real but much weaker per
+decade than the degree effect** (which measured −0.0353/unit of exponent sum, z = −4.48). If a
+staged comparison shows otherwise, that is the finding.
