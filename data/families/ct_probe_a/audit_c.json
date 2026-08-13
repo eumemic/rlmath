@@ -1,0 +1,32 @@
+{
+  "H1_twoatom": {
+    "direction": "H1_twoatom",
+    "instances": 20,
+    "points_checked": 642,
+    "mismatch_under": 0,
+    "mismatch_over": 0,
+    "status": "EXACT",
+    "examples": [],
+    "spill_max": 2,
+    "spill_mean": 1.05,
+    "spill_ge_3": 0,
+    "cap_min": 9,
+    "cap_max": 17,
+    "max_abs_coeff": 1890
+  },
+  "H3_nested": {
+    "direction": "H3_nested",
+    "instances": 20,
+    "points_checked": 640,
+    "mismatch_under": 0,
+    "mismatch_over": 0,
+    "status": "EXACT",
+    "examples": [],
+    "spill_max": 2,
+    "spill_mean": 0.8,
+    "spill_ge_3": 0,
+    "cap_min": 5,
+    "cap_max": 8,
+    "max_abs_coeff": 1880
+  }
+}

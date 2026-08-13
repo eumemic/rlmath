@@ -47,9 +47,16 @@ Usage
     uv run python scripts/probes/probe_ct_algebraic.py --lean --pilot   # 1 instance/direction
     uv run python scripts/probes/probe_ct_algebraic.py --lean --skip-battery
 
-Outputs (--out-dir, default data/families/ct_probe_a/):
-    audit.json       exactness + spill report per direction
-    lean.json        witness / battery / idiom verdicts per instance
+    # the three runs behind research/ct-hardening-survey-a.md
+    A: --lean --n-probe 8 --n-random 300 --workers 4
+    B: --lean --n-probe 8 --n-random 60 --workers 3 --skip-battery --tag _b \
+       --directions H2_quartic,H4_twoatom_quartic --cal-low 18 --cal-high 10
+    C: --lean --n-random 20 --workers 3 --skip-battery --skip-calibration \
+       --skip-directions --split-sweep 4 --directions H1_twoatom,H3_nested --tag _c
+
+Outputs (--out-dir, default data/families/ct_probe_a/; `--tag` suffixes both files):
+    audit{tag}.json  exactness + spill report per direction
+    lean{tag}.json   witness / battery / idiom / split-sweep verdicts per instance
 """
 from __future__ import annotations
 
@@ -264,7 +271,18 @@ class Instance:
     def witness(self, order: str) -> str:
         """`order` is the argument order of `Real.sqrt_le_iff` in this Mathlib,
         determined at runtime by `probe_sqrt_le_iff_order` — "nt" means the
-        non-negativity conjunct comes first, "tn" means the bound does."""
+        non-negativity conjunct comes first, "tn" means the bound does.
+
+        Degree-4 atoms need a **degree staircase** and the flat degree-2 witness
+        does not supply one (measured: run A, H2 witness 1/8 / H4 3/8). The band
+        product `(x−lo)(hi−x) ≥ 0` is a degree-2 certificate; `nlinarith`'s
+        preprocessing multiplies hypothesis *pairs*, and no pair of the available
+        facts is a degree-4 upper bound on `(x−m)^4`. Naming the intermediate
+        `u := (x−m)^2 ≤ far^2` fixes it: the pair `(far^2 − u ≥ 0, u ≥ 0)`
+        multiplies to `far^2·u − u^2 ≥ 0`, and `u^2 ≤ far^2·u ≤ far^4` is then
+        pure `linarith` over the monomials. Two extra lines, no extra oracle
+        knowledge (the generator already knows `m` and `far`).
+        """
         band = "mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)"
         lines = ["by", "  intro x hl hr"]
         for i, a in enumerate(self.atoms, start=1):
@@ -276,12 +294,29 @@ class Instance:
                     f"    {_sqrt_le_iff(order, f'by nlinarith [{band}, hv{i}]')}",
                 ]
             else:
+                extra = ""
+                if a.deg == 4:
+                    far = _far(self.lo, self.hi, a.m)
+                    vx = _vertex_term(a.m)
+                    lines += [
+                        f"  have hs{i} : {vx} ^ 2 ≤ {far * far} := by nlinarith [{band}]",
+                        f"  have hq{i} : {vx} ^ 4 ≤ {far ** 4} := by "
+                        f"nlinarith [hs{i}, sq_nonneg {vx}]",
+                    ]
+                    extra = f", hs{i}, hq{i}"
                 lines += [
                     f"  have hb{i} : Real.sqrt ({a.render()}) ≤ {a.cap} :=",
-                    f"    {_sqrt_le_iff(order, f'by nlinarith [{band}]')}",
+                    f"    {_sqrt_le_iff(order, f'by nlinarith [{band}{extra}]')}",
                 ]
         lines.append("  linarith")
         return "\n".join(lines)
+
+
+def _vertex_term(m: int) -> str:
+    """`x`, `(x - m)` or `(x + |m|)` — no unary minus, matching the render convention."""
+    if m == 0:
+        return "x"
+    return f"(x - {m})" if m > 0 else f"(x + {-m})"
 
 
 def _sqrt_le_iff(order: str, bound_proof: str) -> str:
@@ -476,6 +511,121 @@ def audit_direction(direction: str, n_random: int = 400) -> dict:
     }
 
 
+# ---------------------------------------------- (e) free structural checks, no Lean --
+
+
+def structural_report(directions: Sequence[str], n_per_k: int = 300) -> dict:
+    """Flatness in k, the necessity-repair bound, and the H1 split-asymmetry lever.
+
+    All three are exact/free: they need the generator, not the prover. They are here
+    rather than in a scratch script because §6 of research/ct-hardening-survey-a.md
+    turns on them, and `retune-notes.md` §8's cautionary tale is a flatness axis that
+    was never written down as a re-runnable check.
+
+      * `flatness` — leaf prop length and max|coefficient| per (direction, k). The
+        schema's ONLY k-dependence is a band's absolute position, so a piece whose
+        coefficients grow like `m^deg` grows much faster at deg 4 than at deg 2. This
+        is the table that disqualifies the quartic directions from shipping.
+      * `spill` — EXHAUSTIVE over the knob support, not sampled: reach past a band is
+        a function of `(width, a, offset, slack)` and the derived second-atom knobs
+        only, never of absolute position, so 360 cells settle it. `case_tree.
+        _repair_necessity` stays a no-op iff reach < width/2 at every cell; a repair
+        that fired at k-dependent rates would itself be a flatness leak.
+      * `lever` — for two-atom directions, how often the naive even split IS the
+        generator's split, and how far the generator's split sits from it. This is
+        the difficulty knob the shipped schema does not have (F1: every v2 marginal
+        is flat), so its measured range is what makes a ladder possible.
+    """
+    import itertools
+    import statistics as st
+
+    out: dict = {"flatness": {}, "spill": {}, "lever": {}}
+
+    for d in directions:
+        per_k = {}
+        for k in (2, 4, 8, 16, 32):
+            rng = random.Random(f"flat|{d}|{k}")
+            chars, coefs, caps = [], [], []
+            for _ in range(n_per_k):
+                _, pieces = ct.layout(k, seed=rng.randrange(10**6), idx=0)
+                pc = rng.choice(pieces)
+                inst = build_instance(d, rng.choice(ct.VARIANTS), pc.lo, pc.hi,
+                                      pc.a, pc.offset, pc.slack)
+                chars.append(len(inst.prop()))
+                caps.append(inst.t)
+                mx = 0
+                for a in inst.atoms:
+                    src = a.coeffs() if isinstance(a, PolyAtom) else a.outer_coeffs()
+                    mx = max(mx, max(abs(c) for c in src.values()))
+                    if isinstance(a, NestedAtom):
+                        mx = max(mx, max(abs(c) for c in a.inner.coeffs().values()))
+                coefs.append(mx)
+            per_k[k] = {"chars_median": st.median(chars), "chars_max": max(chars),
+                        "coef_median": st.median(coefs), "coef_max": max(coefs),
+                        "cap_median": st.median(caps), "cap_max": max(caps)}
+        g = per_k[32]["coef_median"] / max(per_k[2]["coef_median"], 1)
+        out["flatness"][d] = {"per_k": per_k, "coef_growth_k2_to_k32": round(g, 1),
+                              "chars_growth_k2_to_k32":
+                                  per_k[32]["chars_median"] - per_k[2]["chars_median"]}
+
+        worst, bad, cells, worst_cell = 0, 0, 0, None
+        for width, a, off, slack, variant, base in itertools.product(
+                ct.WIDTHS, ct.CURVATURES, ct.VERTEX_OFFSETS, ct.SLACKS, ct.VARIANTS,
+                (-120, -37, 0, 41, 119)):
+            lo, hi = base, base + width
+            inst = build_instance(d, variant, lo, hi, a, off, slack)
+            cells += 1
+            assert all(inst.holds_at(x) for x in range(lo, hi + 1)), inst.name
+            reach = 0
+            for x in range(lo - 40, hi + 41):
+                if inst.holds_at(x):
+                    reach = max(reach, lo - x if x < lo else (x - hi if x > hi else 0))
+            if reach > worst:
+                worst, worst_cell = reach, [width, a, off, slack, variant, base]
+            bad += reach >= min(ct.WIDTHS) // 2
+        out["spill"][d] = {"cells": cells, "max_reach": worst,
+                           "cells_at_or_past_half_width": bad,
+                           "half_width": min(ct.WIDTHS) // 2, "worst_cell": worst_cell,
+                           "repair_stays_noop": bad == 0}
+
+        probe = build_instance(d, "max", 0, 6, 1, 0, 0)
+        if len(probe.atoms) == 2:
+            rng = random.Random(f"lever|{d}")
+            eq = tot = 0
+            gaps = []
+            for _ in range(2000):
+                k = rng.choice((2, 4, 8))
+                _, pieces = ct.layout(k, seed=rng.randrange(10**6), idx=0)
+                pc = rng.choice(pieces)
+                inst = build_instance(d, rng.choice(ct.VARIANTS), pc.lo, pc.hi,
+                                      pc.a, pc.offset, pc.slack)
+                c1 = inst.atoms[0].cap
+                # the split the generator uses is provably the ONLY feasible integer
+                # one: max_band Uᵢ == capᵢ² − slackᵢ, so capᵢ is the least true bound,
+                # and cap₁ + cap₂ == t. Asserted, not assumed.
+                assert c1 + inst.atoms[1].cap == inst.t
+                tot += 1
+                eq += c1 == inst.t // 2
+                gaps.append(abs(c1 - inst.t / 2))
+            out["lever"][d] = {"instances": tot, "even_split_is_correct": eq,
+                               "even_split_rate": round(eq / tot, 3),
+                               "gap_median": st.median(gaps), "gap_max": max(gaps)}
+        elif isinstance(probe.atoms[0], NestedAtom):
+            rng = random.Random(f"lever|{d}")
+            inside = tot = 0
+            for _ in range(2000):
+                k = rng.choice((2, 4, 8))
+                _, pieces = ct.layout(k, seed=rng.randrange(10**6), idx=0)
+                pc = rng.choice(pieces)
+                inst = build_instance(d, rng.choice(ct.VARIANTS), pc.lo, pc.hi,
+                                      pc.a, pc.offset, pc.slack)
+                tot += 1
+                inside += inst.atoms[0].inner.cap <= inst.t
+            out["lever"][d] = {"instances": tot, "inner_cap_within_visible_budget": inside,
+                               "lazy_guess_legal_rate": round(inside / tot, 3)}
+    return out
+
+
 # ------------------------------------------------------------------- (d) idiom probes --
 
 
@@ -559,6 +709,7 @@ def idiom_variants(inst: Instance) -> dict[str, str]:
     h = _hints(inst)
     out: dict[str, str] = {}
     first = inst.atoms[0]
+    bandprod = "mul_nonneg (sub_nonneg.mpr hx1) (sub_nonneg.mpr hx2)"
 
     # base: one bound on the first atom at the cap read off the goal (t = A − C)
     out["base"] = _measured_idiom(inst, [(_atom_render(first), str(inst.t))], h)
@@ -575,6 +726,22 @@ def idiom_variants(inst: Instance) -> dict[str, str]:
         # adaptation 3: both atoms bounded by the whole visible budget (sound but loose)
         out["adapt_bothfull"] = _measured_idiom(
             inst, [(_atom_render(a), str(inst.t)) for a in inst.atoms], h)
+        # adaptation 4: the oracle split PLUS the explicit band product. Separates
+        # "the split is the obstacle" from "the per-atom bound is the obstacle" —
+        # the distinction that decides whether a two-atom direction is reachable
+        # at all (run A: every H4 variant failed, and H4's atom 2 is quartic).
+        out["adapt_oraclesplit_band"] = _measured_idiom(
+            inst, [(_atom_render(a), str(a.cap)) for a in inst.atoms],
+            _hints(inst, (bandprod,)))
+        # adaptation 5: oracle split + band product + the quartic degree lift, i.e.
+        # the generator's own certificate handed to the idiom shape. If THIS fails
+        # the direction is not merely hard, the idiom SHAPE cannot carry it.
+        deg4 = [f"sq_nonneg ({_vertex_term(a.m)} ^ 2 - {_far(inst.lo, inst.hi, a.m) ** 2})"
+                for a in inst.atoms if isinstance(a, PolyAtom) and a.deg == 4]
+        if deg4:
+            out["adapt_oraclesplit_deg4"] = _measured_idiom(
+                inst, [(_atom_render(a), str(a.cap)) for a in inst.atoms],
+                _hints(inst, (bandprod, *deg4)))
     elif isinstance(first, NestedAtom):
         # adaptation 1: bound the inner root by the visible outer cap, then the outer
         out["adapt_innerfull"] = _measured_idiom(
@@ -590,10 +757,19 @@ def idiom_variants(inst: Instance) -> dict[str, str]:
         m, a = first.m, first.a
         far = _far(inst.lo, inst.hi, m)
         vx = f"(x - {m})" if m >= 0 else f"(x + {-m})"
-        extra = (f"sq_nonneg ({vx} ^ 2 - {far * far})",
-                 f"mul_nonneg (sub_nonneg.mpr hx1) (sub_nonneg.mpr hx2)")
+        quartic_sq = f"sq_nonneg ({vx} ^ 2 - {far * far})"
         out["adapt_degreehint"] = _measured_idiom(
-            inst, [(_atom_render(first), str(inst.t))], _hints(inst, extra))
+            inst, [(_atom_render(first), str(inst.t))],
+            _hints(inst, (quartic_sq, bandprod)))
+        # `adapt_degreehint` bundles two independent hints. These two split it, so
+        # the ceiling verdict says WHICH invention the direction actually demands:
+        #   bandprod      — a hint nlinarith can already synthesise from hx1,hx2
+        #   vertexquartic — requires completing the square AND knowing the band's
+        #                   far radius, i.e. genuine geometric work
+        out["adapt_bandprod"] = _measured_idiom(
+            inst, [(_atom_render(first), str(inst.t))], _hints(inst, (bandprod,)))
+        out["adapt_vertexquartic"] = _measured_idiom(
+            inst, [(_atom_render(first), str(inst.t))], _hints(inst, (quartic_sq,)))
         _ = a
 
     out["adapt_sqsqrt"] = _sqsqrt_idiom(inst, h)
@@ -656,17 +832,61 @@ def run_battery(pool, props: Sequence[str]) -> list[list[str]]:
     return out
 
 
-def calibration_leaves(n: int = 10) -> list[dict]:
+def calibration_leaves(n_low: int = 18, n_high: int = 10) -> list[dict]:
     """Real measured case_tree leaves from the bank, with their measured pass@8.
 
     The idiom template is calibrated against THESE, not against regenerated ones:
     if the template does not close what DSV2 closed at 0.92, the template is wrong.
+
+    **Stratified deliberately.** Run A took the first 10 by `statement_key` and drew
+    10 leaves whose measured pass@8 was 1.000 — a ceiling-only calibration, which
+    proves the template *fits* but says nothing about whether it *discriminates*.
+    The measured distribution is 50 leaves at 1.0 and 18 below (0.25 / 0.375 / 0.5 /
+    3×0.625 / 6×0.75 / 6×0.875), so `n_low` takes the hardest leaves DSV2 actually
+    measured and `n_high` a matched ceiling sample. If the base idiom closes both
+    strata equally, the instrument reports route APPLICABILITY, not difficulty, and
+    every inference downstream of it has to be narrowed to that claim.
     """
     path = ROOT / "data" / "bank" / "family_leaf_calibration.jsonl"
     rows = [json.loads(line) for line in open(path)]
     ct_rows = [r for r in rows if "case_tree" in r.get("source_id", "")]
-    ct_rows.sort(key=lambda r: r["statement_key"])
-    return ct_rows[:n]
+    ct_rows.sort(key=lambda r: (r["pass_rate"], r["statement_key"]))
+    low = ct_rows[:n_low]
+    high = [r for r in ct_rows if r["pass_rate"] >= 1.0]
+    high.sort(key=lambda r: r["statement_key"])
+    seen = {r["statement_key"] for r in low}
+    return low + [r for r in high if r["statement_key"] not in seen][:n_high]
+
+
+def split_sweep_proofs(inst: Instance) -> list[tuple[int, str]]:
+    """Every integer budget the prover could guess for the *hidden* sub-bound.
+
+    The corridor mechanism for H1/H4 is that `√U₁ + √U₂ ≤ t` gives the prover a
+    budget but not its split, and the split is not readable off the goal. For H3
+    the same shape appears one level down: `√(U + √V) ≤ t` gives no bound on the
+    inner root. How wide is the target? This enumerates it — the count of closing
+    guesses, over the candidates a prover would enumerate, is the probability a
+    blind attempt lands, which is what decides corridor vs floor.
+
+    Two-atom: `s ∈ [1, t−1]` split as `(s, t−s)`.
+    Nested:   `s ∈ [1, t]` as the inner-root bound, outer left at the visible `t`.
+    """
+    h = _hints(inst)
+    if len(inst.atoms) == 2:
+        a1, a2 = inst.atoms
+        return [(s, _measured_idiom(inst, [(_atom_render(a1), str(s)),
+                                           (_atom_render(a2), str(inst.t - s))], h))
+                for s in range(1, inst.t)]
+    first = inst.atoms[0]
+    if isinstance(first, NestedAtom):
+        # the inner cap can EXCEED the visible budget t (`√(U + √V) ≤ t` bounds the
+        # whole radicand, not √V), so the sweep must run past t or it would miss the
+        # generator's own guess and report a false "no guess works".
+        top = max(inst.t, first.inner.cap + 2)
+        return [(s, _measured_idiom(inst, [(first.inner.render(), str(s)),
+                                           (_atom_render(first), str(inst.t))], h))
+                for s in range(1, top + 1)]
+    return []
 
 
 def _instance_from_prop(prop: str) -> Instance | None:
@@ -695,21 +915,35 @@ def _instance_from_prop(prop: str) -> Instance | None:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--audit", action="store_true", help="(a) exactness audit only, no Lean")
+    ap.add_argument("--structural", action="store_true",
+                    help="(e) flatness-in-k, exhaustive spill sweep, split-asymmetry lever; no Lean")
     ap.add_argument("--lean", action="store_true", help="(a)-(d): witness, battery, idiom")
     ap.add_argument("--pilot", action="store_true", help="1 instance per direction")
     ap.add_argument("--n-probe", type=int, default=8, dest="n_probe")
     ap.add_argument("--n-random", type=int, default=300, dest="n_random")
     ap.add_argument("--skip-battery", action="store_true", dest="skip_battery")
+    ap.add_argument("--skip-calibration", action="store_true", dest="skip_calibration")
+    ap.add_argument("--skip-directions", action="store_true", dest="skip_directions")
+    ap.add_argument("--cal-low", type=int, default=18, dest="cal_low",
+                    help="hardest measured leaves in the calibration stratum")
+    ap.add_argument("--cal-high", type=int, default=10, dest="cal_high",
+                    help="pass@8 == 1.0 leaves in the calibration stratum")
+    ap.add_argument("--split-sweep", type=int, default=0, dest="split_sweep",
+                    help="two-atom directions: sweep every integer budget split on N instances")
     ap.add_argument("--directions", default=",".join(DIRECTIONS))
     ap.add_argument("--workers", type=int, default=3)
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR, dest="out_dir")
+    ap.add_argument("--tag", default="", help="suffix for lean{tag}.json (keeps run A intact)")
     args = ap.parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)
     dirs = [d.strip() for d in args.directions.split(",") if d.strip()]
     n_probe = 1 if args.pilot else args.n_probe
 
     audit = {d: audit_direction(d, n_random=(20 if args.pilot else args.n_random)) for d in dirs}
-    (args.out_dir / "audit.json").write_text(json.dumps(audit, indent=2, ensure_ascii=False))
+    # tagged, so a narrow follow-up run (`--directions H2,H4 --n-random 60`) cannot
+    # silently replace the full 5-direction audit a previous run wrote. It did once.
+    (args.out_dir / f"audit{args.tag}.json").write_text(
+        json.dumps(audit, indent=2, ensure_ascii=False))
     print("## (a) exact-integer-predicate audit\n", file=sys.stderr)
     print("| direction | points | under | over | status | spill max/mean | cap range | max|coef| |",
           file=sys.stderr)
@@ -721,6 +955,35 @@ def main(argv=None) -> int:
     disq = [d for d, a in audit.items() if a["mismatch_under"]]
     if disq:
         print(f"\nDISQUALIFIED (under-approximating predicate): {disq}", file=sys.stderr)
+
+    if args.structural:
+        srep = structural_report(dirs)
+        (args.out_dir / f"structural{args.tag}.json").write_text(
+            json.dumps(srep, indent=2, ensure_ascii=False))
+        print("\n## (e) flatness in k (n=300 leaves per direction per k)\n", file=sys.stderr)
+        print("| direction | chars k2->k32 | max|coef| median k2->k32 | growth | cap max (k2/k32) |",
+              file=sys.stderr)
+        print("|---|---|---|---|---|", file=sys.stderr)
+        for d, f in srep["flatness"].items():
+            lo, hi = f["per_k"][2], f["per_k"][32]
+            print(f"| {d} | {lo['chars_median']:.0f} -> {hi['chars_median']:.0f} "
+                  f"(+{f['chars_growth_k2_to_k32']:.0f}) | {lo['coef_median']:.0f} -> "
+                  f"{hi['coef_median']:.0f} | {f['coef_growth_k2_to_k32']:.0f}x | "
+                  f"{lo['cap_max']}/{hi['cap_max']} |", file=sys.stderr)
+        print("\n## (e) exhaustive spill sweep — _repair_necessity must stay a no-op\n",
+              file=sys.stderr)
+        print("| direction | cells | max reach | cells >= width/2 | repair stays no-op |",
+              file=sys.stderr)
+        print("|---|---|---|---|---|", file=sys.stderr)
+        for d, s in srep["spill"].items():
+            print(f"| {d} | {s['cells']} | {s['max_reach']} | "
+                  f"{s['cells_at_or_past_half_width']} | {s['repair_stays_noop']} |",
+                  file=sys.stderr)
+        if srep["lever"]:
+            print("\n## (e) difficulty lever (the knob the shipped schema lacks)\n", file=sys.stderr)
+            for d, lv in srep["lever"].items():
+                print(f"  {d}: {lv}", file=sys.stderr)
+
     if not args.lean:
         return 2 if disq else 0
 
@@ -743,28 +1006,52 @@ def main(argv=None) -> int:
             print(f"planted control killed by: {'; '.join(killers)}", file=sys.stderr)
 
         # ---- (d) calibration of the idiom template on measured leaves
-        cal = []
-        for row in calibration_leaves():
-            inst = _instance_from_prop(row["prop"])
-            cal.append({"statement_key": row["statement_key"], "prop": row["prop"],
-                        "measured_pass8": row["pass_rate"], "recovered": inst is not None,
-                        "instance": inst})
-        pairs = [(c["prop"], idiom_variants(c["instance"])["base"]) for c in cal if c["instance"]]
-        oks = run_checks(pool, pairs, IDIOM_TIMEOUT_S)
-        it = iter(oks)
-        for c in cal:
-            c["base_idiom_closes"] = next(it) if c["instance"] else None
-            c.pop("instance")
-        n_ok = sum(1 for c in cal if c["base_idiom_closes"])
-        report["idiom_calibration"] = {"leaves": len(cal), "recovered": len(pairs),
-                                       "base_idiom_closes": n_ok, "rows": cal}
-        print(f"\nidiom calibration on measured leaves: base closes {n_ok}/{len(pairs)} "
-              f"(recovered {len(pairs)}/{len(cal)}); measured DSV2 pass@8 mean "
-              f"{sum(c['measured_pass8'] for c in cal) / len(cal):.3f}", file=sys.stderr)
+        if not args.skip_calibration:
+            cal = []
+            for row in calibration_leaves(args.cal_low, args.cal_high):
+                inst = _instance_from_prop(row["prop"])
+                cal.append({"statement_key": row["statement_key"], "prop": row["prop"],
+                            "measured_pass8": row["pass_rate"], "recovered": inst is not None,
+                            "instance": inst})
+            pairs = [(c["prop"], idiom_variants(c["instance"])["base"])
+                     for c in cal if c["instance"]]
+            oks = run_checks(pool, pairs, IDIOM_TIMEOUT_S)
+            it = iter(oks)
+            for c in cal:
+                c["base_idiom_closes"] = next(it) if c["instance"] else None
+                c.pop("instance")
+            n_ok = sum(1 for c in cal if c["base_idiom_closes"])
+            # the discrimination question: does the template separate the strata?
+            strata: dict[str, dict[str, int]] = {}
+            for c in cal:
+                key = "pass8 == 1.0" if c["measured_pass8"] >= 1.0 else "pass8 < 1.0"
+                s = strata.setdefault(key, {"n": 0, "recovered": 0, "closes": 0})
+                s["n"] += 1
+                s["recovered"] += bool(c["recovered"])
+                s["closes"] += bool(c["base_idiom_closes"])
+            report["idiom_calibration"] = {
+                "leaves": len(cal), "recovered": len(pairs), "base_idiom_closes": n_ok,
+                "strata": strata,
+                "by_pass_rate": {
+                    str(pr): {
+                        "n": sum(1 for c in cal if c["measured_pass8"] == pr),
+                        "closes": sum(1 for c in cal
+                                      if c["measured_pass8"] == pr and c["base_idiom_closes"]),
+                    }
+                    for pr in sorted({c["measured_pass8"] for c in cal})
+                },
+                "rows": cal,
+            }
+            print(f"\nidiom calibration on measured leaves: base closes {n_ok}/{len(pairs)} "
+                  f"(recovered {len(pairs)}/{len(cal)}); measured DSV2 pass@8 mean "
+                  f"{sum(c['measured_pass8'] for c in cal) / len(cal):.3f}", file=sys.stderr)
+            for key, s in sorted(strata.items()):
+                print(f"    {key}: base closes {s['closes']}/{s['recovered']} "
+                      f"(recovered {s['recovered']}/{s['n']})", file=sys.stderr)
 
         # ---- (b)(c)(d) per direction
         report["directions"] = {}
-        for d in dirs:
+        for d in ([] if args.skip_directions else dirs):
             insts = instances_for(d, n_probe)
             wit = run_checks(pool, [(i.prop(), i.witness(order)) for i in insts], WITNESS_TIMEOUT_S)
             bat = ([[] for _ in insts] if args.skip_battery
@@ -783,29 +1070,59 @@ def main(argv=None) -> int:
             per_inst: dict[str, dict] = {}
             for (iname, kname), ok in zip(index, idiom_ok):
                 per_inst.setdefault(iname, {})[kname] = ok
+            # NEVER report a battery verdict that was not measured. `--skip-battery`
+            # also skips the planted control, so an unconditional "survives N/N" here
+            # is exactly the lie the control exists to prevent (found the hard way:
+            # run B printed a vacuous "battery survives 8/8" with the battery off).
+            bat_verdict = ("SKIPPED (not measured)" if args.skip_battery
+                           else f"{sum(1 for b in bat if not b)}/{len(bat)}")
             report["directions"][d] = {
                 "instances": [{
                     "name": i.name, "prop": i.prop(), "witness": i.witness(order),
                     "knobs": i.knobs, "t": i.t, "variant": i.variant,
-                    "witness_ok": w, "battery_killers": b,
+                    "witness_ok": w,
+                    "battery_killers": (None if args.skip_battery else b),
                     "idiom": per_inst.get(i.name, {}),
                 } for i, w, b in zip(insts, wit, bat)],
                 "witness_ok": f"{sum(wit)}/{len(wit)}",
-                "battery_survives": f"{sum(1 for b in bat if not b)}/{len(bat)}",
+                "battery_survives": bat_verdict,
                 "idiom_counts": {kname: sum(1 for i in insts if per_inst.get(i.name, {}).get(kname))
                                  for kname in names},
             }
-            print(f"\n### {d}: witness {sum(wit)}/{len(wit)} | battery survives "
-                  f"{sum(1 for b in bat if not b)}/{len(bat)} | idiom "
+            print(f"\n### {d}: witness {sum(wit)}/{len(wit)} | battery "
+                  f"{bat_verdict} | idiom "
                   + ", ".join(f"{kname} {report['directions'][d]['idiom_counts'][kname]}/{len(insts)}"
                               for kname in names), file=sys.stderr)
             for i, b in zip(insts, bat):
                 if b:
                     print(f"    KILLED {i.name}: {'; '.join(b)}", file=sys.stderr)
+
+        # ---- (d') budget-split width, two-atom directions only
+        if args.split_sweep:
+            report["split_sweep"] = {}
+            for d in dirs:
+                rows = []
+                for i in instances_for(d, args.split_sweep):
+                    sweep = split_sweep_proofs(i)
+                    if not sweep:
+                        continue
+                    first = i.atoms[0]
+                    gen = first.inner.cap if isinstance(first, NestedAtom) else first.cap
+                    oks = run_checks(pool, [(i.prop(), p) for _, p in sweep], IDIOM_TIMEOUT_S)
+                    closing = [s for (s, _), ok in zip(sweep, oks) if ok]
+                    rows.append({"name": i.name, "t": i.t, "candidates": len(sweep),
+                                 "closing": closing, "generator_guess": gen,
+                                 "generator_guess_closes": gen in closing})
+                    print(f"    split-sweep {i.name}: {len(closing)}/{len(sweep)} guesses close "
+                          f"{closing} (generator's is {gen}, "
+                          f"{'in' if gen in closing else 'NOT in'} the set)", file=sys.stderr)
+                if rows:
+                    report["split_sweep"][d] = rows
     finally:
         pool.close()
-    (args.out_dir / "lean.json").write_text(json.dumps(report, indent=2, ensure_ascii=False))
-    print(f"\nwrote {args.out_dir / 'lean.json'}", file=sys.stderr)
+    out = args.out_dir / f"lean{args.tag}.json"
+    out.write_text(json.dumps(report, indent=2, ensure_ascii=False))
+    print(f"\nwrote {out}", file=sys.stderr)
     return 0
 
 

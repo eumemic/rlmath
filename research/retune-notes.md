@@ -460,3 +460,40 @@ be re-run). Alternatives: cap es and let the offset carry the drop; or bank-draw
 
 **Until then bridge_chain is NOT Phase-1 complete.** R1/R2 pass; R3 fails; the family needs the
 schema fix and a re-measure.
+
+### 8.1 Addendum — R3 as written could only ever fail, never pass
+
+The case_tree ladder design agent computed R3's statistical resolution, and it qualifies the
+verdict above without overturning it.
+
+At **10 leaves per k × 8 attempts** — the resolution this retune actually ran at — the
+leaf-clustered SE of a per-k mean is **0.079–0.095** (leaf-rate SD 0.25–0.30), so the smallest
+pairwise per-k gap detectable at 2σ is **0.22–0.27**. Resolving the literal ±0.05 tolerance would
+need roughly **288 leaves per k per rung**, about six times this entire session. The detection
+floor by budget:
+
+| leaves per k | 2σ-detectable per-k gap |
+|---|---|
+| 10 (what ran) | 0.22–0.27 |
+| 30 | 0.16 |
+| 60 | 0.11 |
+| 288 | 0.05 |
+
+So **R3 was a gate with no attainable PASS state**: any preset could only fail loudly or sit
+unresolved, and "within ±0.05" was never a claim the data could support in either direction.
+That is a design defect in the rule, and it compounds the process defect — the rule was skipped
+*and* it was unmeasurable.
+
+**The verdict in §8 still stands**, and stands for the right reason: e3_lowdeg's spread is
+**0.325**, comfortably above the 0.22–0.27 floor. It is one of the few outcomes this budget could
+legitimately detect. The presets with smaller spreads (v2 0.125, e2 0.175) should be read as
+**UNRESOLVED**, not as failures — the table's "FAIL" for those four is stronger than the data.
+
+**Better test, and it costs nothing: R3′.** Replace "three per-k bins" with a regression of pass@8
+on the continuous quantity that actually drives difficulty, with rung fixed effects. Binning into
+three groups of ten throws away most of the information; the continuous form recovers it. For
+bridge_chain that covariate is `es_left`, and **§8's own analysis is already R3′** — coef −0.0353
+per unit, SE 0.0079, **z = −4.48** on 150 rows, which is decisive where the binned test was
+marginal. Adopt R3′ as the primary flatness gate for both families and keep per-k means as a
+descriptive table, not a gate. (For case_tree the analogous covariate is `log10 max|coef|`;
+see `research/case-tree-hardening.md` §7.)

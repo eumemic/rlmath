@@ -1,0 +1,124 @@
+{
+  "audit": {
+    "H1_twoatom": {
+      "direction": "H1_twoatom",
+      "instances": 20,
+      "points_checked": 642,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 1.05,
+      "spill_ge_3": 0,
+      "cap_min": 9,
+      "cap_max": 17,
+      "max_abs_coeff": 1890
+    },
+    "H3_nested": {
+      "direction": "H3_nested",
+      "instances": 20,
+      "points_checked": 640,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 0.8,
+      "spill_ge_3": 0,
+      "cap_min": 5,
+      "cap_max": 8,
+      "max_abs_coeff": 1880
+    }
+  },
+  "sqrt_le_iff_order": "nt",
+  "directions": {},
+  "split_sweep": {
+    "H1_twoatom": [
+      {
+        "name": "H1_twoatom-max-b-7_-1-a1o0s0",
+        "t": 9,
+        "candidates": 8,
+        "closing": [
+          4
+        ],
+        "generator_guess": 4,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H1_twoatom-min-b-1_7-a3o0s1",
+        "t": 16,
+        "candidates": 15,
+        "closing": [
+          8
+        ],
+        "generator_guess": 8,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H1_twoatom-max-b-14_-6-a1o1s1",
+        "t": 15,
+        "candidates": 14,
+        "closing": [
+          6
+        ],
+        "generator_guess": 6,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H1_twoatom-min-b2_8-a3o-1s0",
+        "t": 13,
+        "candidates": 12,
+        "closing": [
+          7
+        ],
+        "generator_guess": 7,
+        "generator_guess_closes": true
+      }
+    ],
+    "H3_nested": [
+      {
+        "name": "H3_nested-max-b-7_-1-a1o0s0",
+        "t": 4,
+        "candidates": 7,
+        "closing": [
+          5
+        ],
+        "generator_guess": 5,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H3_nested-min-b-1_7-a3o0s1",
+        "t": 8,
+        "candidates": 10,
+        "closing": [
+          8,
+          9
+        ],
+        "generator_guess": 8,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H3_nested-max-b-14_-6-a1o1s1",
+        "t": 6,
+        "candidates": 11,
+        "closing": [
+          9,
+          10
+        ],
+        "generator_guess": 9,
+        "generator_guess_closes": true
+      },
+      {
+        "name": "H3_nested-min-b2_8-a3o-1s0",
+        "t": 8,
+        "candidates": 8,
+        "closing": [
+          6
+        ],
+        "generator_guess": 6,
+        "generator_guess_closes": true
+      }
+    ]
+  }
+}

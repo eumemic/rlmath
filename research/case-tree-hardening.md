@@ -1,0 +1,951 @@
+# case_tree hardening ladder — staged schema rungs for the GPU session
+
+Phase 1 is **open on case_tree for the opposite reason it is open on bridge_chain**
+(HANDOFF.md §1). bridge_chain measures ~0.13–0.43 and sits *below* the corridor floor;
+case_tree measures **pass@8 0.923** over 68 leaves × 8 DeepSeek-Prover-V2-7B attempts and sits
+*above* the 0.9 ceiling, with **band-fit 18/68 = 0.265** against the required ≥0.60 and **50/68
+leaves at a perfect 8/8**. bridge_chain's fix was a distribution retune. case_tree's cannot be:
+`research/case-tree-forensics.md` (F1) shows there is no lever inside the knob support, because
+the family measures **template recall**, and template recall has no knob.
+
+This file is the case_tree analogue of `research/retune-notes.md` — same sections, same
+discipline, one structural difference: **this is a schema ladder, not a preset ladder**, so
+§1 has to say which of `case_tree.py`'s invariants are frozen and which move, and §3's rungs
+each carry their own exact integer truth certificate rather than inheriting one.
+
+**Nothing here measures pass@8.** Every number below is one of: a *battery floor* (measured
+locally by S1/S2, definitive), a *self-certification* (witness kernel check, definitive), an
+*exactness obligation* (predicate audit vs 60-digit arithmetic, definitive), a *free structural
+computation* (run here off the shipped generator), or a *ceiling proxy* (idiom probe,
+indicative and with a known calibration defect — §5). §6 registers the projections; the pod
+decides.
+
+Owned file: this one. `src/rlmath/families/case_tree.py` is **not** edited here — a later agent
+implements §3 from this spec, and §9 is the order in which that must happen.
+
+Sources carried forward, cited and not re-run:
+`research/case-tree-forensics.md` (F1, measurement forensics),
+`research/lever-model-refit.md` (F2, how well a projection of this kind scores out of sample),
+`research/ct-hardening-survey-a.md` (S1, algebraic-depth directions),
+`research/ct-hardening-survey-b.md` (S2, alternative-obligation directions),
+`research/retune-notes.md` (the playbook and its §8 post-mortem).
+
+---
+
+## 0. What to run on the pod (TL;DR)
+
+**Three steps, in this order. The first two are local and cost $0.**
+
+**(0a) Implement the rungs** behind a schema dispatch in `case_tree.py` (§9 step 1) and re-run
+the local gate through the *shipped* generator — battery + witness + planted control + full
+`validate_problem` (V0–V6). S1/S2 gated hand-built probe instances; nothing has yet been gated
+through the code that will materialize the dataset, and **V3/V4 have never been run for any
+candidate** (§4). A rung that fails here is dropped before it spends GPU minutes.
+
+**(0b) Stage the candidates** into `data/families/ct_ladder_candidates.jsonl` with a new
+`scripts/stage_ct_ladder.py`, mirroring `scripts/stage_retune_candidates.py` row-for-row
+(`formal_statement` + `id` are what `build_bank.py` reads; every other column is flat scalar
+provenance so the measured bank can be regressed back onto the knobs — that regression is R3′
+and R4 below):
+
+```bash
+uv run python scripts/stage_ct_ladder.py --with-battery \
+  --rungs v2,r1_recip,r2_prod,r2_sum,r3_floor \
+  --k-grid 2,4,8 --per-rung 30 --seed 5150
+```
+
+5 rungs × 30 deduped leaves, k ∈ {2,4,8} evenly (10 each), globally deduped by
+`statement_key`. Seed **5150** is disjoint from 42 (families), 2026 and 4242 (retune).
+
+**(0c) Measure on the pod** — one command, same recipe as `retune-notes.md` §0:
+
+```bash
+uv run python scripts/build_bank.py \
+  --dataset json --data-files data/families/ct_ladder_candidates.jsonl \
+  --out data/bank/ct_ladder_calibration.jsonl \
+  --backend repl --workers 4 --concurrent 4 --k 8 \
+  --leaf-base-url http://localhost:8000/v1 \
+  --leaf-model deepseek-ai/DeepSeek-Prover-V2-7B \
+  --leaf-template deepseek-prover-v2-non-cot
+```
+
+**Do not pass `--leaf-max-tokens` / `--leaf-temperature`.** The comparison baseline
+(`data/bank/family_leaf_calibration.jsonl`, the 68 rows that produced the 0.923) was measured at
+`deepseek-ai/DeepSeek-Prover-V2-7B|deepseek-prover-v2-non-cot|Mdef|Tdef`; `leaf_id` carries the
+full sampling profile, a different profile is a different experiment, and build_bank's
+provenance guard refuses to mix them in one file anyway. Write to a **fresh** `--out`;
+`bank_dsv2.jsonl`, `family_leaf_calibration.jsonl` and `retune_measure.jsonl` are the measured
+record and stay read-only.
+
+**(0d) Then, in the same pod session, the flatness confirm** — this is not optional and it is
+the lesson of `retune-notes.md` §8. Apply §7's R1/R2 to pick the winner, re-stage **60 fresh
+leaves at k=2 and 60 at k=8 for that rung only**, and re-run the same command to a second
+fresh `--out`. Reason: at the ladder's 10 leaves per k, the 2σ-resolvable per-k gap is **0.22–0.27**
+(computed in §7/R3) — the ±0.05 gate cannot be passed *or* failed at that n. At 60 per k it is
+**0.09–0.11**, which is a real test.
+
+### Cost
+
+| step | statements × attempts | wall | $ at $3.2/hr (H100 PCIe) |
+|---|---|---|---|
+| fresh-pod setup (models + Mathlib cache) | — | ~20 min | ~$1.07 |
+| (0c) ladder, 5 rungs | 150 × 8 | ~20 min @ 430–480 rows/hr | ~$1.07 |
+| (0d) flatness confirm, winner only | 120 × 8 | ~16 min | ~$0.85 |
+| optional 6th rung `r4_floorprod` | +30 × 8 | +4 min | +$0.21 |
+| **total** | **270–300 × 8** | **~56–60 min** | **~$3.0–3.2 estimated** |
+
+HANDOFF §1: this project's wall-clock estimates ran **~27% low** against the wallet, and
+`prime wallet` is the only real number. So **budget $4, cap $6**, and re-check the wallet after
+terminating. The standing $30 GPU authorization was spent on the overnight run — **ask before
+this pod**.
+
+Then apply §7's decision rule, and only then re-materialize with `gen_families.py` (§9).
+
+---
+
+## 1. What is being hardened, and what is not
+
+`generate(k, seed, n, preset="v2")`. For bridge_chain a "preset" was a `DifficultyPreset` —
+coefficient ranges, δ choices, function mixture — over **one unchanged schema**. That is what
+kept `research/family-v2-hardening.md`'s measured V0–V6 tables applicable across the whole
+ladder, and it is why the retune could be argued from a fitted lever model.
+
+**Here the piece function itself changes.** That is forced, not preferred (§2). The consequences
+are three, and they are the reason this file exists rather than a §9 of `retune-notes.md`:
+
+1. **Every rung needs its own truth certificate.** Coverage and necessity are re-derived per
+   rung, and the soundness asymmetry (below) is re-checked per rung. S1 and S2 did this work;
+   §3 carries the results forward.
+2. **The measured V0–V6 tables do not transfer.** They were measured on `√`-capped quadratics.
+   Each rung's battery and witness verdicts are S1/S2 measurements on that rung (§4), and V3/V4
+   are still unmeasured for all of them (§9 step 2).
+3. **Leaf statements change**, so every materialized case_tree artifact is invalidated (§9).
+
+### The soundness asymmetry — get this right or the family becomes false
+
+- **COVERAGE** ("the goal is true on the whole real band") is proven by the generator's witness
+  on ℝ. A **sufficient** condition is fine here.
+- **NECESSITY** (`_redundant`: piece *i* is needed because some integer point of band *i* is
+  covered by no other piece) is exact integer arithmetic, and `holds_at` must **not
+  under-approximate** the true super-level set. A predicate that believes a piece covers *less*
+  than it truly does makes the generator claim a necessity it does not have and ship a k-leaf
+  plan that is secretly (k−1)-leaf. This is exactly why `Real.log` pieces were rejected in the
+  module docstring.
+
+Every rung in §3 supplies an **exact (iff)** integer predicate. None needs an over-approximating
+fallback. S1 and S2 each audited theirs numerically against 60-digit reference arithmetic
+(0 under- and 0 over-approximating mismatches, ~9,600 integer points per direction for S1;
+81-point integer windows × 12 instances plus a 401-point real coverage grid at tolerance 10⁻³⁰
+for S2). I re-verified the four rung exemplars in §3 independently while writing this file —
+predicate vs 60-digit `Decimal`, every integer x in [−12, 6]: exact agreement on all four.
+
+### Frozen — a rung that breaks any of these is not a rung
+
+| # | invariant | where it lives |
+|---|---|---|
+| F1 | coverage proven on ℝ by the generator's own witness; a *sufficient* certificate is allowed | `Piece.covers_band`, `leaf_proof` |
+| F2 | necessity decided by **exact integer** arithmetic that never under-approximates | `Piece.holds_at`, `_redundant` |
+| F3 | `_repair_necessity` stays a **no-op at every k** (`leaf_stats()["repaired_frac"] == 0.0`) — a repair firing at different rates per k is itself a flatness leak | `_repair_necessity` docstring |
+| F4 | per-node difficulty flat in k: the knob support is k-independent; the **only** k-dependence is the band's absolute position (→ radicand constant). The outer constant must **not** grow with k | module docstring "Flatness in k", `leaf_stats` |
+| F5 | balanced `max`/`min` extremum tree, depth ⌈log₂ k⌉, assembly Θ(k log k) | `_chain`, `_paths`, `_wrap` |
+| F6 | flat k-way `rcases le_or_gt` assembly, depth 1 at every k | `_assembly` |
+| F7 | V0 (goal resists the battery), V5 (every leaf resists it), V6 with `visible_lemmas = []` and no exemption | `validate.py` |
+| F8 | `C_LEVEL = 3` — nonzero, so the goal never takes the `0 ≤ e` shape `positivity` attacks | `C_LEVEL` |
+| F9 | even band widths (integral midpoints) and `min(WIDTHS) = 6` (the necessity margin F3 rests on) | `WIDTHS` |
+| F10 | the radicand never degenerates to a perfect square or a bare `a·x²` (both leak the vertex — the thing the policy must invent); today enforced by `_cap`'s `e ≥ 1` | `_cap` docstring |
+| F11 | determinism: output a pure function of `(k, seed, idx)`, extended to `(k, seed, idx, preset)`; `v2` output stays **byte-identical** and keeps the untagged id form | `_rng`, golden tests |
+
+### Moving
+
+`Piece.holds_at`, `covers_band`, `_tighten`, `radicand()`, `outer_const()`, `_piece_term` and
+`leaf_proof` all become **per-schema**. `case_tree.Piece` is currently hard-wired to
+`a(x−m)² ≤ d`; the dispatch is the first implementation step and S2 flags it as such. The knob
+support may also widen (`r3_floor`'s pad interval, `r2_*`'s second atom) — and **every widening
+re-opens F3's validity argument**, which must be re-established by the exhaustive knob-cell
+sweep, never inherited.
+
+---
+
+## 2. The measured levers — there are none inside the knob support
+
+This is the justification for a schema ladder, so it has to be tight. Three independent lines of
+evidence, all measured.
+
+### 2.1 Every knob marginal is flat, and it is not sampling noise
+
+68 case_tree leaves × 8 DSV2 attempts (`data/bank/family_leaf_calibration.jsonl`), joined back
+onto the generator knobs by regenerate-and-join on the prop string (F1 §1 — the id suffix is a
+flat counter over a combined candidate list, **not** a generator index; all 68/68 rows matched):
+
+| lever | cells | measured mean pass@8 |
+|---|---|---|
+| variant | max / min | 0.872 / 0.988 |
+| curvature `a` | 1 / 2 / 3 | 0.933 / 0.910 / 0.925 |
+| width | 6 / 8 | 0.905 / 0.939 |
+| vertex offset | −1 / 0 / +1 | 0.890 / 0.940 / 0.944 |
+| slack | 0 / 1 | 0.943 / 0.899 |
+| cap `t` | 4 … 9 | 0.875 … 1.000 |
+| \|vertex\| bucket | low / mid / high | 0.880 / 0.977 / 0.921 |
+| max\|coef\| bucket | low / mid / high | 0.885 / 0.938 / 0.949 |
+| k | 2 / 4 / 8 | 0.850 / 0.974 / 0.917 |
+
+F1 tested this leaf-by-leaf rather than by eyeballing marginals: Mann-Whitney U on the 18 in-band
+vs 50 saturated leaves over width, curvature, offset, slack, cap, pad, d, far, |vertex|,
+max|own-coeff|, k and prop length gives **p > 0.4 on every one**, several p > 0.7. The single
+significant separator is `variant` (Fisher exact **p = 0.00094**, OR ≈ 10.2), and its purest cell
+still measures **0.872**; the hardest stacked cell F1 could find (max ∧ curvature 3 ∧ slack 1,
+n=3) measures **0.79** — against a 0.45 target.
+
+Saturation is real and not an artifact: a homogeneous Binomial(8, p̂) is rejected at
+χ² = 36.17, df = 2, **p ≈ 1.4×10⁻⁸**; the Beta-Binomial fit (α = 2.48, β = 0.20) implies a true
+per-leaf rate SD of **≈ 0.138** with LR = 47.6 vs homogeneous (**p ≈ 5×10⁻¹²**). So the leaves do
+differ in true difficulty — **but nothing in the knob support explains the difference**, and at
+n=8 an observed 8/8 has a 90% credible interval of [0.717, 0.994], a 0.27-wide band of invisible
+difficulty. There is no measurement here to retune against.
+
+### 2.2 The mechanism: one memorised idiom, which is the generator's own witness
+
+Of the 68 leaves with ≥1 success: **68/68** use `nlinarith` **and** `sq_nonneg`; **62/68** name
+`Real.sqrt_le_iff.mpr`; **59/68** name `Real.sqrt_nonneg`; mean 9.8 proof lines. F1's taxonomy
+collapses all 68 first-proofs into **four signatures and one strategy family**, and the
+non-default encodings appear only on already-saturated leaves. The modal emitted proof *is* the
+generator's `leaf_proof` template with the cap `t` read straight off the goal as `A − C`.
+
+### 2.3 The state space is small, which forecloses "just sample harder"
+
+Distinct leaf props at k=8 grow sub-linearly with sampling — F1 measured 2194 → 2888 → 3398 →
+3723 → 3974 over 500 → 8000 problems. Recomputed here off the shipped generator at seed 4242:
+**683 distinct from 100 problems, 2192 from 500, 3385 from 2000** (16,000 leaves drawn). The
+schema's true distinct-leaf content space is a bounded few-thousand-item set. The shipped
+dataset shows the same thing at small n: `data/families/case_tree/DATASHEET.md` reports **5, 9 and
+13 distinct leaf lengths** behind 10, 20 and 40 leaves at k = 2/4/8.
+
+**Conclusion.** The corridor gap is not a distribution problem. `variant`, the one real lever,
+caps 0.42 above the target. The piece function has to change.
+
+---
+
+## 3. The ladder
+
+### 3.1 Shape: a one-step star with one join, not a chain
+
+`retune-notes.md` §3 used a chain because bridge_chain's levers were commensurable knobs on one
+schema, so "each rung adds one lever" was literally true and a flat result between adjacent rungs
+localized the lever. Here the candidate mechanisms are **different kinds of invention** and are
+not orderable a priori. So: every rung differs from the **control** by exactly one mechanism, and
+one optional rung is the **join** of two of them. A flat result between any rung and the control
+identifies that mechanism as inert; a flat result between the join and its two parents identifies
+whether the mechanisms compose. This is strictly more mechanism-identification per cell than a
+chain, at the same cost. Deviation from the brief's "chain" is deliberate and is this paragraph.
+
+| rung | atoms | cap | prover's obligation | the ONE mechanism added vs `v2` |
+|---|---|---|---|---|
+| `v2` (control) | 1 | exact, loose | `√u ≤ t` | — (shipped; measured 0.923) |
+| `r1_recip` | 1 | — (quotient) | `C·u ≤ c`, behind `le_div_iff₀` | **retarget the closing lemma** — `Real.sqrt_le_iff` no longer applies; one other standard lemma does, plus a positivity side goal `positivity` cannot discharge |
+| `r2_prod` | 2, × | exact | `√u·√w ≤ T` | **a second atom** — one `sqrt_le_iff` cannot reach the goal; the visible budget `T` must be split multiplicatively and the two bounds recombined (`mul_le_mul`) |
+| `r2_sum` | 2, + | exact | `√u₁ + √u₂ ≤ t` | **the combinator** — same two atoms as `r2_prod`, combined additively: the split is additive and *anchored* near `t/2`, and `linarith` finishes |
+| `r3_floor` | 1 | **tight** floor | `⌊√u⌋ ≤ T`, with `√u ≤ T` **false** on ~29% of the band | **integrality + strictness** — the memorised sub-goal is not merely unfound, it is false; a strict bound (`Real.sqrt_lt'`) plus a floor/cast step (`Int.floor_lt`, `exact_mod_cast`) is forced |
+| `r4_floorprod` *(optional 6th)* | 2, × | tight floor | `⌊√u·√w⌋ ≤ T` | **composition** — `r2_prod` ⊕ `r3_floor`; `Real.sqrt_mul` must be applied *before* the floor step, an ordering no probed adaptation found |
+
+`r2_prod` and `r2_sum` are a **matched pair**: same atom count, and measured leaf lengths of
+105–113 and 104–113 chars respectively. Whatever separates them is the combinator, not the text.
+
+Rung names match `[a-z][a-z0-9_]*` and double as Lean identifier fragments; ids and declaration
+names tag them the way bridge_chain does (`case_tree-r2_sum-k4-s5150-3`), while `v2` keeps the
+untagged form byte-identical (F11).
+
+### 3.2 `v2` — control
+
+*Not a candidate.* It is the shipped schema, and it is in the run so the 0.923 is re-measured
+**on the same pod, the same day, the same sampling profile** as the candidates. If it does not
+reproduce, the comparison is void (§7/R0c).
+
+- **piece** — max: `(C+t) − Real.sqrt (a x² + b x + c₀)`; min: `Real.sqrt (…) − (t−C)`, radicand
+  `a(x−m)² + e` written expanded.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 12 * x + 22)`
+- **exact ℤ predicate** — `a*(x−m)**2 <= d`, `d = t² − e`. Iff because `√u ≤ t ⟺ u ≤ t²` for
+  `t ≥ 0, u ≥ 0`.
+- **witness** — the shipped `leaf_proof`: one `Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith
+  [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩`, then `linarith`.
+- **mechanism** — none. This is the template DSV2 has memorised.
+
+### 3.3 `r1_recip` — retarget the closing lemma
+
+- **piece** — the piece *is* the quotient, so there is no outer subtraction. max:
+  `C ≤ c / (a x² + b x + c₀)`; min: `2C − c/(…) ≤ C`. The denominator is the same
+  positive-definite `a(x−m)² + e`, `e ≥ 1`.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 51 / (x ^ 2 + 6 * x + 10)`
+  (`u = (x+3)² + 1`, band [−7, 1], far = 4, `c = C·(a·far² + e) = 3·17 = 51`).
+- **exact ℤ predicate** — `C * (a*(x−m)**2 + e) <= c`. Iff **unconditionally**, because
+  `u ≥ e ≥ 1 > 0`, so `le_div_iff₀` applies with no side condition on the truth side.
+  Geometry is the baseline's: `a(x−m)² ≤ c/C − e`, so `covers_band` and `_tighten` port over with
+  `d = a·far² + slack`. Measured spill 2.000, `_redundant` 0% at k = 2/4/8/16 (S2 §5.1).
+- **witness** (S2, kernel-checked 12/12):
+  ```lean
+  by
+    intro x hl hr
+    have hu : (0:ℝ) < x ^ 2 + 6 * x + 10 := by nlinarith [sq_nonneg (x + 3)]
+    rw [le_div_iff₀ hu]
+    nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]
+  ```
+- **mechanism** — the obligation is still "one lemma, then the band product", but it is a
+  *different* lemma and the memorised `Real.sqrt_le_iff` is inapplicable. This is the lightest
+  possible schema change, and it is in the ladder precisely to test whether "one extra lemma" is
+  a difficulty lever **at all**. If it measures ≈0.9, the idiom-distance model is wrong at the
+  easy end and every projection in §6 loses its lower anchor.
+- **invariant that must be asserted, not assumed** — `u > 0`. In Lean `x/0 = 0`, so a knob
+  combination that let the denominator vanish would make the piece evaluate to `0 < C` while the
+  predicate `C·u ≤ c` read `0 ≤ c` = true. That is **coverage-fatal** (a false theorem), not
+  necessity-fatal. Negative discriminant plus `e ≥ 1` forecloses it.
+- **bonus** — leaves are **shorter** than the control (58–64 chars vs 68–73), so a hardening
+  effect here cannot be explained by statement length. See §6.4.
+
+### 3.4 `r2_prod` — a second atom, multiplicatively
+
+- **piece** — `(C+T) − Real.sqrt (u) * Real.sqrt (w)`, with `T = t₁t₂` and the two radicands'
+  caps chosen so `u_max = t₁²` and `w_max = t₂²` **exactly**.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 33 - Real.sqrt (x ^ 2 + 6 * x + 18) * Real.sqrt (2 * x ^ 2 + 12 * x + 22)`
+  (`u = (x+3)²+9 → 25 = 5²` at far = 4; `w = 2(x+3)²+4 → 36 = 6²`; `T = 30`).
+- **exact ℤ predicate** — `u(x) * w(x) <= T**2`. Iff: `√u·√w = √(uw)` for `u, w ≥ 0`, then
+  `√(uw) ≤ T ⟺ uw ≤ T²` for `T ≥ 0`. Note the generator's *witness* uses the weaker split bound
+  (`√u ≤ t₁ ∧ √w ≤ t₂`), which is merely sufficient — correct for coverage — while `holds_at`
+  uses the exact product form, which is what necessity requires. Because the caps are exact
+  squares the super-level set is exactly `[m−far, m+far]`, with **equality at the band endpoint**
+  (verified here to 60 digits: the product hits exactly 30 at x = −7). Spill 2.000; `_redundant`
+  0% at k = 2/4/8/16.
+- **witness** (S2, kernel-checked 12/12):
+  ```lean
+  by
+    intro x hl hr
+    have hb := mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)
+    have h1 : Real.sqrt (x ^ 2 + 6 * x + 18) ≤ 5 := Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith⟩
+    have h2 : Real.sqrt (2 * x ^ 2 + 12 * x + 22) ≤ 6 := Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith⟩
+    have h3 : Real.sqrt (x ^ 2 + 6 * x + 18) * Real.sqrt (2 * x ^ 2 + 12 * x + 22) ≤ 5 * 6 :=
+      mul_le_mul h1 h2 (Real.sqrt_nonneg _) (by norm_num)
+    linarith
+  ```
+- **mechanism** — one `sqrt_le_iff` cannot reach the goal: the closing route composes **two
+  already-memorised steps** with one ordinary one. S2's design rule (§5, and it is the right one)
+  is *prefer a rung where a short route exists but is not the memorised one over a rung that is
+  pass/fail on a single unfamiliar lemma name*, because the former should give graded per-leaf
+  rates and the latter is bimodal. `r2_prod` is the cleanest instance of that rule in either
+  survey, which is why it is a primary candidate.
+- **caveat this file adds** — S2's cracking probe was **oracle-fed**: it supplied `t₁ = 5` and
+  `t₂ = 6`. The prover must find them. Since `u_max = t₁²` and `w_max = t₂²` exactly, the split
+  is **unique** — any `s₁ > t₁` forces `s₂ < t₂`, which is false, and any `s₁ < t₁` is false —
+  so the target is a single divisor pair of `T`, over the ~4–12 divisor pairs a `T ∈ [16, 324]`
+  admits. S1 ran exactly this sweep for `r2_sum` (run C) and S2 did not run it for `r2_prod`, so
+  **`r2_prod`'s difficulty is the less well characterised of the matched pair**, in the direction
+  of *harder than S2's probe suggests*. Registered accordingly in §6.
+- **invariants** — `T ≥ 0` and `u, w ≥ 0` (the squaring step needs both); `T = t₁t₂ ≥ 16` and
+  `e₁, e₂ ≥ 1` by construction.
+
+### 3.5 `r2_sum` — the same two atoms, additively
+
+- **piece** — max: `(C+t) − Real.sqrt (u₁) − Real.sqrt (u₂)`; min: `Real.sqrt (u₁) +
+  Real.sqrt (u₂) − (t−C) ≤ C`. Both reduce to `√u₁ + √u₂ ≤ t` with `t = cap₁ + cap₂`.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 12 - Real.sqrt (x ^ 2 + 8 * x + 23) - Real.sqrt (2 * x ^ 2 + 16 * x + 39)`
+  (`u₁ = (x+4)²+7 → 16 = 4²` at far = 3; `u₂ = 2(x+4)²+7 → 25 = 5²`; `t = 9`).
+- **exact ℤ predicate** — with `s := t² − U₁ − U₂`:
+  `holds ⟺ s >= 0 and 4*U₁*U₂ <= s**2`. Iff: square once (both sides ≥ 0) to get
+  `U₁+U₂+2√(U₁U₂) ≤ t²`, i.e. `2√(U₁U₂) ≤ s`; square again, legal given `s ≥ 0`. All quantities
+  are integers at integer x. Both atoms are convex in x, so the super-level set is an interval
+  and the band geometry is unchanged. Mean spill **0.81** — *tighter* than v2's 1.33, because a
+  second non-negative atom can only shrink the super-level set. Exhaustive 360-knob-cell sweep:
+  max integer reach past a band **2 < width/2 = 3**, 0 cells at threshold (S1 §6.3).
+- **witness** (S1, kernel-checked 8/8):
+  ```lean
+  by
+    intro x hl hr
+    have hb1 : Real.sqrt (x ^ 2 + 8 * x + 23) ≤ 4 :=
+      Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩
+    have hb2 : Real.sqrt (2 * x ^ 2 + 16 * x + 39) ≤ 5 :=
+      Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩
+    linarith
+  ```
+- **mechanism** — the memorised one-shot fails for a **logical** reason, not a search-budget one:
+  `base` bounds `√u₁ ≤ t` and the goal needs `√u₁ + √u₂ ≤ t`, from which `√u₂ ≥ 0` yields
+  nothing. The prover must invent a budget split. S1 swept **every** integer split in Lean:
+  exactly **1 of 8 / 1 of 15 / 1 of 14 / 1 of 12** closes, always the generator's `cap₁`, and
+  offline the feasible split is `cap₁` in **4,000/4,000** instances.
+- **why this is the rung with a future** — it is the only direction in either survey that ships a
+  **continuous, measured difficulty lever**: `|cap₁ − t/2|`, median 0.5, max 2.0 with two matched
+  quadratics, tunable up to 9.0 with a quadratic + quartic second atom. The naive even split *is*
+  the generator's split in **719/2000 = 35.9%** of instances. So the target is anchored, the
+  anchoring is a per-leaf covariate the pod run will record, and a near-miss on level is
+  correctable **within the rung** rather than by switching rungs. F1 proved v2 has no such
+  property.
+- **capacity caveat** — S1 draws the second atom deterministically from the first
+  (`_second_atom_knobs`), which multiplies the *statement* space without multiplying the *knob*
+  space. Given §2.3, the implementing agent should measure distinct-leaf capacity for the chosen
+  draw and consider an independent second-atom draw if it binds (§10).
+
+### 3.6 `r3_floor` — integrality and a false sub-goal
+
+- **piece** — max: `(C+T) − (⌊Real.sqrt (a x² + b x + c₀)⌋ : ℝ)`; min: `(⌊Real.sqrt (…)⌋ : ℝ) −
+  (T−C)`. The cap is **tight**: `T = t − 1` with the pad chosen so `u_max = t² − 1`.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 7 - (⌊Real.sqrt (x ^ 2 + 6 * x + 17)⌋ : ℝ)`
+  (`u = (x+3)²+8 → 24 = 5²−1` at far = 4; `T = 4`).
+- **exact ℤ predicate** — `a*(x−m)**2 + e < (T+1)**2`. Iff: `⌊r⌋ ≤ T ⟺ r < T+1` for `T ∈ ℤ`,
+  then `√u < T+1 ⟺ u < (T+1)²` since both sides are non-negative; `u(x)` is an integer at
+  integer x, so the comparison is pure integer arithmetic. Spill 2.062 — identical to the
+  baseline; `_redundant` 0% at k = 2/4/8/16 over 40 tilings each.
+- **the invariant that must be asserted** — **write the predicate as the integer comparison
+  `u < (T+1)²`, never as `floor(sqrt(u)) ≤ T` in floating point.** At k=32 the radicand's
+  constant reaches ~4×10⁴; a float `√` of a perfect square that rounds down reports coverage
+  where there is none. That is **coverage-fatal** (a false theorem), not necessity-fatal, and the
+  integer form makes it unreachable rather than merely unlikely.
+- **witness** (S2, kernel-checked 12/12):
+  ```lean
+  by
+    intro x hl hr
+    have hs : Real.sqrt (x ^ 2 + 6 * x + 17) < 5 := (Real.sqrt_lt' (by norm_num)).mpr (by
+      nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)])
+    have hf : ⌊Real.sqrt (x ^ 2 + 6 * x + 17)⌋ < (5:ℤ) := Int.floor_lt.mpr (by push_cast; linarith)
+    have hf2 : (⌊Real.sqrt (x ^ 2 + 6 * x + 17)⌋ : ℝ) ≤ 4 := by exact_mod_cast Int.lt_add_one_iff.mp hf
+    linarith
+  ```
+- **mechanism** — qualitatively different from every other rung: the memorised sub-goal
+  `√u ≤ T` is not merely unfound but **false**. Verified here at 60 digits on the exemplar: it
+  fails on **29.5%** of the band. The bracket route (`⌊r⌋ ≤ r < ⌊r⌋+1` as raw hypotheses)
+  provably cannot work either, because `nlinarith` cannot get `⌊r⌋ ≤ T` from `⌊r⌋ < T+1` without
+  knowing `↑⌊r⌋` is an integer. **Integrality is a new obligation**, and S2's loose-vs-tight
+  control isolates the cause exactly: the one-line `Int.floor_le` route closes **12/12 on the
+  loose cap and 0/12 on the tight one** — same symbol, same lemma surface, one knob different.
+  So the hardening is the **tightness calibration**; `⌊·⌋` is only the device that makes
+  tightness expressible.
+- **the pad knob, and a correction to S2** — the real constraints are `a·far² + e < (T+1)²`
+  (coverage) and `a·far² + e > T²` (tightness), so for a chosen `T` the pad `e` ranges over ~2T
+  integers instead of `SLACKS = (0,1)`: **5–9× more leaf capacity**, which directly addresses
+  §2.3. But S2's further claim that this makes difficulty *continuously* tunable does not
+  survive scrutiny: the memorised sub-goal is either false somewhere on the band or it is not, so
+  difficulty is a **step function** of tightness, and the loose side of the step is
+  `floor_sqrt_loose`, which S2 measured as necessity-degrading (spill 2.796; `_repair_necessity`
+  fires at 3.1% / 0.6% / 2.3% at k = 4/8/16 — a k-varying repair rate, i.e. an F3 violation).
+  **Spec:** sample `e` over the sub-interval that keeps the measured spill ≤ 2.24 (the shipped
+  bound), verify with the exhaustive knob-cell sweep **and** a `_redundant` scan at
+  k ∈ {2,4,8,16}, and fall back to the probe's pinned tight value if any repair fires. Capacity
+  is the gain; difficulty tuning is not.
+- **the risk that puts this rung third, not first** — bimodality. A rung gated on "does the model
+  know `Real.sqrt_lt'` / `Int.floor_lt`" lands leaves at 8/8 or 0/8, and a bimodal distribution
+  can hit mean 0.45 with band-fit near 0. Registered in §6 as a *predicted R2 failure even if R1
+  passes*.
+
+### 3.7 `r4_floorprod` — the join (optional 6th cell)
+
+- **piece** — `(C+T) − (⌊Real.sqrt (u) * Real.sqrt (w)⌋ : ℝ)`, pad bumped until
+  `P = u_max·w_max` is not a perfect square, so `T² < P < (T+1)²`.
+  Example: `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 26 - (⌊Real.sqrt (x ^ 2 + 6 * x + 10) * Real.sqrt (2 * x ^ 2 + 12 * x + 19)⌋ : ℝ)`
+- **exact ℤ predicate** — `u(x) * w(x) < (T+1)**2`. Same derivation as `r3_floor` after
+  `√u·√w = √(uw)`. **The integer form is mandatory, not a preference**: `u·w` reaches ~10¹⁸ at
+  k=32, past double precision entirely. Spill 2.015; `_redundant` 0% at all k.
+- **witness** — S2's 13-line route through `Real.sqrt_mul` then the floor step; kernel-checked
+  12/12 (verbatim in `research/ct-hardening-survey-b.md` §Appendix).
+- **mechanism** — composition. `r2_prod`'s cracking route (two bounds + `mul_le_mul`) does **not**
+  crack it, and `r3_floor`'s cracking route (`Int.floor_le_iff` + `sq_sqrt`-fed `nlinarith`) does
+  **not** crack it either: **0 of 4** probed adaptations close. The witness has to apply
+  `Real.sqrt_mul` *before* the floor step, an ordering no adaptation found.
+- **why optional** — it is the hardest cell in either survey and is projected below the floor. It
+  earns its place only if the run needs a reserve rung for k = 16/32, or if the join estimate is
+  worth $0.21. Include it if the budget allows; drop it first if it does not.
+
+### 3.8 Directions considered and NOT staged, with the reason
+
+| direction | source | why not |
+|---|---|---|
+| `H2_quartic` (√ of a quartic) | S1 | Projected **0.60** — the natural easy rung, and clean on predicate, witness (after S1's degree-staircase fix), battery and necessity. **Rejected for this run on flatness:** its sole k-dependence grows **45,394×** across k = 2→32 (max\|coef\| median 324 → 14,707,723; worst k=32 leaf 4.7×10⁸) vs v2's 134×. F1 measured coefficient magnitude as difficulty-neutral, but only over the range 1–2,200. Shipping it before R3′ measures that axis would be bridge_chain's R3 failure with a different variable name. Reinstate after R3′. |
+| `H4_twoatom_quartic` | S1 | Same flatness leak (**52,488×**), plus projected 0.05 and every non-oracle route 0/8; the even split is the generator's split in **0 of 2,000** instances. Top-of-ladder reserve only. |
+| `H3_nested` (`√(u + √v)`) | S1 | Projected 0.30 — legitimate, exact, battery-surviving, spill 0.87. Omitted for **budget**: it occupies the same band as `r3_floor` and adds no mechanism the ladder does not already have. First reserve if a k=16/32 rung is needed. |
+| `two_var` | S2 | **Rejected on measurement, twice.** The verbatim memorised idiom closes it **12/12** (no hardening at all — `nlinarith` finds both band products by itself), *and* necessity collapses with k: redundant-piece fraction 0 → 3.1% → **16.7%** → 16.7% at k = 4/8/16/32, concentrated in interior cells (21/48 interior vs 6/144 edge). Interior fraction → 1 as k grows, so the repair rate is k-dependent **by construction** — an F3 violation. Residual value: a 2-D piece whose super-level set is a *rectangle* would dissolve the objection and buy an 18× reduction in coefficient growth. |
+| `abs_quad`, `abs_v` | S2 | **Easier**, as the orchestrator predicted — 2 of 4 adaptations close 12/12 for each, and `abs_v`'s closing proof is three lines of `linarith`. `abs_v` additionally spills 2.500 and fires the repair at 1.9–2.7%, k-varying (F3). Reported as a measured negative. |
+| `ceil_sqrt` | S2 | Predicate is **literally the baseline's** (`⌈r⌉ ≤ t ⟺ r ≤ t` composes with `√u ≤ t ⟺ u ≤ t²`), so as a truth argument the ceiling is a no-op; one lemma (`Int.ceil_le`) closes 12/12; projected 0.78. Retained as the **explanatory control for `r3_floor`** — same symbol class, opposite verdict, because ceiling needs `≤` and a tight floor needs strict + integrality. |
+| `min_inside` | S2 | Too easy as a rung (3 of 4 adaptations close; projected 0.66) — conjunctive obligations turn out to be a routing change, not a difficulty change. **Retained as the necessity-margin tool:** it leaves **5** private integer points per band vs the baseline's 1, spill 0.082. This is the construction to reach for if a widened knob support ever threatens F3. |
+| `recip_sqrt` | S2 | Projected 0.52, in band, sound — but it occupies `r2_prod`'s slot with one more positivity side goal and no measured advantage. Add as a 7th cell only if budget is free. |
+| `floor_sqrt_loose` | S2 | Mechanism control, never a candidate. Its 0/12-vs-12/12 flip against `r3_floor` on one knob is the cleanest causal isolation in either survey. |
+
+---
+
+## 4. Local gate — carried over from S1 and S2, not re-run here
+
+All measured 2026-08-12 on local `ReplPool`, Mathlib @ lean v4.34.0-rc1, stock `PREAMBLE`.
+Battery = `families.validate.battery_proofs()`, 10 tactics × {bare, intros-first}, 25 s cap,
+**any** success kills.
+
+| rung | instances | battery | witness kernel-checks | exact-predicate audit | `_redundant` at k = 2/4/8/16 | source |
+|---|---|---|---|---|---|---|
+| `v2` | 8 (S1) + 12 (S2) | survives, 0 kills | 8/8, 12/12 | 0 under / 0 over | 0% (min 1 private pt) | S1 §3, S2 §4 |
+| `r1_recip` | 12 | survives 12/12, 0 kills | 12/12 | 0 under / 0 over | 0% | S2 |
+| `r2_prod` | 12 | survives 12/12, 0 kills | 12/12 | 0 under / 0 over | 0% | S2 |
+| `r2_sum` | 8 | survives 8/8 (160 checks) | 8/8 | 0 under / 0 over over 9,644 pts | 0%, exhaustive 360-cell sweep: max reach 2 < 3 | S1 |
+| `r3_floor` | 12 | survives 12/12, 0 kills | 12/12 | 0 under / 0 over | 0% (0/640 pieces at k=16) | S2 |
+| `r4_floorprod` | 12 | survives 12/12, 0 kills | 12/12 | 0 under / 0 over | 0% | S2 |
+
+**The planted control was live in both surveys.** S1 ran the known-dead v1-shape leaf
+(`∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2x² - 12x + 17`) through the same pool and it **died to
+`by intros; nlinarith`**; S2's planted positive control died the same way in the same batch. So
+"everything survives" is a measurement, not a dead gate. S2 additionally assembled k=4 goals for
+each direction in both variants and confirmed **V0 holds** (goal resists the battery).
+
+**Two methodological findings from those runs that this ladder inherits:**
+
+1. **`positivity` cannot prove `0 ≤ (positive-definite quadratic)`** — a positive-definite
+   quadratic is not a sum of syntactically non-negative terms. Every witness and probe in this
+   family must use `nlinarith [sq_nonneg (x − m)]` for that side goal. S2's first full pass
+   produced a **wrong headline** because seven probes used `by positivity` there and failed for
+   a reason unrelated to the direction under test — including the one route that actually cracks
+   `r3_floor`. An idiom-ceiling probe can be wrong in the **pessimistic** direction, and the only
+   defence is reading each failure's error text rather than counting failures.
+2. **`le_div_iff` / `div_le_iff` are unknown identifiers in this Mathlib**; the live names are
+   `le_div_iff₀` / `div_le_iff₀`. And `Real.sqrt_le_iff` is `√x ≤ y ↔ 0 ≤ y ∧ x ≤ y^2` —
+   non-negativity **first**, which is why the generator's `⟨by norm_num, by nlinarith […]⟩`
+   works.
+
+### What was NOT gated, and must be before the pod
+
+- **V3 (stage-1 plan check) and V4 (full oracle compose + sanitizer + axiom audit) have never
+  been run for any candidate.** The assembly is unchanged for every rung and V0/V1/V2/V5 were
+  measured, so they *should* pass — but "should" is not measured, and bridge_chain already hit a
+  k=32 V3 elaboration wall once. §9 step 2 makes this a blocking pre-flight.
+- **Nothing was gated through the shipped generator.** S1 and S2 built instances in their own
+  probe scripts. The battery/witness verdicts are about the *props*, which will be
+  byte-identical if the implementation is faithful — but that is exactly what a re-run of the
+  gate through `case_tree.build` checks, and it is free.
+- **`r3_floor`'s widened pad support was not gated** (the probe pinned the tight value). §3.6.
+
+---
+
+## 5. The idiom probe as the corridor-ceiling instrument
+
+### What it is
+
+Both surveys templated the *measured* DSV2 idiom over the things a prover reads off the goal —
+band, radicand, cap, and the vertex recovered by completing the square (`m = −c₁/2c₂`), which is
+exactly the step the expanded rendering is designed to force. The hint bag is the measured one:
+`sq_nonneg` at the vertex plus both band endpoints (the bank's proofs pass
+`sq_nonneg (x + 2), sq_nonneg (x - 1), sq_nonneg (x + 7)` for band [−7, 1] with vertex −2). S1
+probed `Real.sqrt_le_iff`'s conjunct order at runtime rather than guessing it; S2 used
+`constructor <;> nlinarith [hints]` so the probe is robust to that order. Both are deliberately
+**generous**: the model has to find the vertex and the template is handed it, so a direction the
+oracle-hinted idiom cannot close is one the model certainly cannot close by copying.
+
+### Its calibration on the control rung
+
+| calibration | result |
+|---|---|
+| S2, all 68 measured case_tree leaves regex-parsed back to (lo, hi, radicand, cap, vertex) | 68/68 parsed; **verbatim idiom closes 68/68** against measured mean 0.923 |
+| S2, 12 freshly generated baseline instances | 12/12 — the calibration is not an artifact of the bank's particular leaves |
+| S1, stratified sample: all 18 leaves with pass@8 < 1.0 (including the single 0.25 leaf) + 10 at 1.0 | **28/28**, i.e. **18/18 of the hard stratum** |
+
+### What it predicts, and what it does not
+
+**Does:** whether the memorised one-shot *applies* to a piece shape. That is a binary, per-schema
+property, and it is measured with a live planted control on both sides.
+
+**Does not:** graded difficulty. S1's stratified re-calibration is decisive and is the biggest
+caveat in this file: the base idiom **closes the 0.25 leaf**. A deterministic single-shot proof
+has no sampling variance to model, so the instrument reproduces the 0.923 only in the weak sense
+that the prover's real route exists and the template is it. It does **not** reproduce the
+0.25→1.0 spread and it cannot.
+
+**Consequence for §6.** "Base fails" licenses only *"the memorised one-shot stops applying at the
+schema level"*. The ordering among rungs is carried entirely by (i) the **adaptation ladder** —
+which second-attempt route closes, and how far it is from the template — and (ii) the **offline
+target-width measurements** (how many candidate splits are feasible, and whether the obvious
+guess is one of them). Both are hand-constructed routes, and `retune-notes.md` §7.1's disclaimer
+applies verbatim: three hand routes are not eight DSV2 samples, and the measured bank later
+produced a 20-line chained proof no hand probe would have found.
+
+### The adaptation ladder, per rung (the actual ranking signal)
+
+| rung | verbatim idiom | adaptations probed | first route that closes | distance |
+|---|---|---|---|---|
+| `v2` | **8/8, 12/12, 68/68** | — | base | 0 |
+| `r1_recip` | 0/12 | 4 | `le_div_iff₀` + `nlinarith` → 12/12 | 1 + a side goal `positivity` cannot do |
+| `r2_prod` | 0/12 | 4 | two `Real.sqrt_le_iff` + `mul_le_mul` → 12/12 | 2, composed of memorised steps |
+| `r2_sum` | 0/8 | 5 | oracle split → 8/8; **even split 4/8**; both-full 0/8; sq_sqrt 0/8 | 1 `have` + 1 invented integer, anchored |
+| `r3_floor` | 0/12 | 7 | only `Int.floor_le_iff` + `sq_sqrt`-fed `nlinarith` + `exact_mod_cast` → 12/12 (a 2nd structurally different route also 12/12) | 3, and the memorised sub-goal is **false** |
+| `r4_floorprod` | 0/12 | 4 | **none** | ≥ 4 |
+
+---
+
+## 6. Registered predictions — written before the GPU run
+
+### 6.1 The reasoning chain (there is no fitted model, so this is the whole basis)
+
+F1's finding is that no lever exists inside the knob support, which is the same as saying **no
+model can be fitted** for this ladder. So each projection is an explicit interpolation between
+three anchors and a mechanism argument, and it is stated as such.
+
+**The anchors — all of them:**
+
+| anchor | local probe result | measured mean pass@8 | n |
+|---|---|---|---|
+| case_tree `v2` | verbatim idiom closes 68/68 | **0.923** | 68 leaves × 8 |
+| bridge_chain `e3_lowdeg` | short hand route closes 4/6 | **0.429** | 30 × 8 |
+| bridge_chain `v2` / `e1` / `e2` / `e4` | hand routes close **0/6** | **0.196 / 0.283 / 0.267 / 0.312** | 30 × 8 each |
+
+**The single most load-bearing regularity: probe-fails does NOT mean zero.** Four bridge_chain
+presets where no local probe closed still measured **0.20–0.31**. Eight samples from a 7B prover
+find things three hand routes do not. Both surveys' sub-0.20 projections (S1's H4 at 0.05, S2's
+`floor_product` at 0.15) sit **below the only measured floor that exists for "no probe closes"**,
+and I shade them upward accordingly.
+
+**The competing consideration, which widens the intervals rather than moving the centres:**
+DSV2 is *extraordinarily* templated on this family — 68/68 successes, one strategy. bridge_chain's
+0.2–0.3 floor came from a family where sampling found long chained proofs; if case_tree's prover
+has literally one route, any schema change could collapse it toward 0.05–0.15 across the board.
+That world is registered explicitly as L3 below.
+
+**How much to trust this.** F2 scored bridge_chain's §5 projections at **MAE 0.044, Pearson
+r = 0.83, Spearman ρ = 0.70**, with one adjacent rank flip and the R1 decision correct under both
+projected and measured numbers. That is encouraging but it is **not** the right reference class:
+that projection was a *fitted three-factor cell model within one schema on 58 measured leaves*.
+Here there is no fit, the rungs are outside any measured support (F1: there is **no** measured
+case_tree leaf for which the base idiom fails), and the anchors come from two different families.
+**Expect MAE ≈ 0.15–0.20, not 0.044.** The intervals below are ±0.20–0.25 wide on purpose, and
+the **rank order is the primary registered claim** because it is far more robust than any level.
+
+### 6.2 Per-rung projections
+
+Band-fit is projected from an explicit leaf-level mixture, not guessed. At n=8 attempts the band
+[0.25, 0.9] excludes exactly the outcomes 0/8, 1/8 and 8/8, so for a leaf of true rate p,
+band-fit probability is `1 − (1−p)⁸ − 8p(1−p)⁷ − p⁸`: 0.34 at p=0.15, 0.63 at 0.25, 0.94 at 0.45,
+0.97 at 0.62, 0.57 at 0.90, 0.34 at 0.95. The killer is **heterogeneity**, not the mean — which
+is why each row below states the assumed leaf-rate mixture.
+
+| rung | projected mean pass@8 | interval | assumed leaf mixture | projected band-fit | projected zero-rate | corridor verdict |
+|---|---|---|---|---|---|---|
+| `v2` (control) | **0.92** | 0.86 – 0.98 | reproduce the measured distribution | **0.27** | 0.00 | above the ceiling (as measured) |
+| `r1_recip` | **0.62** | 0.40 – 0.85 | 40% @ 0.95, 60% @ 0.40 | **0.65** | ≤ 0.05 | in band, high side |
+| `r2_prod` | **0.42** | 0.20 – 0.70 | 25% @ 0.80, 50% @ 0.45, 25% @ 0.15 | **0.72** | 0.08 | **in band, near target** |
+| `r2_sum` | **0.48** | 0.25 – 0.72 | 30% @ 0.80, 45% @ 0.45, 25% @ 0.20 | **0.78** | 0.06 | **in band, near target** |
+| `r3_floor` | **0.28** | 0.05 – 0.55 | **bimodal**: 45% @ 0.60, 55% @ 0.02 | **0.44** | **0.47** | level may pass R1; **predicted to FAIL R2 on zero-rate** |
+| `r4_floorprod` *(opt)* | **0.15** | 0.02 – 0.40 | 25% @ 0.50, 75% @ 0.03 | **0.26** | **0.59** | **below the floor; predicted to fail R2** |
+
+Notes on the two centre rungs. `r2_sum` is placed marginally above `r2_prod` because its numeric
+target is **anchored** (the even split is right 35.9% of the time; `|cap₁ − t/2|` median 0.5) and
+its closing step is `linarith`, whereas `r2_prod`'s split is a divisor pair with no measured
+anchor and its closing step is `mul_le_mul` with non-negativity side conditions — **and** because
+S2's `r2_prod` probe was oracle-fed while S1 ran the split sweep for `r2_sum` (§3.4). That gap is
+0.06 and it is **inside the noise**: no confident ordering is registered within the pair. The
+pair exists to measure the combinator, not to be ranked.
+
+### 6.3 Ladder-level registered claims
+
+| id | claim | confidence |
+|---|---|---|
+| **L1** | Rank order holds exactly: `v2 > r1_recip > {r2_sum ≈ r2_prod} > r3_floor > r4_floorprod` | 0.55 |
+| **L1c** | Coarse order holds: `v2 > {r2_prod, r2_sum} > r3_floor` | 0.85 |
+| **L2** | At least one of `r2_prod` / `r2_sum` passes **both** R1-relevance (mean ∈ [0.25, 0.9]) and R2 (band-fit ≥ 0.60, zeros ≤ 0.20) | 0.55 |
+| **L3** | **Overshoot:** all four non-control rungs measure **< 0.25** (the "DSV2 has exactly one route" world) | 0.20 |
+| **L4** | **Undershoot:** all four measure **> 0.9** (no rung hardens anything) | 0.05 |
+| **L5** | The `v2` control reproduces inside [0.86, 0.98] | 0.90 |
+| **L6** | `r3_floor` is measurably bimodal: > 40% of its leaves land at exactly 0/8 or 8/8 | 0.65 |
+| **L7** | `r2_sum`'s continuous lever is real: pass@8 regressed on `\|cap₁ − t/2\|` has a negative slope at \|z\| ≥ 2 | 0.45 (n=30 is thin for a covariate with median 0.5, max 2.0) |
+| **L8** | No rung shows a significant coefficient-magnitude gradient (R3′ pooled slope \|z\| < 2) | 0.70 |
+
+**Overshoot is as much a failure as undershoot** and L3 is registered at 0.20, which is not
+small. The ladder brackets 0.45 from both sides on purpose: `r1_recip` at 0.62 and the `v2`
+control at 0.92 above it, `r3_floor` at 0.28 and (optionally) `r4_floorprod` at 0.15 below it.
+If the pod contradicts any of this, **the contradiction is the finding** and it should be written
+up as such rather than patched.
+
+### 6.4 The one confound this ladder cannot hold constant, and its partial control
+
+`retune-notes.md` §3 deliberately held leaf length flat at 176–178 chars across its whole ladder,
+so a measured difference was the knob change and not a text-length effect. **That control is
+unavailable across schemas.** Measured leaf lengths (k=2 → k=32): `v2` 68→73, `r1_recip` 58→64,
+`r3_floor` 76→81, `r2_sum` 104→113, `r2_prod` 105→113, `r4_floorprod` 113→121. All flat *in k*,
+so there is no flatness leak — but they differ across rungs by up to 1.8×.
+
+Two designed partial controls:
+
+1. **`r2_prod` vs `r2_sum` is length-matched** (105–113 vs 104–113), so the combinator comparison
+   is clean.
+2. **`r1_recip` is SHORTER than the control and predicted HARDER.** If it measures below `v2`,
+   statement length cannot be the explanation for that rung — which weakens the length story for
+   the whole ladder. This is the main reason `r1_recip` earned a cell over the algebraic-axis
+   alternative `H3_nested`.
+
+The pod write-up must state the confound regardless.
+
+---
+
+## 7. Decision rule for the GPU session
+
+Applied to `data/bank/ct_ladder_calibration.jsonl` after the run, in order. Adaptations from
+`retune-notes.md` §6 are flagged with **[adapted]** and carry a stated reason, per the brief.
+
+**R0 — validity.** Ignore rows with `status == "error"` (re-run with `--repair`). A row with
+`elaborates == false` is a generator bug and blocks its rung outright.
+
+**R0b — full validation, per rung. [new]** Before *any* rung is eligible, `validate_problem`
+(V0–V6, automation battery on) must pass on ≥3 freshly generated problems at each of
+k ∈ {2, 4, 8} for that rung, plus one k=32 problem for V1/V3 elaboration cost. Reason: this is a
+**schema** ladder, V3 and V4 have never been run for any candidate (§4), and the piece function
+is exactly what V4's compose/sanitize/axiom-audit path exercises. This is local and free and
+belongs in step (0a), not after the pod — a rung that fails it should never have been measured.
+
+**R0c — control reproduction, blocking. [new]** If the same-pod `v2` cell does not measure a
+mean inside **[0.85, 0.98]**, the whole comparison is void: report that, and do not select a
+rung. Reason: every projection in §6 is anchored on 0.923; a control that does not reproduce
+means the sampling profile, the prover build, or the harness differs from the run that produced
+the anchor, and no candidate number is interpretable against it.
+
+**R1 — level (primary).** Pick the rung whose **mean measured pass@8 is nearest 0.45**.
+
+**R2 — band fit.** Require **band-fit ≥ 0.60** (share of the rung's 30 leaves with measured
+pass@8 ∈ [0.25, 0.9]) **and zero-rate ≤ 0.20** (share measured 0/8). Unchanged from
+`retune-notes.md` §6, including its arithmetic justification: a leaf whose true rate is 0.5 lands
+outside [0.25, 0.9] about 3.9% of the time, so a literal "all 30 in band" rejects a
+perfectly-centred rung ~70% of the time.
+
+**R2b — bimodality diagnostic, reported not gated. [new]** Also report, per rung, the share of
+leaves at exactly 0/8 **or** 8/8. Reason: FAMILIES.md's corridor was calibrated against knob
+retunes, which give unimodal leaf distributions almost for free; schema rungs do not (§3.6, S2
+§6.2). If that share exceeds 0.40, say so explicitly — R2's band-fit clause is then doing the work
+it was designed for, and the rung should not be described as "mean 0.45" without the qualifier. A
+50/50 mixture of a 0.9 rung and a 0.2 rung has mean 0.55 and band-fit ≈ 0; mixing rungs is
+therefore **not** a fix for a rung that misses the corridor.
+
+**R3 — flatness must not regress. [adapted — and this is the rule that was silently skipped last
+time]**
+
+- **Report per-k means (k = 2/4/8) and the max pairwise gap for EVERY rung, shipped or not.**
+  This is non-negotiable. `retune-notes.md` §8: R1 and R2 were applied at the session close, R3
+  was never evaluated, and that is how a failing family got written up as DONE.
+- **The literal ±0.05 tolerance is not resolvable at this n, and that is arithmetic, not
+  opinion.** With 10 leaves per k and 8 attempts each, the leaf-clustered SE of a per-k mean is
+  0.079–0.095 (leaf-rate SD 0.25–0.30), so the 2σ-detectable pairwise gap is **0.22–0.27**.
+  Resolving ±0.05 at 2σ needs **~288 leaves per k** (≈ 6× this session's entire budget, per rung).
+  Detecting 0.10 needs 72/k; 0.15 needs 32/k. bridge_chain's R3 failure was detectable only
+  because the spread was 0.325.
+- **Operational form:**
+  - **FAIL** if any pairwise per-k gap ≥ **0.20**, or any pairwise difference is ≥ 2 SE on the
+    leaf-clustered SE.
+  - **UNRESOLVED** if the winning rung's max gap is in (0.05, 0.20) and not 2σ — which is the
+    likely outcome. UNRESOLVED **blocks Phase-1 close** and triggers step (0d): 60 fresh leaves
+    at each of k=2 and k=8 for the winner, where the detectable gap falls to 0.09–0.11.
+  - **PASS** only if the max gap is ≤ 0.05, and even then record that at this n a pass is a point
+    estimate, not a demonstration.
+- **Pool for power. [new]** Also fit `pass_rate ~ C(k) + C(rung)` over all 150 rows and report the
+  k contrasts with SEs: at 50 leaves per k the detectable gap falls to ~0.12, which is a real
+  test of whether *the schema family* is flat, as distinct from whether one rung is. Test the
+  rung × k interaction first; if it is significant, fall back to per-rung means only.
+
+**R3′ — coefficient magnitude. [new axis]** Regress measured pass@8 on `log10(max|coef|)`,
+pooled over all rows with rung fixed effects, and report the slope with its SE. Reason and power:
+the schema's *only* k-dependence is the band's absolute position, which drives the radicand's
+constant — so coefficient magnitude is the mechanistically correct flatness variable, and a
+continuous covariate on 150 leaves is a **more powerful** test than three bins of ten. Computed
+here off the shipped generator: `log10(max|coef|)` has mean 2.12 and SD **0.65** pooled over
+k ∈ {2,4,8} (per-k medians 28 / 99 / 333, rising to 1,380 at k=16 and 5,336 at k=32 — a 2.05-decade
+shift from k=2 to k=32). With SD 0.65 and 150 rows, SE(slope) ≈ 0.04/decade, so a gradient large
+enough to move the mean by 0.16 across the full k-grid is detectable. F1 measured this axis as
+flat (0.885/0.938/0.949) but only over the range 1–2,200 and only at the saturated ceiling, where
+nothing is detectable. **R3′ is a prerequisite for ever staging a quartic rung** (§3.8), and it
+protects the staged rungs too.
+
+**R4 — tie-break**, in order:
+1. flatter per-k profile (R3's max gap);
+2. **graded over bimodal** (R2b's share at 0/8 or 8/8);
+3. larger distinct-leaf capacity — FAMILIES.md's GRPO-correlation note asks datasheets for
+   distinct-leaf counts, and §2.3 shows this schema's capacity is only a few thousand at k=8;
+4. shorter leaf statement (§6.4's confound);
+5. for `r2_sum` specifically, the presence of a working continuous lever: regress pass@8 on
+   `|cap₁ − t/2|` (shipped on every candidate row). A significant negative slope means a
+   near-miss on level is correctable **within** the rung, which no other rung offers.
+
+**Report every rung's numbers, including the ones that measure badly.** A rung that measures 0.05
+is as informative about the mechanism model as one that measures 0.45.
+
+### 7.1 EASING ladder — if NO rung lands in the corridor because all are too hard
+
+(The brief calls this the escalation case; naming it by direction avoids ambiguity, since this
+family is being made *harder* and "escalate" could mean either.)
+
+Trigger: every non-control rung measures mean < 0.25, i.e. L3.
+
+1. **Read `r1_recip` first.** It is by construction the lightest schema change in either survey
+   (one lemma retarget, shorter statements). If even `r1_recip` is below 0.25, the finding is
+   *"any schema change collapses this prover"* — a real and publishable result about how narrow
+   DSV2's route repertoire is on synthetic families — and the correct next move is **not** more
+   schema search. Go to FAMILIES.md direction 1: **bank-drawn leaves** from the 401 in-band
+   statements in `bank_dsv2.jsonl` (299 train / 102 eval), through `families/leaf_split.py`.
+2. **If only the two-atom rungs are low**, tune *within* `r2_sum` using its measured lever:
+   restrict to `|cap₁ − t/2| ≤ 0.5` (the anchored end, where the even split is the answer). This
+   is the reason `r2_sum` is in the run at all and it costs one knob-range change, not a schema
+   change.
+3. **`min_inside`** (S2) as an easier two-atom conjunction — projected 0.66, already locally
+   gated, and it carries the best necessity margin in either survey (5 private integer points per
+   band). It is the natural rung between `v2` and the two-atom pair.
+4. **`ceil_sqrt`** (projected 0.78) as the minimal legal change, if even `min_inside` is too hard.
+
+### 7.2 HARDENING ladder — if EVERY rung overshoots the other way (nothing bites)
+
+Trigger: every non-control rung measures mean > 0.9, i.e. L4 — the schema changes are cosmetic
+to this prover.
+
+1. **Add `r4_floorprod`** — already staged and locally gated; 0 of 4 adaptations close it; it is
+   the composition of the two mechanisms that individually failed to bite.
+2. **`H3_nested`** (S1, projected 0.30) — exact, battery-surviving, spill 0.87, and in 2 of 4
+   probe cells the generator's inner cap **exceeds the visible budget `t`**, so the numeric target
+   is not even bounded by what the goal shows.
+3. **`H2_quartic` / `H4_twoatom_quartic`** — *only after R3′ has returned a null slope*. They are
+   the highest-leverage remaining directions (H2 projected 0.60 and it is otherwise clean on every
+   axis) but their coefficient growth is 45,000×/52,000× over the k-grid, and shipping either
+   before R3′ repeats bridge_chain's exact mistake.
+4. **Composition beyond the surveys** — e.g. `r2_sum` ⊕ `r3_floor` (tight floor over a two-atom
+   sum). Unmeasured; would need a fresh local gate with a live planted control before staging.
+
+---
+
+## 8. What this does NOT establish
+
+1. **No pass@8 was measured, here or in either survey.** Everything is a battery floor (local,
+   definitive), a self-certification (definitive), an exactness audit (definitive), a free
+   structural computation (definitive), or a ceiling proxy (indicative).
+2. **The idiom probe does not discriminate within a schema.** It closes 18/18 of the sub-ceiling
+   stratum including the single 0.25 leaf. "Base fails" is a statement about route applicability,
+   not about difficulty. Every ordering in §6 rests on the adaptation ladder and the offline
+   target widths — hand-constructed routes, not samples.
+3. **The projections are extrapolations off the measured support.** There is no measured
+   case_tree leaf for which the base idiom fails. The anchors are two families and six points.
+   They rank; they do not estimate a value. Expected MAE ≈ 0.15–0.20 (§6.1).
+4. **Battery resistance is a property of *this* Mathlib** (lean v4.34.0-rc1, stock PREAMBLE), and
+   `nlinarith`'s pair-product preprocessing in particular. S1 showed how thin some of these
+   barriers are: `H2_quartic`'s base failure is a hint-repertoire artifact — supplying a product
+   `nlinarith` could in principle synthesise from context turns 0/8 into 8/8. The mitigation is
+   that the gate is re-runnable with its planted control attached, so a Mathlib upgrade that
+   softens a rung fails loudly.
+5. **The `_repair_necessity` no-op (F3) is exhaustive over the CURRENT knob support, not an
+   analytic bound.** `r3_floor`'s pad widening and `r2_*`'s second atom both change that support.
+   Re-run the sweep; do not inherit the result.
+6. **V3 and V4 remain unmeasured for every rung** until §9 step 2 runs.
+7. **Leaf length is not held constant across rungs** (§6.4). Two partial controls exist; neither
+   is a substitute.
+8. **R3 as literally written (±0.05) is not attainable at any budget this project will spend**
+   (~288 leaves per k per rung). §7's operational form is what will actually be evaluated, and
+   the honest reading of a passing rung is "no gap larger than 0.09–0.11 was detected at k=2 vs
+   k=8", not "flat to ±0.05".
+9. **Nothing here says anything about k=16 or k=32.** The whole ladder is measured at
+   k ∈ {2,4,8}, and case_tree's coefficient magnitude keeps growing past that (median 1,380 at
+   k=16, 5,336 at k=32). R3′ is the instrument that would catch a problem there; it is not a
+   measurement at those k.
+
+---
+
+## 9. ORDER OF OPERATIONS — the chosen rung invalidates every existing case_tree artifact
+
+**This is a hard constraint, not a cleanup note.** A rung changes leaf *statements*. Statements
+are what `statement_key` hashes, what `leaf_split` derives membership from, and what the measured
+bank is keyed on. Nothing downstream survives a rung change untouched.
+
+**Step 1 — implement, do not materialize.** Add a schema dispatch to `case_tree.py`.
+`Piece` is hard-wired to `a(x−m)² ≤ d`, so `holds_at`, `covers_band`, `_tighten`, `radicand`,
+`outer_const`, `_piece_term` and `leaf_proof` must become per-schema (a `PieceSchema` protocol,
+or a `schema` field with dispatch). Mirror `bridge_chain.PRESETS`: a module-level dict keyed by
+rung name, each entry carrying its rationale, its knob support, and its own witness renderer.
+**Use the kwarg name `preset`** even though these are schemas — `gen_families.py --preset` already
+passes `preset=` through to the registry generator, and reusing it avoids touching a file this
+work does not own. `v2` stays the default and byte-identical (F11), pinned by a golden test.
+
+**Step 2 — local pre-flight, blocking (R0b).** Re-run the battery + witness + **planted control**
+through the shipped generator for every rung, and run `validate_problem` (V0–V6) on ≥3 problems
+per k ∈ {2,4,8} per rung plus one k=32 for elaboration cost. Free; ~78 s bought 15 validated rows
+last time. Drop any rung that fails.
+
+**Step 3 — stage.** `scripts/stage_ct_ladder.py` → `data/families/ct_ladder_candidates.jsonl`,
+seed 5150, 30 deduped leaves per rung, k ∈ {2,4,8} evenly, globally deduped by `statement_key`.
+Emit the per-leaf covariates R3′ and R4 need: `max_abs_coeff`, `leaf_chars`, `cap`, `pad`,
+`width`, `curvature`, `offset`, and for `r2_sum` the lever `abs(cap1 - t/2)`.
+
+**Step 4 — measure** (§0c), **then decide** (§7), **then the flatness confirm** (§0d).
+
+**Step 5 — re-materialize, and only now.** These artifacts are **v2 output at seed 42** and become
+stale the moment a non-`v2` rung is chosen:
+
+- `data/families/case_tree/k2.jsonl`, `k4.jsonl`, `k8.jsonl` — 15 problems, 70 leaves;
+- `data/families/case_tree/DATASHEET.md` — its V0–V6 table, its leaf-length distribution and its
+  `repaired_frac` all describe the old piece function;
+- any downstream episode/eval config that reads those files.
+
+Regenerate with `gen_families.py --family case_tree --preset <rung> --k-grid 2,4,8 --n 5
+--validate` and **re-run the full validator**, not a structural pass: V0/V5 verdicts do not
+transfer across piece functions.
+
+The 68 measured rows in `data/bank/family_leaf_calibration.jsonl` are **not** deleted or
+regenerated — they remain the measured record of the v2 state and the anchor for the 0.923. They
+simply stop being *this family's* calibration once a rung ships.
+
+### Leaf-disjointness (FAMILIES.md) applies to the regenerated leaves — and it does not currently work here
+
+FAMILIES.md's contract is binding "before any v2 dataset": membership is a pure function of
+`statement_key` via `families/leaf_split.py` (last hex nibble, 25% eval); **TRAIN problems at any
+k draw leaves exclusively from the train pool, EVAL problems exclusively from the eval pool**;
+datasets record the pool per problem and the gen CLI must refuse mixed draws.
+
+Three facts the implementing agent needs, in order of severity:
+
+1. **It is not implemented for family-generated leaves at all.** `leaf_pool` is written by
+   `breed_mutants.py` and read by `run_zeroshot.py` "when their generator drew from the bank";
+   `gen_families.py` has no pool logic whatsoever, so today's case_tree rows are `unrecorded`.
+   The regeneration in step 5 is where this first bites, because it is the first case_tree dataset
+   materialized *after* the contract became binding.
+2. **Problem-level rejection sampling is infeasible and must not be attempted.** A case_tree
+   problem has k leaves, each with its own key. P(all k leaves land in train) = 0.75^k =
+   **0.56 / 0.32 / 0.10 / 0.010 / 0.0001** at k = 2/4/8/16/32; for eval it is 0.25^k, i.e.
+   1.5×10⁻⁵ at k=8. The correct implementation is **leaf-level** rejection: resample each piece
+   until its statement's key nibble matches the problem's target pool (expected 1.33 draws for
+   train, 4.0 for eval). This is legitimate because `statement_key` is a sha256 prefix, so the
+   last nibble is independent of the knob values — but that independence should be *checked*
+   (χ² of the knob marginals by pool) rather than assumed, and it must be done inside the
+   deterministic RNG stream so F11 survives.
+3. **The eval pool is capacity-thin, and this ladder makes it thinner.** §2.3 measures the
+   schema's distinct-leaf space at ~3.4k at k=8; the eval pool is 25% of that, ≈850 distinct
+   leaves. `r2_sum`'s second atom is drawn deterministically from the first, so it multiplies the
+   statement space without multiplying the knob space. The datasheet must report distinct-leaf
+   counts **and leaf-reuse distribution per pool** (FAMILIES.md's GRPO-correlation note), and if
+   the eval pool binds, an independent second-atom draw is the fix.
+
+---
+
+## 10. Contract friction (reported, not worked around — none of these files are owned here)
+
+1. **`FAMILIES.md` gives no operational guidance for a BIMODAL leaf distribution.** band-fit
+   ≥ 0.60 / zero-rate ≤ 0.20 was calibrated against knob retunes, which vary continuously. A
+   schema rung whose difficulty reduces to "does the model know this lemma name" lands leaves at
+   8/8 or 0/8 and can hit mean 0.45 with band-fit ≈ 0 (§6.2's `r3_floor` row is exactly this).
+   Mixing rungs is not a fix. **One sentence in FAMILIES.md would settle what to do.** Carried
+   forward from S2's flag; restated because this ladder is the first run where it will bite.
+2. **R3's ±0.05 tolerance is unattainable at any realistic n** (~288 leaves per k per rung;
+   §7/R3). Implemented as the three-way FAIL / UNRESOLVED / PASS rule with a budgeted 60-per-k
+   confirm for the winner. Same class of friction as `retune-notes.md` §8.1's R2 arithmetic, one
+   gate over. If the strategist wants the literal form, it costs ~6× this session per rung.
+3. **`case_tree` has no written R-rules of its own until this file.** §7 is the first. It should
+   be referenced from `FAMILIES.md` alongside `retune-notes.md` §6, or the next agent will adopt
+   bridge_chain's informally again — which is how R3 got skipped.
+4. **`FAMILIES.md`'s leaf-disjointness contract is unimplementable as literally written for a
+   synthetic k-leaf generator** (§9: P(all k leaves in one pool) → 0). The leaf-level rejection
+   reading is the only feasible one and should be written into the contract explicitly, together
+   with the requirement that the datasheet report per-pool distinct-leaf counts.
+5. **`gen_families.py --preset` is a `preset=` kwarg passthrough**, so a case_tree *schema* has to
+   masquerade as a preset to be materializable from the CLI. Workable and recommended (§9 step 1),
+   but the naming will mislead: a bridge_chain preset does not change the schema and a case_tree
+   "preset" does. A `--schema` alias, or one line of help text, would fix it.
+6. **`data/families/case_tree/DATASHEET.md` and its `k*.jsonl` predate the ladder** and carry no
+   `preset` field. They remain valid *v2* artifacts (v2 output stays byte-identical); consumers
+   should read `meta.get("preset", "v2")` from here on.
+7. **S2's probe report defaults to `/tmp/ct_functional_probe/report.json`** because that task owned
+   only two files, so survey B's per-instance raw records are **not durable** while survey A's
+   (`data/families/ct_probe_a/*.json`) are. Re-running S2's probe with
+   `--out data/families/ct_probe_b/report.json` before the pod session would make §4's table
+   reproducible from artifacts rather than from a note. Cheap and worth doing.
+8. **No staged candidate file exists yet**, so §0's pod command references a path that step (0b)
+   creates. `scripts/stage_retune_candidates.py` is bridge_chain-specific. This is the one place
+   where this file is weaker than `retune-notes.md` §0, which could quote a file that already
+   existed — stated plainly rather than papered over.
+9. **HANDOFF §1's money correction applies to §0's cost table.** Every pre-2026-08-12 estimate in
+   this repo ran ~27% low against `prime wallet`, and the overnight pod overran its authorized cap.
+   §0 quotes the estimate *and* a budget with headroom; quote the wallet afterwards, not the
+   estimate.

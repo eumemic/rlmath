@@ -1,0 +1,1177 @@
+{
+  "audit": {
+    "v2": {
+      "direction": "v2",
+      "instances": 300,
+      "points_checked": 9640,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 1.33,
+      "spill_ge_3": 0,
+      "cap_min": 4,
+      "cap_max": 9,
+      "max_abs_coeff": 2193
+    },
+    "H1_twoatom": {
+      "direction": "H1_twoatom",
+      "instances": 300,
+      "points_checked": 9644,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 0.81,
+      "spill_ge_3": 0,
+      "cap_min": 9,
+      "cap_max": 18,
+      "max_abs_coeff": 2202
+    },
+    "H2_quartic": {
+      "direction": "H2_quartic",
+      "instances": 300,
+      "points_checked": 9608,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 1.39,
+      "spill_ge_3": 0,
+      "cap_min": 10,
+      "cap_max": 44,
+      "max_abs_coeff": 1594384
+    },
+    "H3_nested": {
+      "direction": "H3_nested",
+      "instances": 300,
+      "points_checked": 9602,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 0.87,
+      "spill_ge_3": 0,
+      "cap_min": 4,
+      "cap_max": 10,
+      "max_abs_coeff": 2037
+    },
+    "H4_twoatom_quartic": {
+      "direction": "H4_twoatom_quartic",
+      "instances": 300,
+      "points_checked": 9572,
+      "mismatch_under": 0,
+      "mismatch_over": 0,
+      "status": "EXACT",
+      "examples": [],
+      "spill_max": 2,
+      "spill_mean": 0.89,
+      "spill_ge_3": 0,
+      "cap_min": 15,
+      "cap_max": 53,
+      "max_abs_coeff": 1594339
+    }
+  },
+  "sqrt_le_iff_order": "nt",
+  "planted_control": {
+    "prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2 * x ^ 2 - 12 * x + 17",
+    "killers": [
+      "by intros; nlinarith"
+    ]
+  },
+  "idiom_calibration": {
+    "leaves": 10,
+    "recovered": 10,
+    "base_idiom_closes": 10,
+    "rows": [
+      {
+        "statement_key": "029b036394be6473",
+        "prop": "∀ x : ℝ, -6 ≤ x → x ≤ 2 → Real.sqrt (2 * x ^ 2 + 4 * x + 15) - 5 ≤ 3",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "0f20b1149b0e5f71",
+        "prop": "∀ x : ℝ, -12 ≤ x → x ≤ -6 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 48 * x + 207)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "10a52df90c1aedcc",
+        "prop": "∀ x : ℝ, 15 ≤ x → x ≤ 21 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 - 76 * x + 726)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "1392eff7ab39921f",
+        "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 4 * x + 14)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "14036985c9f938d9",
+        "prop": "∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ 9 - Real.sqrt (2 * x ^ 2 + 12 * x + 21)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "1a0de3fe9a41b844",
+        "prop": "∀ x : ℝ, 8 ≤ x → x ≤ 14 → Real.sqrt (3 * x ^ 2 - 72 * x + 433) - 4 ≤ 3",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "1d9f396898c5afd6",
+        "prop": "∀ x : ℝ, 7 ≤ x → x ≤ 15 → 3 ≤ 9 - Real.sqrt (x ^ 2 - 20 * x + 111)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "1fb40725252fcd65",
+        "prop": "∀ x : ℝ, -23 ≤ x → x ≤ -15 → 3 ≤ 8 - Real.sqrt (x ^ 2 + 38 * x + 370)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "21a02686f1529d9b",
+        "prop": "∀ x : ℝ, 7 ≤ x → x ≤ 13 → 3 ≤ 8 - Real.sqrt (2 * x ^ 2 - 40 * x + 206)",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      },
+      {
+        "statement_key": "229cc4ce4561327a",
+        "prop": "∀ x : ℝ, -21 ≤ x → x ≤ -13 → Real.sqrt (3 * x ^ 2 + 108 * x + 977) - 6 ≤ 3",
+        "measured_pass8": 1.0,
+        "recovered": true,
+        "base_idiom_closes": true
+      }
+    ]
+  },
+  "directions": {
+    "v2": {
+      "instances": [
+        {
+          "name": "v2-max-b-7_-1-a1o0s0",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 7 - Real.sqrt (x ^ 2 + 8 * x + 23)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 8 * x + 23) ≤ 4 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 0,
+            "slack": 0,
+            "width": 6
+          },
+          "t": 4,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": true
+          }
+        },
+        {
+          "name": "v2-min-b-1_7-a3o0s1",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (3 * x ^ 2 - 18 * x + 42) - 5 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 0,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 8,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": true
+          }
+        },
+        {
+          "name": "v2-max-b-14_-6-a1o1s1",
+          "prop": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 18 * x + 91)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 18 * x + 91) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 1,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 6,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "v2-min-b2_8-a3o-1s0",
+          "prop": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (3 * x ^ 2 - 24 * x + 49) - 4 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 24 * x + 49) ≤ 7 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": -1,
+            "slack": 0,
+            "width": 6
+          },
+          "t": 7,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "v2-max-b-29_-21-a2o1s0",
+          "prop": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 96 * x + 1166)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 96 * x + 1166) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": 1,
+            "slack": 0,
+            "width": 8
+          },
+          "t": 8,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "v2-min-b-3_5-a2o-1s1",
+          "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → Real.sqrt (2 * x ^ 2 + 13) - 5 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 13) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": -1,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 8,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": true
+          }
+        },
+        {
+          "name": "v2-max-b-7_-1-a3o1s1",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 18 * x + 42)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 + 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 1,
+            "slack": 1,
+            "width": 6
+          },
+          "t": 8,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": true
+          }
+        },
+        {
+          "name": "v2-min-b-1_7-a1o-1s0",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (x ^ 2 - 4 * x + 15) - 3 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 - 4 * x + 15) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": -1,
+            "slack": 0,
+            "width": 8
+          },
+          "t": 6,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": true,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": true
+          }
+        }
+      ],
+      "witness_ok": "8/8",
+      "battery_survives": "8/8",
+      "idiom_counts": {
+        "base": 8,
+        "adapt_degreehint": 8,
+        "adapt_sqsqrt": 5
+      }
+    },
+    "H1_twoatom": {
+      "instances": [
+        {
+          "name": "H1_twoatom-max-b-7_-1-a1o0s0",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 12 - Real.sqrt (x ^ 2 + 8 * x + 23) - Real.sqrt (2 * x ^ 2 + 16 * x + 39)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 8 * x + 23) ≤ 4 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 2 + 16 * x + 39) ≤ 5 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 0,
+            "slack": 0,
+            "width": 6,
+            "a2": 2,
+            "offset2": 0,
+            "slack2": 0,
+            "cap1": 4,
+            "cap2": 5
+          },
+          "t": 9,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": true,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-min-b-1_7-a3o0s1",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (3 * x ^ 2 - 18 * x + 42) + Real.sqrt (2 * x ^ 2 - 8 * x + 22) - 13 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 2 - 8 * x + 22) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 0,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 8,
+            "cap2": 8
+          },
+          "t": 16,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": true,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-max-b-14_-6-a1o1s1",
+          "prop": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 18 - Real.sqrt (x ^ 2 + 18 * x + 91) - Real.sqrt (3 * x ^ 2 + 66 * x + 368)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 18 * x + 91) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 2 + 66 * x + 368) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 1,
+            "slack": 1,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 1,
+            "cap1": 6,
+            "cap2": 9
+          },
+          "t": 15,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-min-b2_8-a3o-1s0",
+          "prop": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (3 * x ^ 2 - 24 * x + 49) + Real.sqrt (3 * x ^ 2 - 30 * x + 84) - 10 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 24 * x + 49) ≤ 7 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 2 - 30 * x + 84) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": -1,
+            "slack": 0,
+            "width": 6,
+            "a2": 3,
+            "offset2": 0,
+            "slack2": 0,
+            "cap1": 7,
+            "cap2": 6
+          },
+          "t": 13,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-max-b-29_-21-a2o1s0",
+          "prop": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 20 - Real.sqrt (2 * x ^ 2 + 96 * x + 1166) - Real.sqrt (3 * x ^ 2 + 144 * x + 1733)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 96 * x + 1166) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 2 + 144 * x + 1733) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": 1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": 1,
+            "slack2": 1,
+            "cap1": 8,
+            "cap2": 9
+          },
+          "t": 17,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": true,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-min-b-3_5-a2o-1s1",
+          "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → Real.sqrt (2 * x ^ 2 + 13) + Real.sqrt (2 * x ^ 2 - 8 * x + 21) - 13 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 13) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 2 - 8 * x + 21) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": -1,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": 1,
+            "slack2": 1,
+            "cap1": 8,
+            "cap2": 8
+          },
+          "t": 16,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": true,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-max-b-7_-1-a3o1s1",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 18 - Real.sqrt (3 * x ^ 2 + 18 * x + 42) - Real.sqrt (3 * x ^ 2 + 30 * x + 76)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 + 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 2 + 30 * x + 76) ≤ 7 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 1,
+            "slack": 1,
+            "width": 6,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 8,
+            "cap2": 7
+          },
+          "t": 15,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H1_twoatom-min-b-1_7-a1o-1s0",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (x ^ 2 - 4 * x + 15) + Real.sqrt (3 * x ^ 2 - 12 * x + 18) - 12 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 - 4 * x + 15) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 2 - 12 * x + 18) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": -1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 6,
+            "cap2": 9
+          },
+          "t": 15,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": true,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        }
+      ],
+      "witness_ok": "8/8",
+      "battery_survives": "8/8",
+      "idiom_counts": {
+        "base": 0,
+        "adapt_evensplit": 4,
+        "adapt_oraclesplit": 8,
+        "adapt_bothfull": 0,
+        "adapt_sqsqrt": 0
+      }
+    },
+    "H2_quartic": {
+      "instances": [
+        {
+          "name": "H2_quartic-max-b-7_-1-a1o0s0",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 13 - Real.sqrt (x ^ 4 + 16 * x ^ 3 + 96 * x ^ 2 + 256 * x + 275)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 4 + 16 * x ^ 3 + 96 * x ^ 2 + 256 * x + 275) ≤ 10 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 0,
+            "slack": 0,
+            "width": 6
+          },
+          "t": 10,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-min-b-1_7-a3o0s1",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (3 * x ^ 4 - 36 * x ^ 3 + 162 * x ^ 2 - 324 * x + 258) - 25 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 4 - 36 * x ^ 3 + 162 * x ^ 2 - 324 * x + 258) ≤ 28 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 0,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 28,
+          "variant": "min",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-max-b-14_-6-a1o1s1",
+          "prop": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 29 - Real.sqrt (x ^ 4 + 36 * x ^ 3 + 486 * x ^ 2 + 2916 * x + 6611)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 4 + 36 * x ^ 3 + 486 * x ^ 2 + 2916 * x + 6611) ≤ 26 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 1,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 26,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-min-b2_8-a3o-1s0",
+          "prop": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (3 * x ^ 4 - 48 * x ^ 3 + 288 * x ^ 2 - 768 * x + 784) - 25 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 4 - 48 * x ^ 3 + 288 * x ^ 2 - 768 * x + 784) ≤ 28 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": -1,
+            "slack": 0,
+            "width": 6
+          },
+          "t": 28,
+          "variant": "min",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-max-b-29_-21-a2o1s0",
+          "prop": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 39 - Real.sqrt (2 * x ^ 4 + 192 * x ^ 3 + 6912 * x ^ 2 + 110592 * x + 663598)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 4 + 192 * x ^ 3 + 6912 * x ^ 2 + 110592 * x + 663598) ≤ 36 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": 1,
+            "slack": 0,
+            "width": 8
+          },
+          "t": 36,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-min-b-3_5-a2o-1s1",
+          "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → Real.sqrt (2 * x ^ 4 + 45) - 33 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 4 + 45) ≤ 36 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": -1,
+            "slack": 1,
+            "width": 8
+          },
+          "t": 36,
+          "variant": "min",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-max-b-7_-1-a3o1s1",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 31 - Real.sqrt (3 * x ^ 4 + 36 * x ^ 3 + 162 * x ^ 2 + 324 * x + 258)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 4 + 36 * x ^ 3 + 162 * x ^ 2 + 324 * x + 258) ≤ 28 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 1,
+            "slack": 1,
+            "width": 6
+          },
+          "t": 28,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H2_quartic-min-b-1_7-a1o-1s0",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (x ^ 4 - 8 * x ^ 3 + 24 * x ^ 2 - 32 * x + 67) - 23 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 4 - 8 * x ^ 3 + 24 * x ^ 2 - 32 * x + 67) ≤ 26 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": -1,
+            "slack": 0,
+            "width": 8
+          },
+          "t": 26,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_degreehint": true,
+            "adapt_sqsqrt": false
+          }
+        }
+      ],
+      "witness_ok": "1/8",
+      "battery_survives": "8/8",
+      "idiom_counts": {
+        "base": 0,
+        "adapt_degreehint": 8,
+        "adapt_sqsqrt": 0
+      }
+    },
+    "H3_nested": {
+      "instances": [
+        {
+          "name": "H3_nested-max-b-7_-1-a1o0s0",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 7 - Real.sqrt (x ^ 2 + 8 * x + 18 + Real.sqrt (2 * x ^ 2 + 16 * x + 39))",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (2 * x ^ 2 + 16 * x + 39) ≤ 5 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (x ^ 2 + 8 * x + 18 + Real.sqrt (2 * x ^ 2 + 16 * x + 39)) ≤ 4 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 0,
+            "slack": 0,
+            "width": 6,
+            "a2": 2,
+            "offset2": 0,
+            "slack2": 0,
+            "inner_cap": 5
+          },
+          "t": 4,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": false,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-min-b-1_7-a3o0s1",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (3 * x ^ 2 - 18 * x + 34 + Real.sqrt (2 * x ^ 2 - 8 * x + 22)) - 5 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (2 * x ^ 2 - 8 * x + 22) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (3 * x ^ 2 - 18 * x + 34 + Real.sqrt (2 * x ^ 2 - 8 * x + 22)) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 0,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": -1,
+            "slack2": 0,
+            "inner_cap": 8
+          },
+          "t": 8,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": true,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-max-b-14_-6-a1o1s1",
+          "prop": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 9 - Real.sqrt (x ^ 2 + 18 * x + 82 + Real.sqrt (3 * x ^ 2 + 66 * x + 368))",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (3 * x ^ 2 + 66 * x + 368) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (x ^ 2 + 18 * x + 82 + Real.sqrt (3 * x ^ 2 + 66 * x + 368)) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 1,
+            "slack": 1,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 1,
+            "inner_cap": 9
+          },
+          "t": 6,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": false,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-min-b2_8-a3o-1s0",
+          "prop": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (3 * x ^ 2 - 24 * x + 58 + Real.sqrt (3 * x ^ 2 - 30 * x + 84)) - 5 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (3 * x ^ 2 - 30 * x + 84) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (3 * x ^ 2 - 24 * x + 58 + Real.sqrt (3 * x ^ 2 - 30 * x + 84)) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": -1,
+            "slack": 0,
+            "width": 6,
+            "a2": 3,
+            "offset2": 0,
+            "slack2": 0,
+            "inner_cap": 6
+          },
+          "t": 8,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": false,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-max-b-29_-21-a2o1s0",
+          "prop": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 11 - Real.sqrt (2 * x ^ 2 + 96 * x + 1157 + Real.sqrt (3 * x ^ 2 + 144 * x + 1733))",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (3 * x ^ 2 + 144 * x + 1733) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (2 * x ^ 2 + 96 * x + 1157 + Real.sqrt (3 * x ^ 2 + 144 * x + 1733)) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": 1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": 1,
+            "slack2": 1,
+            "inner_cap": 9
+          },
+          "t": 8,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": false,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-min-b-3_5-a2o-1s1",
+          "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → Real.sqrt (2 * x ^ 2 + 5 + Real.sqrt (2 * x ^ 2 - 8 * x + 21)) - 5 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (2 * x ^ 2 - 8 * x + 21) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (2 * x ^ 2 + 5 + Real.sqrt (2 * x ^ 2 - 8 * x + 21)) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": -1,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": 1,
+            "slack2": 1,
+            "inner_cap": 8
+          },
+          "t": 8,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": true,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-max-b-7_-1-a3o1s1",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 11 - Real.sqrt (3 * x ^ 2 + 18 * x + 35 + Real.sqrt (3 * x ^ 2 + 30 * x + 76))",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (3 * x ^ 2 + 30 * x + 76) ≤ 7 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (3 * x ^ 2 + 18 * x + 35 + Real.sqrt (3 * x ^ 2 + 30 * x + 76)) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 1,
+            "slack": 1,
+            "width": 6,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "inner_cap": 7
+          },
+          "t": 8,
+          "variant": "max",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": true,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H3_nested-min-b-1_7-a1o-1s0",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (x ^ 2 - 4 * x + 6 + Real.sqrt (3 * x ^ 2 - 12 * x + 18)) - 3 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hv1 : Real.sqrt (3 * x ^ 2 - 12 * x + 18) ≤ 9 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb1 : Real.sqrt (x ^ 2 - 4 * x + 6 + Real.sqrt (3 * x ^ 2 - 12 * x + 18)) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr), hv1]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": -1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "inner_cap": 9
+          },
+          "t": 6,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_innerfull": false,
+            "adapt_oracleinner": true,
+            "adapt_sqsqrt": false
+          }
+        }
+      ],
+      "witness_ok": "8/8",
+      "battery_survives": "8/8",
+      "idiom_counts": {
+        "base": 0,
+        "adapt_innerfull": 3,
+        "adapt_oracleinner": 8,
+        "adapt_sqsqrt": 0
+      }
+    },
+    "H4_twoatom_quartic": {
+      "instances": [
+        {
+          "name": "H4_twoatom_quartic-max-b-7_-1-a1o0s0",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 20 - Real.sqrt (x ^ 2 + 8 * x + 23) - Real.sqrt (2 * x ^ 4 + 32 * x ^ 3 + 192 * x ^ 2 + 512 * x + 519)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 8 * x + 23) ≤ 4 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 4 + 32 * x ^ 3 + 192 * x ^ 2 + 512 * x + 519) ≤ 13 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 0,
+            "slack": 0,
+            "width": 6,
+            "a2": 2,
+            "offset2": 0,
+            "slack2": 0,
+            "cap1": 4,
+            "cap2": 13
+          },
+          "t": 17,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-min-b-1_7-a3o0s1",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (3 * x ^ 2 - 18 * x + 42) + Real.sqrt (2 * x ^ 4 - 16 * x ^ 3 + 48 * x ^ 2 - 64 * x + 78) - 41 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 4 - 16 * x ^ 3 + 48 * x ^ 2 - 64 * x + 78) ≤ 36 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 0,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 8,
+            "cap2": 36
+          },
+          "t": 44,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-max-b-14_-6-a1o1s1",
+          "prop": "∀ x : ℝ, -14 ≤ x → x ≤ -6 → 3 ≤ 53 - Real.sqrt (x ^ 2 + 18 * x + 91) - Real.sqrt (3 * x ^ 4 + 132 * x ^ 3 + 2178 * x ^ 2 + 15972 * x + 43983)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 + 18 * x + 91) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 4 + 132 * x ^ 3 + 2178 * x ^ 2 + 15972 * x + 43983) ≤ 44 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": 1,
+            "slack": 1,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 1,
+            "cap1": 6,
+            "cap2": 44
+          },
+          "t": 50,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-min-b2_8-a3o-1s0",
+          "prop": "∀ x : ℝ, 2 ≤ x → x ≤ 8 → Real.sqrt (3 * x ^ 2 - 24 * x + 49) + Real.sqrt (3 * x ^ 4 - 60 * x ^ 3 + 450 * x ^ 2 - 1500 * x + 1888) - 20 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 - 24 * x + 49) ≤ 7 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 4 - 60 * x ^ 3 + 450 * x ^ 2 - 1500 * x + 1888) ≤ 16 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": -1,
+            "slack": 0,
+            "width": 6,
+            "a2": 3,
+            "offset2": 0,
+            "slack2": 0,
+            "cap1": 7,
+            "cap2": 16
+          },
+          "t": 23,
+          "variant": "min",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-max-b-29_-21-a2o1s0",
+          "prop": "∀ x : ℝ, -29 ≤ x → x ≤ -21 → 3 ≤ 55 - Real.sqrt (2 * x ^ 2 + 96 * x + 1166) - Real.sqrt (3 * x ^ 4 + 288 * x ^ 3 + 10368 * x ^ 2 + 165888 * x + 995388)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 96 * x + 1166) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 4 + 288 * x ^ 3 + 10368 * x ^ 2 + 165888 * x + 995388) ≤ 44 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": 1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": 1,
+            "slack2": 1,
+            "cap1": 8,
+            "cap2": 44
+          },
+          "t": 52,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-min-b-3_5-a2o-1s1",
+          "prop": "∀ x : ℝ, -3 ≤ x → x ≤ 5 → Real.sqrt (2 * x ^ 2 + 13) + Real.sqrt (2 * x ^ 4 - 16 * x ^ 3 + 48 * x ^ 2 - 64 * x + 77) - 41 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (2 * x ^ 2 + 13) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (2 * x ^ 4 - 16 * x ^ 3 + 48 * x ^ 2 - 64 * x + 77) ≤ 36 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 2,
+            "offset": -1,
+            "slack": 1,
+            "width": 8,
+            "a2": 2,
+            "offset2": 1,
+            "slack2": 1,
+            "cap1": 8,
+            "cap2": 36
+          },
+          "t": 44,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-max-b-7_-1-a3o1s1",
+          "prop": "∀ x : ℝ, -7 ≤ x → x ≤ -1 → 3 ≤ 39 - Real.sqrt (3 * x ^ 2 + 18 * x + 42) - Real.sqrt (3 * x ^ 4 + 60 * x ^ 3 + 450 * x ^ 2 + 1500 * x + 1891)",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (3 * x ^ 2 + 18 * x + 42) ≤ 8 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 4 + 60 * x ^ 3 + 450 * x ^ 2 + 1500 * x + 1891) ≤ 28 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 3,
+            "offset": 1,
+            "slack": 1,
+            "width": 6,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 8,
+            "cap2": 28
+          },
+          "t": 36,
+          "variant": "max",
+          "witness_ok": false,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        },
+        {
+          "name": "H4_twoatom_quartic-min-b-1_7-a1o-1s0",
+          "prop": "∀ x : ℝ, -1 ≤ x → x ≤ 7 → Real.sqrt (x ^ 2 - 4 * x + 15) + Real.sqrt (3 * x ^ 4 - 24 * x ^ 3 + 72 * x ^ 2 - 96 * x + 109) - 47 ≤ 3",
+          "witness": "by\n  intro x hl hr\n  have hb1 : Real.sqrt (x ^ 2 - 4 * x + 15) ≤ 6 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  have hb2 : Real.sqrt (3 * x ^ 4 - 24 * x ^ 3 + 72 * x ^ 2 - 96 * x + 109) ≤ 44 :=\n    Real.sqrt_le_iff.mpr ⟨by norm_num, by nlinarith [mul_nonneg (sub_nonneg.mpr hl) (sub_nonneg.mpr hr)]⟩\n  linarith",
+          "knobs": {
+            "a": 1,
+            "offset": -1,
+            "slack": 0,
+            "width": 8,
+            "a2": 3,
+            "offset2": -1,
+            "slack2": 0,
+            "cap1": 6,
+            "cap2": 44
+          },
+          "t": 50,
+          "variant": "min",
+          "witness_ok": true,
+          "battery_killers": [],
+          "idiom": {
+            "base": false,
+            "adapt_evensplit": false,
+            "adapt_oraclesplit": false,
+            "adapt_bothfull": false,
+            "adapt_sqsqrt": false
+          }
+        }
+      ],
+      "witness_ok": "3/8",
+      "battery_survives": "8/8",
+      "idiom_counts": {
+        "base": 0,
+        "adapt_evensplit": 0,
+        "adapt_oraclesplit": 0,
+        "adapt_bothfull": 0,
+        "adapt_sqsqrt": 0
+      }
+    }
+  }
+}

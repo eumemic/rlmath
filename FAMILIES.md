@@ -76,7 +76,20 @@ the bake-off's measured bank gives its ceiling. **The band is a distributional t
 per-leaf hard constraint** (retune agent, 2026-08-12): at n=8 attempts a leaf whose true rate is
 0.5 still lands outside the band ~4% of the time, so "every leaf in band" rejects correct presets
 most of the time. Operational criterion: **band-fit fraction ≥ 0.60 with zero-rate ≤ 0.20** at
-pass@8, mean targeted near 0.45; tighten only by raising attempts (~32 for per-leaf claims). v2 directions, in preference order:
+pass@8, mean targeted near 0.45; tighten only by raising attempts (~32 for per-leaf claims).
+
+**The three clauses are conjunctive, and the mean is the weakest of them** (added 2026-08-12).
+At n=8 the band `[0.25, 0.9]` excludes exactly `{0/8, 1/8, 8/8}`, so a leaf whose true rate is
+`p` lands in band with probability `1 − (1−p)⁸ − 8p(1−p)⁷ − p⁸` — 0.34 at p=0.15, 0.63 at 0.25,
+**0.94 at 0.45**, 0.97 at 0.62, 0.57 at 0.90, 0.34 at 0.95. It follows that **heterogeneity, not
+the mean, is what fails the corridor**: a bimodal schema with 45% of leaves at 0.60 and 55% at
+0.02 has mean 0.28 — respectable — yet band-fit 0.44 and zero-rate 0.47, failing both other
+clauses. Report all three, always; a rung that passes R1 alone is rejected.
+
+**Corollary — mixing to hit a mean is not a fix.** Blending two schemas (or two presets) so the
+pooled mean lands near 0.45 makes the corridor *worse*, not better: a 50/50 mix of leaves at 0.9
+and 0.2 has mean 0.55 and band-fit ≈ 0. The corridor is a statement about the leaf distribution's
+shape, not its first moment. v2 directions, in preference order:
 1. **Semi-synthetic leaves** (the original §5.4 design): draw leaf content from the calibrated
    bank — competition-style statements are battery-resistant by nature and arrive with measured
    pass rates. Needs the bake-off (leaf pass-rate bank).
@@ -101,6 +114,24 @@ contamination channel the retrieval RLM never had (its content was inexhaustible
 - **TRAIN problems (any k) draw leaves exclusively from the train pool; EVAL problems
   exclusively from the eval pool.** Datasets record the pool per problem; the gen CLI must
   refuse mixed draws.
+- **How that is achieved for a *synthetic* k-leaf generator: leaf-level rejection, never
+  problem-level** (ratified 2026-08-12 after the ladder design agent showed the literal
+  reading is infeasible). Sampling a whole problem and discarding it unless all k leaves
+  happen to agree has acceptance probability `0.75^k` for train and `0.25^k` for eval —
+  0.56/0.32/0.10/0.010/0.0001 at k=2/4/8/16/32 train, and 1.5e-5 at k=8 for eval. It does
+  not scale and must not be attempted. Instead **resample each piece until its own
+  `statement_key` nibble lands in the target pool** (expected 1.33 draws train, 4.0 eval),
+  which satisfies the contract's actual intent — no eval problem is built from a
+  train-visible leaf — at constant cost per leaf. Two obligations come with it: the
+  generator must stay deterministic in `(k, seed, idx, pool)`, and a χ² check must confirm
+  that conditioning on the key nibble does not shift the knob marginals (the nibble is a
+  hash of the rendered prop, so it should be independent of the knobs, but "should" is not
+  "measured").
+- **Status: NOT YET IMPLEMENTED for family-generated leaves.** `scripts/gen_families.py`
+  has no pool logic at all, so every currently-materialized family row is `unrecorded`
+  rather than train/eval. This is not a contamination event — nothing has been trained —
+  but it blocks the first dataset that feeds training, and it is the step where the
+  contract stops being prose.
 - GRPO-correlation note: problems assembled from few distinct leaves have correlated content —
   effective dataset size is closer to leaf count than problem count. Datasheets must report
   distinct-leaf counts and leaf-reuse distribution, not just problem counts.
