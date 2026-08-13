@@ -1667,3 +1667,38 @@ high-information next measurement is instead: generate surplus `r3_floor` and `r
 measure, filter, and re-measure the filtered pool at **n=32** to test whether the corridor survives
 the selection bias — plus reinstating `H2_quartic`, which R3′ has re-legitimised. That is one pod
 and it tests the thing everything now rests on.
+
+## §12.2 REGISTERED before the n=32 run (2026-08-13, pod `ct-n32` provisioning)
+
+Written before any n=32 datum exists. 49 leaves × 32 attempts, three strata.
+
+**Why two-sided.** Re-measuring only the 33 in-band leaves would confirm nothing — it cannot
+separate "the filter works" from "a noisy sample regressed toward the middle." Adding 8 leaves
+measured 0/8 and 8 measured 8/8 turns the run from a re-check of a selection into an estimate of
+the underlying true-rate distribution.
+
+**Predictions.** The n=8 keepers came from populations with unfiltered means ~0.22 (`r2_prod`) and
+~0.17 (`r3_floor`) carrying heavy mass at zero, so Bayes pulls a leaf measured 2/8 *up* and one
+measured 7/8 *down* — both toward the middle, i.e. toward the band. That is why I expect the filter
+to mostly hold rather than mostly collapse:
+
+| stratum | n | registered prediction at n=32 |
+|---|---|---|
+| in_band (measured 0.25–0.9) | 33 | **70–85% stay in band**; filtered mean within 0.10 of its n=8 value (0.448 `r3_floor` / 0.363 `r2_prod`) |
+| zero (measured 0/8) | 8 | **1–2 of 8** come out ≥0.25 — a true rate of 0.15 still yields 0/8 about 27% of the time |
+| saturated (measured 8/8) | 8 | **1–2 of 8** come out ≤0.9 — `p⁸` is 0.43 at p=0.9, so most 8/8 leaves really are ≥0.85 |
+
+**Decision rule, fixed now.**
+- **PASS** — ≥70% of in-band leaves stay in band **and** the filtered mean moves <0.10.
+  Measure-and-filter is a real instrument; **Phase 1 closes for case_tree** and the pipeline is
+  n=8-filter + surplus, which is affordable.
+- **MARGINAL** — 50–70% stay. The filter works but leaks; the pool needs n=16 filtering (2× cost)
+  and the corridor claim must carry an explicit selection-bias caveat wherever it is cited.
+- **FAIL** — <50% stay. The n=8 filter is mostly noise. Then either filter at n=32 (4× cost, which
+  makes a large pool unaffordable at this budget) or accept that the corridor is not practically
+  reachable for synthetic leaves — and that is a genuine Phase-1 negative result, not a setback to
+  engineer around.
+
+Whatever it returns, **the next move is Phase 2 on case_tree alone**, because the project's real
+risk is having no measurement of the actual research question rather than an imperfect task family.
+A FAIL changes what the leaves are, not whether the transfer slope gets measured.
