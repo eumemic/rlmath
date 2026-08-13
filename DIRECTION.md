@@ -556,3 +556,63 @@ uninterpretable after the fact.
 - [Prime Intellect — Recursive Language Models: the paradigm of 2026](https://www.primeintellect.ai/blog/rlm)
 - Zhang & Khattab — Language model harnesses are compositional generalizers (alexzhang13.github.io/blog/2026/harness/)
 - `../rl/REPORT_NOTES.md`, `../rl/analysis/scores.csv` — reproduction of the above blog's inference-side findings
+
+---
+
+## §7. Phase 2 — registered before the run (2026-08-13)
+
+The project's live risk is that three days of work have produced a great deal of evidence about
+*task construction* and none about *decomposition transfer*. This run exists to change that ratio,
+and it is designed so that a null result is informative rather than merely disappointing.
+
+### What is being measured
+
+The inference-side analogue of the transfer slope: **does the decomposition arm's advantage over
+the flat arm grow with k?** Both arms get the same problems, the same few-shot treatment (rung 1.5
+is settled) and the same scoring path; only the harness differs.
+
+| | |
+|---|---|
+| family | `case_tree` preset `v2` — the shipped rung, deliberately |
+| k-grid | 2, 4, 8 |
+| n | 20 problems per k |
+| arms | `direct` (flat), `decomp` — both `--few-shot`, symmetric exemplars |
+| roots | `qwen3-30b-a3b-instruct-2507` (the ../rl base model) and `claude-haiku-4.5` |
+| leaf | DeepSeek-Prover-V2-7B non-CoT, **16 attempts/leaf** (§5.4(b′), task #22) |
+
+**Why `v2` and not a hardened rung.** `v2`'s leaves measure 0.847, so the oracle ceiling is ≈1.0
+and a decomposition that is *correct* will actually close. The hardened rungs sit at ~0.30, where
+even a perfect plan fails often — which would confound "the root cannot decompose" with "the leaf
+prover could not finish." For a first signal, the leaf must not be the bottleneck. `v2`'s goals
+still resist the full automation battery (V0 held at every k), so the flat arm gets no free win.
+The cost of this choice is stated up front: `v2` fails the corridor at the *leaf* level, so this
+run measures the **mechanism**, not the final calibrated experiment.
+
+### Registered predictions
+
+1. **Direct-arm solve rate decays in k** — DIRECTION §5.4(d), never yet measured for case_tree.
+   Predicted: qwen3-30b roughly 0.35 / 0.10 / 0.02 at k=2/4/8; haiku 0.60 / 0.25 / 0.05. If the
+   flat arm does *not* decay, the k-axis is decorative for this family too and that is the finding
+   — it is what killed bridge_chain.
+2. **Decomp beats direct at k=8, and the gap widens with k.** This is the premise of the whole
+   project. Predicted gap (decomp − direct): ≈0.0 at k=2, +0.10 at k=4, **+0.20 at k=8**.
+3. **Decomp's own solve rate also decays**, just more slowly — predicted 0.35 / 0.25 / 0.20.
+   A *flat* decomp curve would be a stronger result than predicted and should be treated with
+   suspicion until the plans are read.
+4. **The dominant decomp failure at k=8 is `plan_invalid`, not `leaf_failed`** — the two-stage
+   check exists precisely to separate these. If it is `leaf_failed` instead, the leaf budget is
+   still wrong and #22 needs revisiting before anything else is concluded.
+
+### The decision this run informs
+
+- **Gap widens as predicted** → the mechanism is real at inference time, RL training (Phases 3–4)
+  is worth its cost, and the corridor work resumes with a purpose.
+- **Gap flat or negative at every k** → the premise is in trouble. Before abandoning it, check the
+  status split: a gap hidden behind `plan_invalid` at 90% is a *format/prompting* problem, not
+  evidence against decomposition. If plans are valid and decomp still does not win, that is a real
+  negative and it should be written up as one.
+- **Direct arm does not decay in k** → the family cannot support the axis, same defect as
+  bridge_chain, and no amount of leaf calibration fixes it.
+
+Registered before any Phase-2 datum exists. Whatever comes back, the numbers go in the repo
+against these lines.
