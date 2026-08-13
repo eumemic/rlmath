@@ -357,10 +357,40 @@ bank-adjacent leaves.
 | # | Requirement | Why |
 |---|---|---|
 | a | Per-node leaf pass-rate **flat in k** | *The* validity metric for the entire size axis. Without it, k confounds size with difficulty and the transfer plot means nothing |
-| b | Oracle-replay (generator's own decomposition) solves ≥70% at every k | Ceiling estimate; separates "policy failed" from "task impossible" |
+| b | Oracle-replay (generator's own decomposition) solves ≥70% at every k | Ceiling estimate; separates "policy failed" from "task impossible" — **but see (b′): it is coupled to (c) through the attempt budget** |
 | c | Leaves resist automation (`aesop`/`omega`/`simp` run at gen time; auto-closable leaves discarded) | Otherwise the experiment measures tactic dispatch |
 | d | Flat-prover solve rate decays in k | The axis must actually stress the control |
 | e | A top tier where full proof text exceeds the window | The regime where isolation *must* win — the claim-2 analog |
+
+**(b′) — requirements (b) and (c) are in tension, and the attempt budget is what reconciles them
+(found 2026-08-13 by the ladder review; not previously stated anywhere).** (c) pushes leaf
+difficulty *down* toward the corridor's [0.25, 0.9] with a target mean of 0.45, so the flat arm
+cannot win by tactic dispatch. But oracle replay must close **every one of k leaves**, so the
+ceiling is `(1 − (1−p)^a)^k` for per-leaf rate `p` and `a` attempts per leaf — and it collapses in
+k. Under the **shipped** `Budgets` (`leaf_attempts_per_lemma=4`, `max_total_leaf_attempts=64`,
+so `a = min(4, 64//k)`):
+
+| per-leaf p | k=2 | k=4 | k=8 | k=16 | k=32 |
+|---|---|---|---|---|---|
+| 0.923 (case_tree as shipped) | 1.000 | 1.000 | 1.000 | 0.999 | 0.827 |
+| **0.45 (the corridor target)** | 0.825 | **0.681** | **0.464** | **0.215** | **0.000** |
+| 0.25 (corridor floor) | 0.467 | 0.218 | 0.048 | 0.002 | 0.000 |
+
+So **hitting the corridor target breaks gate (b) from k=4 upward** — and it does so silently,
+because both numbers look healthy in isolation. The current family passes (b) only by being too
+easy, i.e. by failing (c). This is not an argument against the corridor; it is a statement that
+`Budgets` was set for a family that never had one.
+
+`a` is the free variable. At a flat 8 attempts per leaf, p=0.45 yields 0.983 / 0.967 / 0.935 /
+0.874 / 0.764 — (b) holds at every k. Attempts needed for ≥70%: `{k=2: 4, 4: 5, 8: 6, 16: 7,
+32: 8}` at p=0.45, so `max_total_leaf_attempts` must scale roughly as `8k` (256 at k=32), not sit
+at a flat 64 — the flat cap is what starves k=32 down to 2 attempts per leaf. Raising it costs
+Phase-2/3 GPU linearly, which is the real trade and belongs to whoever owns the compute budget.
+
+**Consequence for reading any corridor measurement:** a per-leaf mean of 0.45 does **not** by
+itself satisfy (b). Report `(1 − (1−p)^a)^k` alongside the corridor numbers, for the shipped
+budget *and* a raised one, or (b) will be assumed rather than checked — which is how (a) got
+assumed for bridge_chain.
 
 **Tier B (external validity):** miniF2F-test and a PutnamBench subset. Report honestly; expect
 movement only on the hard tail where flat pass@N ≈ 0. Do not stake the thesis here.

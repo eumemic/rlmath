@@ -694,6 +694,18 @@ the anchor, and no candidate number is interpretable against it.
 
 **R1 — level (primary).** Pick the rung whose **mean measured pass@8 is nearest 0.45**.
 
+> **R1 tie rule (added 2026-08-13 after the science review; blocking fix).** R1 as written has no
+> tolerance, so at this n it decides the shipped schema by sampling noise. At 30 leaves × 8
+> attempts the SD of a rung's measured mean is 0.041–0.057 and the SE of a pairwise difference is
+> ~0.07–0.08, while the two primary candidates are projected only 0.06 apart. Monte Carlo over
+> §6.2's *own* registered mixtures (20,000 reps) makes R1 a coin flip between them — `r2_prod`
+> wins 58.6%, `r2_sum` 39.2%, and P(measured `r2_prod` > `r2_sum`) = 0.323 despite the projection
+> ordering them the other way. §6.2 explicitly registers **no** ordering inside the pair, so R1
+> as written converts an unregistered ordering into a shipping decision.
+> **Rule: R1 declares a TIE when two rungs' means differ by less than 0.08 (1 SE of the
+> difference at n=30); ties fall through to R4.** The write-up must then say "the pair was
+> statistically indistinguishable; X was chosen on R4.n", never "X is the harder combinator".
+
 **R2 — band fit.** Require **band-fit ≥ 0.60** (share of the rung's 30 leaves with measured
 pass@8 ∈ [0.25, 0.9]) **and zero-rate ≤ 0.20** (share measured 0/8). Unchanged from
 `retune-notes.md` §6, including its arithmetic justification: a leaf whose true rate is 0.5 lands
@@ -755,6 +767,21 @@ protects the staged rungs too.
 5. for `r2_sum` specifically, the presence of a working continuous lever: regress pass@8 on
    `|cap₁ − t/2|` (shipped on every candidate row). A significant negative slope means a
    near-miss on level is correctable **within** the rung, which no other rung offers.
+
+**R5 — oracle ceiling (added 2026-08-13; blocking fix, $0).** The corridor is a **per-leaf**
+statement; Phase 1's gate (DIRECTION §5.5b) is a **per-episode** one — oracle replay must close
+*all* k leaves at ≥70%. These are not the same number and R1–R4 never touched the second.
+From each rung's measured per-leaf rates compute `(1 − (1−p)^a)^k` at k ∈ {2,4,8,16,32}, for the
+shipped `Budgets` (`a = min(4, 64//k)`) **and** for a raised flat `a = 8`, and report it beside
+R1/R2. Three lines of arithmetic on the calibration file.
+
+Why it is blocking: at the R1 target of 0.45 the shipped budget yields **0.825 / 0.681 / 0.464 /
+0.215 / 0.000** — the ≥70% gate fails **from k=4 upward**. The shipped `v2` passes it only by
+being too easy, i.e. by failing requirement (c). At a flat 8 attempts/leaf the same 0.45 yields
+0.983 / 0.967 / 0.935 / 0.874 / 0.764 and the gate holds. So **a rung is not disqualified by a low
+oracle ceiling under the shipped budget** — the budget is the free variable (task #22,
+DIRECTION §5.4(b′)) — but the write-up must state the ceiling explicitly rather than let "mean
+0.45" imply Phase 1 is satisfied.
 
 **Report every rung's numbers, including the ones that measure badly.** A rung that measures 0.05
 is as informative about the mechanism model as one that measures 0.45.
@@ -949,3 +976,510 @@ Three facts the implementing agent needs, in order of severity:
    this repo ran ~27% low against `prime wallet`, and the overnight pod overran its authorized cap.
    §0 quotes the estimate *and* a budget with headroom; quote the wallet afterwards, not the
    estimate.
+
+---
+
+## 11. Local gate results (measured 2026-08-13)
+
+**Headline: the gate killed nothing, and the gate can kill.** The planted control died to
+`by intros; nlinarith` in the same pool, on its own, before any rung was measured; then
+**7,920 automation-battery proof attempts over 316 distinct propositions produced exactly one
+kill, and it was the control.** All six rungs — `v2`, `r1_recip`, `r2_prod`, `r2_sum`,
+`r3_floor`, `r4_floorprod` — survive V0/V5, kernel-check **1,315 of 1,315** generator witnesses,
+audit 0-under/0-over against 60-digit `Decimal` over 10,788 integer points, hold
+`repaired_frac == 0.0` at every k ∈ {2,4,8,16,32}, and pass the **full validator V0–V6 on 9
+problems each (54/54)** — which closes §4's "V3/V4 have never been run for any candidate" gap and
+§9 step 2's blocking pre-flight.
+
+**One rung has a defect, and it is not a battery kill: `r4_floorprod` fails V4 at k = 32** —
+3 of 3 seeds, `maxHeartbeats` exhausted while elaborating the composed artifact. §11.8 shows this
+is an elaboration-budget wall shared by the whole family (the **shipped `v2` control fails the
+same way at k = 128**), that every rung's wall moves out by ≥ 1 doubling of k when
+`maxHeartbeats` is raised 4×, and that `r4_floorprod` is the only rung whose wall lands *inside*
+the k-grid FAMILIES.md ships.
+
+Everything below was measured on this box, local `ReplPool(n_workers=4)`, Mathlib @
+lean v4.34.0-rc1, stock `PREAMBLE` (`maxHeartbeats 400000`), **$0 of GPU**, ~42 minutes wall.
+Nothing here measures pass@8; §6's projections are untouched and remain registered as written.
+Where a measurement contradicts §3/§6's *reasoning* it is called out in §11.10 — the registered
+numbers themselves are left alone on purpose.
+
+### 11.1 What ran
+
+| phase | what | Lean checks | wall |
+|---|---|---|---|
+| offline | staging + structural report + necessity sweep + predicate audit + capacity/target-width/tightness | 0 | ~30 s |
+| stager gate | planted control → battery on 6 coefficient-extreme leaves + 1 goal per rung → witness on those → **`validate_problem` V0–V6 × 54 problems** | ~7,700 | 337 s |
+| extended gate | control (again, alone) → battery on a **knob-spanning** subset + goal per rung → **witness on all 179 staged leaves** → idiom probe → k=32 structural validation | ~1,600 | 232 s |
+| scaling probe | V1–V4/V6 (automation off) at k = 16 / 32 / 64, 3 seeds where it mattered | ~1,400 | 697 s |
+| heartbeat diagnostic | recompose the failing artifacts with `set_option maxHeartbeats` raised | 12 | 1,050 s |
+
+Reproduce — the stager phase is one command:
+
+```bash
+uv run python scripts/stage_ct_candidates.py \
+  --rungs v2,r1_recip,r2_prod,r2_sum,r3_floor,r4_floorprod \
+  --k-grid 2,4,8 --per-rung 30 --seed 5150 \
+  --battery-n 6 --with-battery --validate --validate-n 3 --workers 4
+```
+
+and the other four phases are the drivers in
+`data/families/ct_battery/gate_scripts/` (`offline.py`, `extended.py`, `k32.py`,
+`heartbeat.py`+`hb2.py`, `rowmap.py`; each is `uv run python <file>` and takes no arguments).
+They sit under `data/` only because this agent owned `data/families/ct_battery/**` and not
+`scripts/**` — their home is `scripts/probes/`, and moving them is a no-op apart from the import
+shim at the top of each file. Recorded so §10.7's "survey B's raw records were not durable"
+failure does not repeat one gate later; flagged in §11.13.
+
+**Deviation from §0b, deliberate:** six rungs, not five. The optional `r4_floorprod` costs +$0.21
+on the pod (§0), the local gate is free, and §7.2's escalation ladder opens with exactly that
+rung — staging it now means the overshoot branch needs no re-stage. The pod drops it with
+`grep -v '"preset": "r4_floorprod"'`; the first five rungs' rows are byte-identical either way
+(global dedupe runs in rung order and `r4_floorprod` is last).
+
+Also noted for the record: the file name is `scripts/stage_ct_candidates.py` →
+`data/families/ct_candidates.jsonl`, not §0b's `stage_ct_ladder.py` →
+`ct_ladder_candidates.jsonl`. §0b's quoted pod command therefore still points at a path that does
+not exist; §10.8 predicted this friction and it is now real. **The pod command in §0c must read
+`--data-files data/families/ct_candidates.jsonl`.**
+
+### 11.2 The planted control — first, and on its own
+
+Run before any rung was touched, in the same pool, with the same 20-proof battery:
+
+| prop | verdict | killed by | wall |
+|---|---|---|---|
+| `∀ x : ℝ, -7 ≤ x → x ≤ 1 → 3 ≤ -2 * x ^ 2 - 12 * x + 17` | **DEAD** | `by intros; nlinarith` | 0.14 s |
+
+Run twice (once inside `stage_ct_candidates.py --with-battery`, once standalone in the extended
+gate); both died. **The gate can kill, so "everything survives" below is a measurement.** Had it
+survived, the whole gate would have been aborted and reported as void — that branch was
+implemented and did not fire.
+
+### 11.3 Offline structural table (per rung)
+
+179 rows staged, seed 5150, k ∈ {2,4,8}, globally deduped by `statement_key`.
+
+| rung | leaves | k mix (2/4/8) | variant (max/min) | leaf chars min/med/max | log10 max\|coef\| min/mean/max | distinct knob cells | distinct statements | deduped | invariant violations |
+|---|---|---|---|---|---|---|---|---|---|
+| `v2` | 30 | 10/10/10 | 18/12 | 63/69/75 | 1.23/2.04/3.34 | 20 | 30 | 0 | **0** |
+| `r1_recip` | **29** | 9/10/10 | 17/12 | 53/62/71 | 0.70/1.95/3.27 | 22 | 29 | **1** | **0** |
+| `r2_prod` | 30 | 10/10/10 | 18/12 | 85/107/117 | 1.00/2.14/3.28 | 23 | 30 | 0 | **0** |
+| `r2_sum` | 30 | 10/10/10 | 18/12 | 100/108/116 | 1.11/2.17/3.34 | 27 | 30 | 0 | **0** |
+| `r3_floor` | 30 | 10/10/10 | 18/12 | 71/77/84 | 1.04/2.04/3.28 | 21 | 30 | 0 | **0** |
+| `r4_floorprod` | 30 | 10/10/10 | 18/12 | 110/115/125 | 1.11/2.18/3.34 | 26 | 30 | 0 | **0** |
+
+`r1_recip` emits 29, not 30: one k=2 statement collided with an earlier one and was dropped by the
+global dedupe. That is the schema's small state space (§2.3) showing up at n=30, not a bug — and
+it slightly under-powers that rung's k=2 cell (9 leaves, not 10). The variant mix is identical
+(18/12, or 17/12) across every rung, which is the stager's interleaving doing the job it was added
+for: `variant` is the one knob F1 measured as a real separator, and it is now balanced by
+construction rather than by luck.
+
+**Necessity and exactness, per rung** (F2/F3, re-established never inherited):
+
+| rung | knob cells swept | max spill | threshold `min(WIDTHS)/2` | cells at threshold | predicate audit (k ∈ 2/4/8/16/32) | `repaired_frac` at k = 2/4/8/16/32 |
+|---|---|---|---|---|---|---|
+| `v2` | 36 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| `r1_recip` | 36 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| `r2_prod` | 72 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| `r2_sum` | 72 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| `r3_floor` | 36 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+| `r4_floorprod` | 72 | 2 | 3 | 0 | 1,798 pts, **0 under / 0 over** | 0.0 / 0.0 / 0.0 / 0.0 / 0.0 |
+
+10,788 audited integer points, 0 mismatches in **either** direction. F3 holds exhaustively over
+every rung's whole widened knob support (the two-atom rungs sweep 72 cells, not 36), and
+`_repair_necessity` fired **zero times** in every problem generated during this gate.
+
+**Flatness structurals** (10 problems per cell, seed 7777; the numbers F4 constrains):
+
+| rung | leaf chars k=2 → k=32 | median \|coef\| k=2 → k=32 | max `outer_const` over the FULL knob support (max/min variant) |
+|---|---|---|---|
+| `v2` | 67.2 → 72.9 | 36 → 32,449 | 12 / 6 |
+| `r1_recip` | 59.6 → 65.6 | 33 → 33,709 | 231 / 231 |
+| `r2_prod` | 104.0 → 112.7 | 54 → 34,993 | 75 / 69 |
+| `r2_sum` | 103.8 → 112.3 | 53 → 35,007 | 20 / 14 |
+| `r3_floor` | 75.1 → 80.5 | 48 → 34,371 | 12 / 6 |
+| `r4_floorprod` | 111.6 → 120.7 | 51 → 33,077 | 65 / 59 |
+
+`knob_support_ok` is `True` for every rung at every k. Leaf length grows 6–9 characters across a
+16× change in k — flat. The outer constant is **exactly** k-independent: the right-hand column is
+an exhaustive maximum over the rung's whole knob support (36 or 72 cells), and it does not depend
+on band position, so F4 is verified rather than sampled. The **only** k-dependence is the
+radicand constant, ~1,000× from k=2 to k=32, which is precisely what R3′ exists to test.
+
+**R3′ power, computed on the staged rows:** `log10(max|coef|)` has mean 2.088 and SD **0.722**
+over the 179 rows, so `SE(slope) ≈ 0.031` per decade at a residual SD of 0.30 — slightly better
+than §7/R3′'s projected 0.04, and the k=2→32 span is 2.05 decades, so a gradient large enough to
+move the mean by 0.13 across the full grid is 2σ-detectable.
+
+**Distinct-leaf capacity** (300 problems at k=8, seed 4242 — FAMILIES.md's GRPO-correlation note,
+§7/R4.3's tie-break):
+
+| rung | distinct leaf props / 2,400 leaves | distinct knob tuples |
+|---|---|---|
+| `v2` | 1,628 | 36 |
+| `r1_recip` | 1,631 | 36 |
+| `r2_prod` | **1,976** | **72** |
+| `r2_sum` | **1,984** | **72** |
+| `r3_floor` | 1,560 | 36 |
+| `r4_floorprod` | 1,929 | 72 |
+
+The two-atom rungs buy **+22% distinct leaves and 2× the knob cells** over the control — the
+independent second-atom draw the implementation chose over S1's derived one (§3.5's capacity
+caveat) is measurably doing what it was meant to. `r3_floor` is the **only rung below the
+control** on capacity (1,560 vs 1,628, −4%), which is the measured cost of §3.6's pad being pinned
+rather than widened; it also confirms the implementer's flag that r3_floor's capacity concern
+(§2.3) is unaddressed.
+
+### 11.4 Kill table — the automation battery (V0/V5)
+
+`families.validate.battery_proofs()`, 10 tactics × {bare, intros-first}, 25 s cap, **any** success
+kills. The subset is not random: per rung it is the coefficient extremes at each k **plus** a
+greedy cover of every observed knob value, so each rung's probe set covers **k ∈ {2,4,8}, both
+variants, both widths, all three curvatures, all three offsets, both slacks** (and all three
+`curvature2` values on the two-atom rungs) — printed per rung in `gate_battery_ext.json`.
+
+| rung | leaf probes | knob cells covered | goal probe (V0) | **kills** |
+|---|---|---|---|---|
+| `v2` | 7 | k 2/4/8 · max,min · w 6,8 · a 1,2,3 · off −1,0,1 · slack 0,1 | k=8 | **0** |
+| `r1_recip` | 6 | same | k=8 | **0** |
+| `r2_prod` | 7 | same + `curvature2` 1,2,3 | k=8 | **0** |
+| `r2_sum` | 6 | same + `curvature2` 1,2,3 | k=8 | **0** |
+| `r3_floor` | 7 | same | k=8 | **0** |
+| `r4_floorprod` | 7 | same + `curvature2` 1,2,3 | k=8 | **0** |
+| **planted control** | 1 | — | — | **1 — `by intros; nlinarith`** |
+
+Pooling every battery run in this gate (extended spanning subset, the stager's coefficient-extreme
+subset, all 54 validator problems' V0 + V5, and the control):
+
+> **7,920 battery proof attempts · 316 distinct propositions · 1 kill · the kill is the control.**
+
+**No rung is DEAD by battery.** V0 holds on every probed goal and V5 holds on every probed leaf,
+now measured through the *shipped generator* rather than a survey's own probe script — which is
+what §4 said had never been done.
+
+### 11.5 Witness kernel checks — every staged leaf, not a subset
+
+| rung | staged leaves checked | pass | failures |
+|---|---|---|---|
+| `v2` | 30 | **30** | 0 |
+| `r1_recip` | 29 | **29** | 0 |
+| `r2_prod` | 30 | **30** | 0 |
+| `r2_sum` | 30 | **30** | 0 |
+| `r3_floor` | 30 | **30** | 0 |
+| `r4_floorprod` | 30 | **30** | 0 |
+
+Adding the witnesses checked inside V2 of the 54 validator problems (252), the k=32 structural
+runs (192), the stager's own subset (36) and the k=16/32/64 scaling probe (656):
+
+> **1,315 witness kernel checks · 1,315 pass · 0 failures, at every k up to 64.**
+
+Every rung's witness template therefore covers its whole knob support, including the structurally
+special cells the implementer flagged (`r3_floor`'s `T = C_LEVEL` and `e = 0` floors,
+`r4_floorprod`'s perfect-square pad bump). A witness failure here would have been a generator bug
+reaching the GPU; there is none.
+
+### 11.6 The idiom probe (the corridor-ceiling proxy)
+
+The measured DSV2 idiom, mechanically retargeted at each rung's primary `√` atom with the cap the
+goal exposes, plus the hint bag read off the goal (`sq_nonneg` at the vertex and both band
+endpoints), plus the rung's adaptations. 4 instances per rung = both variants at k=2 and k=8, run
+against the **shipped generator's own props**.
+
+| rung | `I0_verbatim` (the memorised idiom) | other probes | first route that closes | distance |
+|---|---|---|---|---|
+| `v2` **(calibration)** | **4/4** | `I1_sq_sqrt` 4/4 | base | **0** |
+| `r1_recip` | **0/4** | `A2_div_nonneg_only` 0/4 | `A1_le_div_iff₀` **4/4** | 1 + a side goal `positivity` cannot do |
+| `r2_prod` | **0/4** | `I1_sq_sqrt` 0/4; `A2_balanced_split` **2/4** | `A1_oracle_split` **4/4** | 2 memorised steps + the right divisor pair |
+| `r2_sum` | **0/4** | `I1_sq_sqrt` 0/4; `A2_even_split` **2/4** | `A1_oracle_split` **4/4** | 1 `have` + 1 invented integer |
+| `r3_floor` | **0/4** | `I1_floor_le` 0/4; `A2_bracket` 0/4 | `A1_floor_le_iff` **4/4** | 3, and the memorised sub-goal is **false** |
+| `r4_floorprod` | **0/4** | `A1_prod_then_floor` 0/4; `A2_floor_le_iff` 0/4; **`A3_sqrt_mul_first` 0/4** | **none** | **≥ 4** |
+
+**The control calibrates.** `I0_verbatim` closes 4/4 on `v2` — consistent with S2's 68/68 on the
+measured bank and 12/12 on fresh instances — and 0/4 on every candidate rung. So "the memorised
+one-shot stops applying at the schema level" is measured for all five candidates, through the
+shipped generator, with a live planted control on the other side of the gate.
+
+Three things this run adds beyond §5's table:
+
+1. **`r3_floor`'s failure mode is exactly the advertised one, read off the error text rather than
+   the pass/fail bit.** `I0_verbatim` fails on the *right* conjunct of `Real.sqrt_le_iff` with
+   `⊢ False` from `5 ^ 2 < x ^ 2 + 6 * x + 28` — i.e. `nlinarith` is being asked to prove
+   `u ≤ T²`, which is **false** on part of the band. Not "unfound": false. §11.9 quantifies it.
+2. **`r4_floorprod` resists even the correct route ordering.** `A3_sqrt_mul_first` applies
+   `Real.sqrt_mul` before the floor step — the ordering §3.7 says no adaptation found — and still
+   closes 0/4 when the arithmetic is fed only goal-readable hints, while the generator's own
+   13-line witness closes 30/30 (§11.5). So the barrier is the *arithmetic staging inside* the
+   route, not just knowledge of the route. That is a strictly stronger result than S2's 0-of-4 and
+   it supports §6.2's placement of this rung below the corridor floor.
+3. **The `positivity` trap is still live** (§4's methodological finding 1): `A2_div_nonneg_only`
+   uses `by positivity` for `0 ≤ c / u` and fails 0/4 for a reason unrelated to the rung. Kept in
+   the table as a negative control on the probe itself.
+
+**What it still does not predict.** Graded difficulty. §5 and §8.2 stand unchanged: the base
+idiom closes the 0.25 leaf on `v2`, and every ordering in §6 rests on the adaptation ladder plus
+the offline target widths, not on samples.
+
+### 11.7 Full validator V0–V6 (R0b), through the shipped generator
+
+`validate_problem(..., check_automation=True)`, 3 freshly generated problems at **each** of
+k ∈ {2,4,8}, per rung — R0b's requirement, exactly:
+
+| rung | k=2 | k=4 | k=8 | total | verdict |
+|---|---|---|---|---|---|
+| `v2` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+| `r1_recip` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+| `r2_prod` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+| `r2_sum` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+| `r3_floor` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+| `r4_floorprod` | 3/3 | 3/3 | 3/3 | **9/9** | pass |
+
+**54 problems, 54 pass, every check green** — V0 (goal resists), V1 (elaborates), V2 (252
+witnesses), **V3 (stage-1 plan check)**, **V4 (compose + sanitizer + axiom audit)**, V5 (252 leaf
+battery runs), V6 with `visible_lemmas = []` and no exemption. §4's "V3 and V4 have never been run
+for any candidate" is closed, and it closed clean: 0 sanitizer violations and 0 disallowed axioms
+anywhere.
+
+### 11.8 The k-scaling wall — a real finding, and it is not the ladder's fault
+
+R0b also asks for "one k=32 problem for V1/V3 elaboration cost". Running the full structural
+validator (V1, V2, V3, V4, V6; automation off) at k = 32 found a failure — and chasing it produced
+the cleanest new result of this gate.
+
+**At the shipped `PREAMBLE` (`maxHeartbeats 400000`), V4 compose passes up to:**
+
+Cells marked **[F]** are full `validate_problem` runs (V1, V2, V3, V4, V6); **[C]** are
+compose-and-kernel checks of the identical artifact V4 builds, minus the sanitizer and axiom audit
+(neither of which ever failed anywhere in this gate). "not run" means exactly that — no cell here
+is inferred from monotonicity.
+
+| rung | k=8 (V0–V6) | k=16 | k=32 | k=64 | k=128 | first failing k | k=32 wall |
+|---|---|---|---|---|---|---|---|
+| `v2` (control) | ok 9/9 | not run | ok 3/3 **[F]** | ok 1/1 **[F]** | **FAIL [C]** | **128** | 10 s |
+| `r1_recip` | ok 9/9 | not run | ok 3/3 **[F]** | ok **[C]** | **FAIL [C]** | **128** | 11 s |
+| `r3_floor` | ok 9/9 | not run | ok 3/3 **[F]** | ok **[C]** | not run | **> 64** | 18 s |
+| `r2_prod` | ok 9/9 | not run | ok 3/3 **[F]** | **FAIL [C]** | not run | **64** | 41 s |
+| `r2_sum` | ok 9/9 | not run | ok 3/3 **[F]** | **FAIL 1/1 [F]** (V3+V4) | not run | **64** | 36 s |
+| `r4_floorprod` | ok 9/9 | **ok 3/3 [F]** | **FAIL 3/3 [F]** (V4) | **FAIL 1/1 [F]** (V3+V4) | not run | **32** | 73 s |
+
+Every failure is `(deterministic) timeout … maximum number of heartbeats (400000)` at `whnf`,
+`isDefEq`, `«synthesize pending MVars»` or `«tactic execution»`. **V1 and V2 pass in every one of
+these cases, and V3 passes in all of them except at k=64** — the goal elaborates, all 32
+witnesses kernel-check individually, the plan closes granting the lemmas; it is the single
+composed artifact that exhausts the budget.
+
+**Raising the budget clears it, which is what makes this a harness limit rather than a schema
+defect:**
+
+| case | `maxHeartbeats` 400,000 (shipped) | 1,600,000 | 6,400,000 |
+|---|---|---|---|
+| `r4_floorprod` k=32 (58 KB artifact) | **FAIL**, 48 s | **ok**, 87 s | ok, 87 s |
+| `r2_prod` k=64 (58 KB) | **FAIL**, 31 s | **ok**, 123 s | — |
+| `r2_sum` k=64 (51 KB) | **FAIL** | **ok**, 96 s | — |
+| `r4_floorprod` k=64 (118 KB) | **FAIL** | — | **ok**, 348 s |
+| `v2` k=128 (73 KB) | **FAIL**, 22 s | **ok**, 103 s | — |
+
+Three consequences, in order of how much they should change behaviour:
+
+1. **FAMILIES.md's scaling requirement is already violated by the SHIPPED family, not by the
+   ladder.** "The schema should not break at k=128 even if Phase 1 only ships k≤32" —
+   `case_tree` `v2` at k=128 fails V4 today at the shipped `PREAMBLE`, and passes at 4× the
+   heartbeat budget. This is a pre-existing defect the ladder merely made visible by pushing
+   bigger artifacts through the same path.
+2. **`r4_floorprod` is the only rung whose wall lands inside the shipped k-grid.** Under a literal
+   reading of R0b ("one k=32 problem for **V1/V3** elaboration cost") it passes: V1 and V3 are
+   green at k=32. Under the natural reading (full `validate_problem` at k=32) it fails, 3 seeds
+   out of 3. Both readings are recorded; §11.11 takes the conservative one.
+3. **A `maxHeartbeats` bump is a one-line fix in `core/leancode.py`'s `PREAMBLE` — and it is NOT
+   free.** The same constant governs the V0/V5 battery: more heartbeats means `nlinarith`,
+   `aesop` and `polyrith`-adjacent tactics get more budget to *close* a leaf. **Any bump
+   invalidates every battery verdict in this file and in §4, and V0/V5 must be re-measured with
+   the planted control attached.** That file is not owned here; flagged in §11.13.
+
+### 11.9 Offline target-width and tightness measurements
+
+Free, exact, computed over the 30 staged leaves of each rung — these are §5's "offline
+target-width measurements", which §5 says carry the ranking together with the adaptation ladder.
+
+**How wide is the numeric target the prover must hit?**
+
+| rung | candidate splits per leaf (min/median/max) | leaves with **exactly one** feasible split | the obvious guess is the answer | \|cap₁ − t/2\| median / max |
+|---|---|---|---|---|
+| `r2_sum` | 8 / 11 / 16 (every integer split of t) | **30/30** | even split feasible in **9/30 = 30.0%** | **0.5 / 1.5** (≤ 0.5 on 17/30) |
+| `r2_prod` | 4 / 8 / 12 (divisor pairs of T) | **30/30** | balanced divisor pair feasible in **17/30 = 56.7%** | n/a (multiplicative) |
+
+Both rungs' feasible split is **unique**, over 30/30 leaves, confirming §3.4's argument
+analytically and §3.5's Lean sweep empirically. The 30.0% even-split rate reproduces S1's 35.9%
+on independent draws.
+
+**How tight is the tight cap — i.e. how much of the band actually falsifies the memorised
+sub-goal `√u ≤ T`?** (1,001-point grid per leaf, 30 leaves per rung)
+
+| rung | min | median | max | leaves where the sub-goal is false somewhere |
+|---|---|---|---|---|
+| `r3_floor` | 0.071 | **0.166** | **1.000** | **30/30** |
+| `r4_floorprod` | 0.001 | **0.004** | 0.032 | **30/30** |
+
+§3.6's exemplar measured 29.5%; the shipped distribution's median is 16.6%, with one staged leaf
+where `√u > T` on the **entire** band (`⌊√u⌋ = T` everywhere — the tightest configuration the
+knob support can produce). The mechanism is present on every leaf, and the *degree* of tightness
+is a per-leaf covariate the pod can condition on — it is not currently written into
+`ct_candidates.jsonl`, and it would be the natural R4.5-style lever for `r3_floor` if that rung
+lands near the corridor (§11.13).
+
+`r4_floorprod` inherits the same logical blocker with three orders of magnitude less margin —
+false on ~0.4% of the band. Since falsity is a binary blocker for the route, this does not soften
+the rung; but it does mean any future *loosening* of `r4_floorprod` is a knife-edge, and §3.7's
+"pad bumped until P is not a perfect square" is doing more work than its dead-code status
+suggests.
+
+### 11.10 Where the measurements contradict §3/§6's reasoning
+
+Per §6's own instruction ("if the pod contradicts any of this, the contradiction is the finding"),
+applied one gate early. **No registered number in §6 is edited.**
+
+1. **§6.2's stated reason for placing `r2_sum` marginally above `r2_prod` does not survive
+   measurement.** The note argues `r2_sum` is *anchored* (even split right 35.9% of the time)
+   while `r2_prod`'s divisor pair has "no measured anchor". Measured here on the shipped
+   generator: the obvious guess is right **30.0%** of the time for `r2_sum` and **56.7%** for
+   `r2_prod`. If anchoring is what makes a rung easier, the ordering inside the matched pair
+   should be `r2_prod` **easier** than `r2_sum`, not harder. §6.2 already declines to register an
+   ordering inside the pair ("that gap is 0.06 and it is inside the noise") — so the registered
+   claim survives; the *argument* for it does not. **L1's exact rank order is now the less likely
+   of the two; L1c (coarse order) is untouched.**
+2. **`r2_prod`'s search space is narrower than `r2_sum`'s, not wider.** §3.4 estimates "~4–12
+   divisor pairs"; measured 4–12, median 8, against `r2_sum`'s 8–16, median 11. Combined with (1),
+   the pair is less matched on target width than §3.5's length-matching suggests — the combinator
+   comparison is clean on *text*, not on *search*.
+3. **`r4_floorprod` is harder than §5's "≥ 4" says, in a specific way.** The correct route
+   ordering, hand-supplied, still closes 0/4 (§11.6). The distance is not "the model must find
+   `Real.sqrt_mul` first"; it is "even with `Real.sqrt_mul` first, the degree-4 product bound must
+   be staged by hand". This strengthens the case for §6.2's 0.15 projection and for keeping the
+   rung last.
+4. **`r3_floor`'s capacity is *below* the control**, 1,560 vs 1,628 distinct leaves at k=8. §3.6's
+   pad-widening was supposed to buy "5–9× more leaf capacity" and address §2.3; the implementation
+   correctly refused it under F3, and the measured consequence is a small capacity *loss*. R4.3
+   (larger distinct-leaf capacity) therefore ranks `r2_sum` ≈ `r2_prod` > `r4_floorprod` >
+   `r1_recip` ≈ `v2` > `r3_floor`.
+5. **§6.4's length confound is confirmed as stated and is now quantified across the whole grid**
+   (§11.3): the rungs differ by up to 1.9× in leaf length (`r1_recip` 60 chars → `r4_floorprod`
+   112 at k=2) and every rung is flat in k. `r1_recip` remains the designed partial control —
+   shorter than `v2` and predicted harder.
+
+### 11.11 Readiness verdict — which rungs go to the GPU, and in what order
+
+**Nothing died to the battery. Nothing died to the validator at k ∈ {2,4,8}. One rung has a
+k=32 elaboration defect.** So this is not §7.1's escalation case and not §7.2's — it is the
+ordinary case, and the ladder ships.
+
+| # | rung | status | why this position |
+|---|---|---|---|
+| 1 | **`v2`** | **READY — mandatory, blocking** | R0c: if the same-pod control does not reproduce inside [0.85, 0.98] the whole comparison is void. Never drop this cell. |
+| 2 | **`r2_sum`** | **READY** | Primary candidate. Carries the ladder's only continuous, per-leaf lever (`split_gap`, shipped on every row, median 0.5 / max 1.5), the least-anchored obvious guess (30.0%), and the joint-best distinct-leaf capacity. A near-miss on level is correctable *within* the rung. |
+| 3 | **`r2_prod`** | **READY** | Primary candidate and the matched-pair partner: dropping it forfeits the combinator measurement, which is the one mechanism-identification this star design buys over a chain. Measured to be *more* anchored than `r2_sum` (§11.10.1), so the pair now brackets rather than duplicates. |
+| 4 | **`r3_floor`** | **READY** | Mechanism confirmed strongest locally (memorised sub-goal false on 30/30 leaves, median 16.6% of the band). Registered to fail R2 on zero-rate even if R1 passes (L6) — measure it precisely *because* that prediction is falsifiable. |
+| 5 | **`r1_recip`** | **READY** | The upper bracket, and the model's falsification test: §3.3 says if this measures ≈0.9 the idiom-distance model loses its lower anchor. Also the length confound's partial control (shorter than `v2`, predicted harder). Only 29 leaves, and 9 at k=2. |
+| 6 | **`r4_floorprod`** | **READY FOR THE LADDER CELL ONLY — NOT SHIPPABLE AS THE CHOSEN RUNG** | Leaf statements are sound and gated at k ∈ {2,4,8}: 30/30 witnesses, 0 battery kills, V0–V6 9/9. But **V4 fails at k=32 on 3 of 3 seeds** at the shipped `maxHeartbeats`, so §9 step 5's re-materialization (which runs the full validator across the k-grid) cannot complete for this rung until the `PREAMBLE` bump lands and V0/V5 are re-measured. **Drop this cell first if budget binds** (§0: −$0.21). |
+
+**Order to drop under budget pressure: 6, then 4, then 3** (corrected 2026-08-13 after the science
+review; was "6, then 5, then 4"). Never 1 or 2 — 1 is R0c, 2 is half the matched pair.
+**Never drop 5 (`r1_recip`) while §7.1 step 1 depends on it**: that branch reads "read `r1_recip`
+first … if even `r1_recip` is below 0.25, the finding is that any schema change collapses this
+prover", so `r1_recip` is the cell carrying the ladder's only *upper* bracket and its escalation
+trigger. Dropping it leaves v2 + the matched pair + `r3_floor`, which brackets 0.45 from below
+only. The collapse world is not remote: the sole measured anchor for "the memorised route no
+longer applies" is bridge_chain's four probe-fail presets at 0.196–0.312, and four of this
+ladder's five projections sit at or above the top of that band.
+
+`OVERNIGHT-2.md`'s Pod A plan names **five** cells, so dropping `r4_floorprod` is also the
+plan-conforming default; the 179-row file measures 6 cells for ~+$0.21 over the 149-row
+five-cell run (~23 min vs ~20 min at 430–480 rows/hr), and the filter is one line:
+
+```bash
+grep -v '"preset": "r4_floorprod"' data/families/ct_candidates.jsonl > /tmp/ct5.jsonl
+```
+
+The case for spending the $0.21: `r4_floorprod` is §6.2's only rung projected *below* the corridor
+floor (0.15), so it is the lower anchor that distinguishes **L3** ("all four non-control rungs
+collapse") from "one rung overshot", and it is §7.2's first escalation rung already gated. The
+case against: it cannot ship as the chosen rung until the `PREAMBLE` bump lands (§11.13.1).
+
+**The pod command must change in one place.** §0c's `--data-files` path is
+`data/families/ct_candidates.jsonl` (§11.1). Everything else in §0c stands, including the
+prohibition on `--leaf-max-tokens` / `--leaf-temperature` and the fresh `--out`.
+
+**R0b's main clause is satisfied for all six rungs** (V0–V6 on 3 freshly generated problems at
+each of k ∈ {2,4,8}); **R0b's k=32 clause is satisfied for five**, and is the reason rung 6
+carries a condition. R0c, R1, R2, R2b, R3, R3′ and R4 are pod-side and untouched.
+
+### 11.12 Artifacts
+
+Written by this gate, all regenerable from the stager command plus the drivers in §11.1:
+
+| path | contents |
+|---|---|
+| `data/families/ct_candidates.jsonl` | **179 rows**, 6 rungs, `build_bank`-ingestable, `battery_gated: true` |
+| `data/families/ct_battery/structural.json` | per-rung invariants, necessity sweep, predicate audit, `leaf_stats` |
+| `data/families/ct_battery/<rung>.jsonl` | the stager's coefficient-extreme battery subset per rung |
+| `data/families/ct_battery/battery.json` | stager kill table + witness verdicts (control first) |
+| `data/families/ct_battery/validate.json` | V0–V6, 9 problems per rung |
+| `data/families/ct_battery/gate_control.json` | the planted control, run alone |
+| `data/families/ct_battery/gate_battery_ext.json` | knob-spanning battery subset, per-probe killers, covered cells |
+| `data/families/ct_battery/gate_witness_all.json` | witness kernel check, all 179 staged leaves |
+| `data/families/ct_battery/gate_idiom.json` | idiom probe, per instance, with failure texts |
+| `data/families/ct_battery/gate_validate_k32.json` | k=32 structural validation |
+| `data/families/ct_battery/gate_validate_scaling.json` | k = 16/32/64 walls, 3 seeds where it mattered |
+| `data/families/ct_battery/gate_heartbeat.json` | the `maxHeartbeats` diagnostic |
+| `data/families/ct_battery/gate_offline.json` | target width, tightness, capacity, flatness structurals, R3′ power |
+| `data/families/ct_battery/gate_rows.jsonl` | **per-staged-row verdicts**: `witness_kernel_ok`, `battery_probed`, `battery_killers` |
+| `data/families/ct_battery/gate_scripts/` | the five drivers that produced the `gate_*` artifacts, plus a README (misplaced by ownership, see §11.13.7) |
+
+`ct_candidates.jsonl` was deliberately **not** hand-edited, so it stays byte-reproducible from the
+single documented command; the per-row gate verdicts live in the `gate_rows.jsonl` sidecar
+instead. Read `battery_gated: true` on a candidate row as *"the local Lean gate ran for this
+staging run"* — the field the implementer defined — **not** as *"this statement was itself
+battery-probed"*. Per-statement truth: **179/179 witness-checked, 40/179 battery-probed,
+0 killed**; the battery additionally ran on 275 further generator propositions (the validator's
+V0/V5 across 54 problems, plus the per-rung goal probes).
+
+### 11.13 Contract friction found by this gate (reported, not worked around)
+
+1. **`core/leancode.py`'s `PREAMBLE` heartbeat budget is the binding constraint on the k-axis, and
+   it is not owned by any family agent.** `maxHeartbeats 400000` fails V4 for shipped `v2` at
+   k=128 and for `r4_floorprod` at k=32; 1,600,000 clears every wall observed up to k=64 (except
+   `r4_floorprod` at k=64, which needed 6,400,000 — 1,600,000 untested there) and clears `v2` at
+   k=128. **A bump also strengthens the V0/V5 battery** (same constant), so it
+   retroactively invalidates every battery verdict in §4 and §11.4 and must be followed by a
+   re-run of this gate with the planted control attached. This is a repo-level decision, not a
+   family one, and it blocks FAMILIES.md's k=128 scaling clause today.
+2. **§0b/§9's file names do not match the shipped script** (`stage_ct_ladder.py` /
+   `ct_ladder_candidates.jsonl` vs `stage_ct_candidates.py` / `ct_candidates.jsonl`). §10.8
+   predicted it; §11.1 records the working command. One of the two must move before the pod
+   session — this note's §0/§9 is the cheaper edit.
+3. **`r3_floor` has no per-leaf difficulty covariate in the staged rows.** The measured tightness
+   fraction (§11.9, median 0.166, range 0.071–1.000) is the natural analogue of `r2_sum`'s
+   `split_gap` and would give that rung an R4.5-style within-rung lever, which is exactly what §7
+   values. It is computable offline from the existing knobs; adding it means touching
+   `case_tree.py`'s `knobs()` and the stager, neither owned here.
+4. ~~`scripts/probes/probe_ct_functional.py:309` is broken.~~ **Fixed upstream in `724b70f`**
+   (`ct.Piece(ct.RUNGS["v2"], …)`) while this gate ran; verified against the working tree. Not
+   exercised here either way — the idiom probe in §11.6 builds props from the shipped generator
+   rather than from that script — so §10.7's "re-run S2's probe with a durable `--out`" is now
+   unblocked and remains worth doing.
+5. **FAMILIES.md's leaf-disjointness contract is still unimplemented for family leaves.** The
+   staged rows carry `leaf_pool` from `leaf_split(statement_key)` for information only —
+   measured **137 train / 42 eval (23.5%)** across the 179 rows, consistent with the 25% design —
+   but there is no leaf-level rejection sampling, so §9's regeneration step still cannot honour
+   the contract. Unchanged by this gate; restated because §9 step 5 is the next step after the
+   pod.
+6. **§7/R3 remains unresolvable at the ladder's n**, exactly as §7 and §10.2 state. This gate
+   changes nothing there except to sharpen R3′'s power estimate (SE ≈ 0.031/decade, §11.3).
+7. **The gate's own drivers had nowhere to live.** Four of the five phases are scripts this agent
+   wrote but could not commit to `scripts/probes/`, because the owned-files list was
+   `research/case-tree-hardening.md` plus `data/families/ct_candidates.jsonl` and
+   `data/families/ct_battery/**`. They are parked at
+   `data/families/ct_battery/gate_scripts/` with a README rather than left in `/tmp`, which is
+   §10.7's failure mode. **Move them to `scripts/probes/` at the next commit that owns that
+   directory** — otherwise a data directory carries executable code, which is exactly the kind of
+   thing that rots.
