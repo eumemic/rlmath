@@ -517,7 +517,15 @@ def main(argv=None) -> int:
             fdir = out_dir / family
             fdir.mkdir(parents=True, exist_ok=True)
             for k in args.k_grid:
-                path = fdir / f"k{k}.jsonl"
+                # The preset/rung MUST be in the filename. `append_row` appends and
+                # `existing_ids` resumes off whatever is already there, so a preset-free
+                # path silently interleaves two rungs into one file the moment anyone
+                # materializes a second rung at the same k — and every downstream consumer
+                # reads it as a single distribution. (Soundness review, 2026-08-13.)
+                # Default-preset runs keep the historical `k{k}.jsonl` name so existing
+                # datasets and their resume state stay valid.
+                path = fdir / (f"k{k}.jsonl" if not args.preset or args.preset == "v2"
+                               else f"k{k}-{args.preset}.jsonl")
                 if args.revalidate:
                     dropped = drop_unvalidated(path)
                     if dropped:

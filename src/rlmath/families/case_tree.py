@@ -117,7 +117,23 @@ Shared geometry: band `[lo, hi]`, `m = lo + width/2 + offset`,
 * `r4_floorprod` — pads `e₁ = 1 + slack`, `e₂ = 1` bumped until
   `P = u_max·w_max` is **not** a perfect square, `T = ⌊√P⌋`, so `T² < P < (T+1)²`.
   `⌊√u·√w⌋ ≤ T ⟺ u·w < (T+1)²`. The integer form is mandatory, not a
-  preference: `u·w` reaches ~10¹⁸ at k=32, past double precision entirely.
+  preference — but **not for the reason an earlier revision of this docstring
+  gave**. It claimed `u·w` reaches ~10¹⁸ at k=32 and overflows double
+  precision; measured, the largest `u·w` at any integer point `_redundant` can
+  ask about is **25,090** within a band and **4.0×10¹²** across the whole
+  domain at k=128 — the latter still ~2,200× *inside* float64's exact-integer
+  range (2⁵³ ≈ 9.0×10¹⁵). Magnitude is not the problem.
+
+  The real reason is **ties**. Measured across all six rungs, the minimum of
+  `|piece value − C_LEVEL|` over the integer points is **exactly 0**: every
+  rung has knife-edge points where the piece meets the threshold with no
+  margin at all. There, `√` in binary floating point can land on either side
+  of the comparison, and `holds_at` would report a coverage or necessity fact
+  that the Lean statement contradicts. Exact integer arithmetic is what makes
+  the predicate agree with the rendered proposition at those points, and it is
+  why every rung's `holds_at` is written over ℤ rather than over floats.
+  (Corrected 2026-08-13 from the soundness review's independent re-derivation:
+  290,700 integer points to k=128, 0 mismatches in either direction.)
 
 Why v1 died (the reason the `√` wrapper exists at all)
 ------------------------------------------------------
