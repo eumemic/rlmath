@@ -1702,3 +1702,75 @@ to mostly hold rather than mostly collapse:
 Whatever it returns, **the next move is Phase 2 on case_tree alone**, because the project's real
 risk is having no measurement of the actual research question rather than an imperfect task family.
 A FAIL changes what the leaves are, not whether the transfer slope gets measured.
+
+---
+
+# §13. MEASURED — the n=32 replication: **MARGINAL** (2026-08-13, pod `ct-n32`, invoice $1.38)
+
+49 leaves × 32 attempts, 0 errors, `n_attempts == 32` on all 49, profile pinned to the anchor's.
+Verdict by `scripts/analyze_n32.py`, which was committed **before** the data landed.
+
+| stratum | n | n=8 mean | n=32 mean | in band @32 | 95% CI (Wilson) |
+|---|---|---|---|---|---|
+| in_band | 33 | 0.394 | **0.304** | **21/33 = 64%** | [47%, 78%] |
+| zero | 8 | 0.000 | 0.070 | 0/8 | [0%, 32%] |
+| saturated | 8 | 1.000 | 0.973 | 0/8 | [0%, 32%] |
+
+**VERDICT: MARGINAL** — 64% retention (PASS needed ≥70%) and the filtered mean moved ≥0.10 for
+`r3_floor`. Per §12.2 the consequence is fixed in advance: **filter at n=16, and caveat the
+corridor claim wherever it is cited.**
+
+## The headline number in §12.1 was inflated by selection, by about 0.13
+
+§12.1 reported `r3_floor`'s filtered pool at **0.448 against a 0.45 target** and called it "the
+closest this project has come to the corridor." Re-measured: **0.320** (drift −0.128).
+`r2_prod` moved 0.363 → 0.295 (−0.068). Both are still *inside* the corridor [0.25, 0.9] — the
+band is not out of reach — but the **0.45 target is not being hit**, and the number I published
+was a property of the n=8 measurement rather than of the leaves. That is precisely what this run
+existed to find out, and it found it.
+
+## Both side-predictions missed 0/8, and the miss is the more useful result
+
+§12.2 registered "1–2 of 8" for each extreme stratum, reasoning by Bayes from a broad prior.
+Measured **0/8 and 0/8**:
+
+- leaves that measured 0/8 have n=32 mean **0.070** (max 0.219) — genuinely near-zero;
+- leaves that measured 8/8 have n=32 mean **0.973** (min 0.906) — genuinely near-one.
+
+So my prior was wrong in shape, not just scale. **The extremes are reliable at n=8; the noise
+lives in the middle** — which is exactly the band being filtered on. That independently
+corroborates §12's finding that difficulty here is a **step function of idiom match** rather than a
+continuum: a bimodal population with sharp modes has trustworthy tails and an unstable middle, and
+"the corridor" is a thin, noisy region between two attractors rather than a plateau to sit on.
+
+## R5, recomputed at the corrected level — the cost went up
+
+At the true filtered level ~0.304 rather than the reported 0.448:
+
+| attempts/leaf | k=2 | k=4 | k=8 | k=16 | k=32 |
+|---|---|---|---|---|---|
+| 4 (shipped) | 0.586 | 0.343 | 0.118 | 0.014 | 0.000 |
+| 8 | 0.893 | 0.797 | 0.636 | 0.404 | 0.163 |
+| **16** | 0.994 | 0.988 | **0.976** | 0.953 | **0.907** |
+
+Attempts needed for oracle ≥0.70: **9 at k=8, 11 at k=16, 13 at k=32** — against 6 and 8 under the
+inflated number. **16 attempts/leaf clears every k up to 32 with margin**, so `Budgets` wants
+`leaf_attempts_per_lemma = 16` and `max_total_leaf_attempts ≈ 16k` (512 at k=32), which is 4× the
+shipped 64-attempt total and scales Phase-2/3 leaf cost accordingly. That is task **#22**, now with
+a number attached.
+
+## What this changes, and what it does not
+
+**Does not change:** Phase 2 goes ahead on case_tree. The leaves sit in the corridor at ~0.30 with
+64% stability, which is workable; the project's live risk is still that the transfer slope is
+unmeasured, not that the leaves are imperfect.
+
+**Does change:** (a) the corridor claim is downgraded everywhere from "0.448, on target" to
+"~0.30, inside the band, 64% stable under re-measurement"; (b) the pipeline filters at **n=16**,
+which doubles filtering cost — with a 3.3× surplus that is ~6.6 measured leaves per kept leaf;
+(c) Phase 2 must budget **16 attempts/leaf**, not 4.
+
+**Registered for next time:** at n=33 this run could separate PASS from FAIL but not PASS from
+MARGINAL — the CI [47%, 78%] spans both thresholds, which I said in advance. A definitive retention
+number needs ~120 in-band leaves. It is not worth buying: MARGINAL already fixes the pipeline
+decisions above, and a sharper retention estimate changes none of them.
