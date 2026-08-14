@@ -163,9 +163,17 @@ def main(argv=None) -> int:
                                                      add_generation_prompt=True)
                 ids = tokenizer(text, return_tensors="pt").to(model.device)
                 with torch.no_grad():
-                    o = model.generate(**ids, generation_config=GenerationConfig(
+                    # `tokenizer=` must be a kwarg to generate(), NOT a field of
+                    # GenerationConfig — the config silently accepts and ignores it, and
+                    # transformers then refuses the stop strings:
+                    #   ValueError: ... we could not locate a tokenizer
+                    # That is failure #8 recurring in the eval path, because an earlier edit
+                    # added stop_strings here while its companion edit (moving tokenizer out)
+                    # silently failed to match. Verified by grep this time, not assumed.
+                    o = model.generate(**ids, tokenizer=tokenizer,
+                                       generation_config=GenerationConfig(
                         max_new_tokens=a.eval_max_tokens, do_sample=True, stop_strings=["#end"],
-                        temperature=0.7, top_p=0.95, tokenizer=tokenizer,
+                        temperature=0.7, top_p=0.95,
                         pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id))
                 comp = tokenizer.decode(o[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
                 try:
