@@ -781,3 +781,47 @@ run buys.
 compute-matched flat control (the flat arm cannot be trained on this reward — it emits no plan),
 and stage-1 validity is a *necessary* condition for a closed proof rather than the proof itself.
 This measures whether decomposition *competence* transfers, not whether end-to-end proving does.
+
+### §7.4 Prefill and batching — measured changes to the Phase-3 setup, before the run (2026-08-14)
+
+The first Phase-3 attempt was killed at its baseline eval: **0/40 parsed at k=2**, which at the
+§7.2 ladder's 35% rate has probability ~1e-7. Diagnosis and consequences, all measured:
+
+**1. The model needs far more tokens than I budgeted — unprompted.** Tokens to reach `#end`:
+
+| budget | prefill | parsed | tokens to `#end` | time / 8 completions |
+|---|---|---|---|---|
+| 384 | — | 0/8 | never | 160 s |
+| 640 | — | 0/8 | never | 123 s |
+| 1024 | — | 3/8 | 831 | 180 s |
+| 2048 | — | 4/8 | 1097 | 458 s |
+| 384 | `#lemma ` | 0/8 | 186 | 15 s |
+| **384** | **`#lemma hb1 : `** | **5/8** | — | **13 s** |
+
+A plan is ~150 tokens, so unprompted the model spends **~680 tokens on preamble**. My 384-token
+cap (chosen to cut cost 40%) therefore made **every training rollout score 0.0** — a flat reward,
+no GRPO gradient, for 8 hours and $25. The baseline eval is the only reason this was caught; had
+I skipped it, the run would have produced a converged-looking loss curve and a meaningless null.
+
+**2. The barrier was a naming convention, not capability.** With a bare `#lemma ` prefill the
+model emitted a *structurally complete* decomposition — correct case split, real `rcases`
+assembly, properly closed — rejected solely for naming its lemmas `1` and `2`, which are not Lean
+identifiers. The bare prefix **caused** that by inviting a numeral. A prefix showing a valid name
+(`#lemma hb1 : `) fixes it: **62.5% parse at 384 tokens in 13 s**, versus 37.5% at 1024 in 180 s.
+
+**3. Adopted: `PREFILL = "#lemma hb1 : "`.** Content-free (no goal-specific reasoning revealed),
+identical at every k, so it cannot bias the k=2 → k=4/8 comparison — the same standing as the
+rung-1.5 exemplar. It *does* change the decoding setup, so **§7.2's 35%-at-2048 is no longer the
+reference**; the run's own baseline eval is the only valid comparison, which is what §7.3's
+lift-over-baseline design already required.
+
+**4. Eval is now batched.** Single-sequence generation ran ~2.2 min/completion, making eval at
+n=40 × 3 k × 3 checkpoints a **13-hour** job against a ~2-hour training run. Batched: 13 s per 8.
+
+**Revised cost: ~2.0 h ≈ $6**, from measured timings — against ~$45 at 1024 tokens unprompted.
+And the signal is better, not merely cheaper: P(≥1 parse in a group of 8) rises 0.977 → 1.000, so
+more groups carry reward variance for GRPO.
+
+**Registered baseline expectation, updated:** with prefill the untrained k=2 **parse** rate should
+be ~60% (not 35%). The §7.3 predictions for *validity* are unchanged — parsing is necessary but
+not sufficient, and the k=2 valid band stays 35–55%, with k=4 15–30% and k=8 5–15% directional.

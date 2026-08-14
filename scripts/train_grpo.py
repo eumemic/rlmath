@@ -37,8 +37,32 @@ from pathlib import Path
 
 sys.path.insert(0, "src")
 
+# ASSISTANT-TURN PREFILL — measured, not guessed (scripts/probe_prefill.py, 2026-08-14):
+#     prefill            parsed@384tok   time/8
+#     (none)              0/8            163 s   "no plan markers found"
+#     "#lemma "           0/8             15 s   "invalid lemma name: '1'"
+#     "#lemma h1 : "      4/8             15 s
+#     "#lemma hb1 : "     5/8 (62.5%)     13 s   <- this one
+# Unprompted, the model spends ~680 tokens on preamble and needs 1024 to reach #end (37.5%
+# parse, 180 s per 8). Started in-format it produces a complete, correctly-shaped plan in ~180
+# tokens. A bare "#lemma " made it worse by inviting a NUMERIC name, which is not a Lean
+# identifier — the prefix must show a valid name.
+#
+# This is content-free: it reveals no goal-specific reasoning, and it is identical at every k,
+# so it cannot bias the k=2 -> k=4/8 transfer comparison. Same standing as the rung-1.5
+# exemplar. It DOES change the decoding setup relative to §7.2's ladder, so that 35%-at-2048
+# figure is no longer the reference — the run's own baseline eval is.
+PREFILL = "#lemma hb1 : "
 
-def build_dataset(path: Path, exemplar: str, limit: int | None = None):
+
+def build_dataset(path: Path, exemplar: str, tok, limit: int | None = None):
+    """Prompts as PRE-TEMPLATED STRINGS ending in PREFILL.
+
+    TRL treats a string `prompt` column as "standard" format and tokenizes it verbatim, so
+    applying the chat template here is what lets the assistant turn be prefilled. Passing the
+    conversational (list-of-messages) form instead would have TRL apply the template itself and
+    there would be nowhere to put the prefix.
+    """
     from datasets import Dataset
 
     from rlmath.core.types import GoalSpec
@@ -51,8 +75,9 @@ def build_dataset(path: Path, exemplar: str, limit: int | None = None):
         if not r.get("validation", {}).get("ok"):
             continue
         goal = GoalSpec(id=r["goal"]["id"], prop=r["goal"]["prop"], name="goal")
-        rows.append({"prompt": with_exemplar(build_prompt(goal), exemplar),
-                     "goal_prop": goal.prop, "goal_id": goal.id})
+        text = tok.apply_chat_template(with_exemplar(build_prompt(goal), exemplar),
+                                       tokenize=False, add_generation_prompt=True) + PREFILL
+        rows.append({"prompt": text, "goal_prop": goal.prop, "goal_id": goal.id})
         if limit and len(rows) >= limit:
             break
     return Dataset.from_list(rows)
@@ -87,7 +112,8 @@ def main(argv=None) -> int:
                     help="eval needs more room: a k=8 plan is 8 lemma lines, ~250+ tokens")
     ap.add_argument("--lean-workers", type=int, default=12)
     ap.add_argument("--eval-every", type=int, default=25)
-    ap.add_argument("--eval-n", type=int, default=30)
+    ap.add_argument("--eval-n", type=int, default=40)
+    ap.add_argument("--eval-batch", type=int, default=8)
     ap.add_argument("--seed", type=int, default=0)
     a = ap.parse_args(argv)
 
@@ -115,7 +141,11 @@ def main(argv=None) -> int:
     a.out.mkdir(parents=True, exist_ok=True)
 
     exemplar = build_exemplar(load_exemplar_problem("case_tree", k=2, seed=999), "decomp")
-    train_ds = build_dataset(a.train, exemplar)
+    from transformers import AutoTokenizer as _AT
+    _tok = _AT.from_pretrained(a.model, trust_remote_code=True)
+    if _tok.pad_token_id is None:
+        _tok.pad_token = _tok.eos_token
+    train_ds = build_dataset(a.train, exemplar, _tok)
     print(f"train: {len(train_ds)} k=2 problems", flush=True)
 
     pool = ReplPool(n_workers=a.lean_workers)
@@ -124,7 +154,9 @@ def main(argv=None) -> int:
     def stage1_reward(completions, goal_prop, **kwargs):
         """Graded reward. Batched into ONE Lean pool call per group — a per-completion
         call would serialize the slowest part of the step."""
-        texts = [c if isinstance(c, str) else c[-1]["content"] for c in completions]
+        # The prefill is part of the plan but NOT part of the completion TRL returns, so it
+        # must be re-attached before parsing or every plan loses its first lemma name.
+        texts = [PREFILL + (c if isinstance(c, str) else c[-1]["content"]) for c in completions]
         out: list[float] = [0.0] * len(texts)
         codes, idx = [], []
         for i, (t, gp) in enumerate(zip(texts, goal_prop)):
@@ -149,44 +181,50 @@ def main(argv=None) -> int:
 
     def evaluate(model, tokenizer, tag: str):
         """Stage-1 validity on held-out k=2 and on the never-trained k=4 / k=8.
-        This is the transfer measurement; everything else is bookkeeping."""
+
+        BATCHED. One sequence at a time measured ~2.2 min/completion, which made this eval a
+        13-hour job against a ~2-hour training run — it is what made the first attempt look
+        hung. Decode is memory-bandwidth-bound, so a batch of 8 costs barely more than a batch
+        of 1 (measured: 13 s for 8 at 384 tokens). Left padding is mandatory for a decoder-only
+        model; right padding puts pad tokens between the prompt and the first generated token.
+        """
         from transformers import GenerationConfig
+        tokenizer.padding_side = "left"
         res = {}
         for k in (2, 4, 8):
             f = a.eval_dir / f"k{k}.jsonl"
             if not f.exists():
                 continue
-            ds = build_dataset(f, exemplar, limit=a.eval_n)
+            ds = build_dataset(f, exemplar, tokenizer, limit=a.eval_n)
+            texts = list(ds["prompt"])          # already templated + prefilled
             valid = parsed = 0
-            for row in ds:
-                text = tokenizer.apply_chat_template(row["prompt"], tokenize=False,
-                                                     add_generation_prompt=True)
-                ids = tokenizer(text, return_tensors="pt").to(model.device)
+            for i in range(0, len(texts), a.eval_batch):
+                chunk = texts[i : i + a.eval_batch]
+                enc = tokenizer(chunk, return_tensors="pt", padding=True).to(model.device)
                 with torch.no_grad():
-                    # NO stop_strings anywhere, in training or eval. transformers wants the
-                    # tokenizer passed to generate() alongside them; passing it there DID work
-                    # in an isolated check and then failed again inside the trainer, and I have
-                    # spent four cycles on it for a marginal saving. It is not load-bearing:
-                    # `--eval-max-tokens` caps the cost, and a model that learns to close the
-                    # plan and emit EOS terminates on its own — which is the behaviour worth
-                    # training rather than masking. Deleted rather than debugged further.
-                    o = model.generate(**ids, generation_config=GenerationConfig(
+                    o = model.generate(**enc, generation_config=GenerationConfig(
                         max_new_tokens=a.eval_max_tokens, do_sample=True,
                         temperature=0.7, top_p=0.95,
                         pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id))
-                comp = tokenizer.decode(o[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
-                try:
-                    plan = parse_plan(comp)
-                except PlanFormatError:
-                    continue
-                parsed += 1
-                goal = GoalSpec(id=row["goal_id"], prop=row["goal_prop"], name="goal")
-                r = pool.check_many([leancode.plan_check(goal, plan)], timeout_s=90.0)[0]
-                valid += bool(r.ok and r.sorries == 0)
-            res[k] = {"valid": valid, "parsed": parsed, "n": len(ds),
-                      "rate": valid / len(ds) if len(ds) else 0.0}
-            print(f"  [{tag}] k={k}: valid {valid}/{len(ds)} ({res[k]['rate']:.0%}), "
-                  f"parsed {parsed}/{len(ds)}", flush=True)
+                plen = enc["input_ids"].shape[1]
+                codes, rows_ = [], []
+                for j in range(len(chunk)):
+                    comp = PREFILL + tokenizer.decode(o[j][plen:], skip_special_tokens=True)
+                    try:
+                        plan = parse_plan(comp)
+                    except PlanFormatError:
+                        continue
+                    parsed += 1
+                    g = GoalSpec(id=ds[i + j]["goal_id"], prop=ds[i + j]["goal_prop"],
+                                 name="goal")
+                    codes.append(leancode.plan_check(g, plan)); rows_.append(j)
+                if codes:                        # one Lean call per batch, not per completion
+                    for r in pool.check_many(codes, timeout_s=90.0):
+                        valid += bool(r.ok and r.sorries == 0)
+            res[k] = {"valid": valid, "parsed": parsed, "n": len(texts),
+                      "rate": valid / len(texts) if texts else 0.0}
+            print(f"  [{tag}] k={k}: valid {valid}/{len(texts)} ({res[k]['rate']:.0%}), "
+                  f"parsed {parsed}/{len(texts)}", flush=True)
         (a.out / "eval.jsonl").open("a").write(json.dumps({"tag": tag, "res": res}) + "\n")
         return res
 
