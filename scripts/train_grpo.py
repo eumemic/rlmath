@@ -65,8 +65,18 @@ def main(argv=None) -> int:
     ap.add_argument("--eval-dir", type=Path, default=Path("data/phase3/eval/case_tree"))
     ap.add_argument("--out", type=Path, default=Path("runs/grpo9b"))
     ap.add_argument("--steps", type=int, default=200)
-    ap.add_argument("--group-size", type=int, default=8)
-    ap.add_argument("--batch-prompts", type=int, default=8)
+    # TRL SEMANTICS, spelled out because they are not what the names suggest:
+    #   num_generations              = group size G (rollouts per prompt)
+    #   per_device_train_batch_size  = COMPLETIONS per device step, and trl asserts it is
+    #                                  divisible by G — it is NOT a prompt count
+    #   prompts per optimizer step   = per_device_train_batch_size * grad_accum / G
+    # Getting this wrong cost a smoke run: --batch-prompts 2 with --group-size 4 tripped
+    # "generation_batch_size (2) must be divisible by num_generations (4)".
+    ap.add_argument("--group-size", type=int, default=8, help="G: rollouts per prompt")
+    ap.add_argument("--completions-per-step", type=int, default=8,
+                    help="per-device completions; must be a multiple of --group-size")
+    ap.add_argument("--grad-accum", type=int, default=4,
+                    help="prompts per optimizer step = completions-per-step*grad-accum/G")
     ap.add_argument("--lr", type=float, default=1e-5)
     ap.add_argument("--max-completion-tokens", type=int, default=640)
     ap.add_argument("--lean-workers", type=int, default=12)
@@ -84,6 +94,15 @@ def main(argv=None) -> int:
     from rlmath.core.types import GoalSpec
     from rlmath.eval.exemplars import build_exemplar, load_exemplar_problem
     from rlmath.lean.repl_pool import ReplPool
+
+    if a.completions_per_step % a.group_size:
+        raise SystemExit(f"--completions-per-step ({a.completions_per_step}) must be a multiple "
+                         f"of --group-size ({a.group_size}); trl enforces this and the error it "
+                         f"raises names generation_batch_size, which is neither flag.")
+    print(f"config: G={a.group_size}, {a.completions_per_step} completions/device-step, "
+          f"grad_accum={a.grad_accum} -> "
+          f"{a.completions_per_step * a.grad_accum // a.group_size} prompts per optimizer step",
+          flush=True)
 
     random.seed(a.seed)
     torch.manual_seed(a.seed)
@@ -160,7 +179,8 @@ def main(argv=None) -> int:
 
     cfg = GRPOConfig(
         output_dir=str(a.out), learning_rate=a.lr, max_steps=a.steps,
-        per_device_train_batch_size=a.batch_prompts, num_generations=a.group_size,
+        per_device_train_batch_size=a.completions_per_step,
+        gradient_accumulation_steps=a.grad_accum, num_generations=a.group_size,
         max_completion_length=a.max_completion_tokens,
         # NOTE: trl 1.10's GRPOConfig has NO `max_prompt_length` (checked on the pod:
         # the length-ish params are max_completion_length / vllm_max_model_length /
