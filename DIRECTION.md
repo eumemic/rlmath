@@ -741,3 +741,43 @@ episode instead of up to 16 leaf attempts, and it targets exactly the measured b
 Train at k=2 where signal exists; evaluate validity transfer at k=4 and k=8, where the untrained
 9B and 30B both fall off (30B: 70% → 15% → 0%). That is the train-short-test-long design the
 whole direction rests on, at a scale the project can actually pay for.
+
+### §7.3 Phase 3 — registered before training (2026-08-14)
+
+**Setup.** Qwen3.5-9B + LoRA (r=32), GRPO via TRL, single H100. Reward is graded stage-1 plan
+validity: 0.0 unparseable / 0.3 parses / 1.0 passes `plan_check` in Lean. **Train only at k=2.**
+Evaluate at held-out k=2 and at k=4 and k=8, which are never trained on. Train and eval problems
+come from disjoint seed families (1000 vs 2000), so no goal appears in both.
+
+**Why graded and not binary:** §7.2 measured this model's failures as 13/20 `format_error`,
+4/20 `plan_invalid`, 3/20 `plan_valid`. Two-thirds of its failures are format, so a 0/1 validity
+reward would sit at no-gradient for most of training against a deficit that is not the one under
+study. The 0.3 tier is unfarmable — a well-formed wrong plan stays at 0.3 forever.
+
+**Registered predictions.** My record this week is 1 hit in 5 on Phase 2 and 1 in 6 on the ladder,
+missing low every time, so these are deliberately shaded pessimistic relative to what the
+mechanism story would suggest:
+
+| quantity | baseline (measured, §7.2) | prediction after ~200 steps |
+|---|---|---|
+| k=2 parse rate | 35% (7/20) | **>85%** — the format tier should saturate early; if it does not, the reward plumbing is broken, not the model |
+| k=2 stage-1 valid | 15% | **35–55%** |
+| **k=4 stage-1 valid** (never trained) | ~5% (inferred; 30B falls 70→15%) | **15–30%** |
+| **k=8 stage-1 valid** (never trained) | ~0% | **5–15%** |
+
+**The actual result is the transfer ratio, not the levels.** Define lift = (trained − baseline) at
+each k. The RLM claim predicts lift at k=4 and k=8 that is a substantial fraction of the lift at
+k=2 — training on short tasks buying competence on long ones. The null is lift concentrated
+entirely at k=2 with k=4/8 flat, i.e. the policy learns *these problems* rather than *how to
+decompose*.
+
+**What would make me call it a null:** k=4 lift below one third of k=2 lift, or k=8 lift within
+noise of zero at n=30 (which at these rates means roughly ≤2 successes). I expect to be able to
+distinguish "clear transfer" from "no transfer" at this n, and **not** to be able to resolve the
+*shape* of the decay — that would need several hundred eval problems per k and is not what this
+run buys.
+
+**Known limits, stated now rather than at write-up:** one seed, one family, one model size, no
+compute-matched flat control (the flat arm cannot be trained on this reward — it emits no plan),
+and stage-1 validity is a *necessary* condition for a closed proof rather than the proof itself.
+This measures whether decomposition *competence* transfers, not whether end-to-end proving does.
