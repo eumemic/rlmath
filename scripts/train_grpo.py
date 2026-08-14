@@ -204,8 +204,19 @@ def main(argv=None) -> int:
                           target_modules=["q_proj", "k_proj", "v_proj", "o_proj",
                                           "gate_proj", "up_proj", "down_proj"])
 
+    # Qwen3.5 is a VISION-language model, so TRL's default `AutoProcessor.from_pretrained`
+    # builds Qwen3VL's image AND video processors — which is how setup failure #7 happened:
+    #   [ERROR] `min_frames` is part of Qwen3VLVideoProcessorInitKwargs, but not documented
+    # a transformers docstring-validation error raised while constructing a VIDEO processor for
+    # a text-only task. The plain tokenizer loads cleanly (proved in the setup gate), so pass it
+    # explicitly and the processor path is never entered.
+    from transformers import AutoTokenizer
+    tok = AutoTokenizer.from_pretrained(a.model, trust_remote_code=True)
+    if tok.pad_token_id is None:
+        tok.pad_token = tok.eos_token
     trainer = GRPOTrainer(model=a.model, reward_funcs=stage1_reward, args=cfg,
-                          train_dataset=train_ds, peft_config=peft_cfg)
+                          train_dataset=train_ds, peft_config=peft_cfg,
+                          processing_class=tok)
 
     print("== BASELINE (untrained) — the line every later number is read against", flush=True)
     evaluate(trainer.model, trainer.processing_class, "baseline")
