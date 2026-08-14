@@ -696,3 +696,48 @@ target than "learn to decompose".
 the task the policy actually faces. #23's measure-and-filter machinery is still useful, but the
 distribution it should be filtering is the one measured *from policy proposals*, which nothing in
 the repo currently measures.
+
+### §7.2 What prices Phase 3 — the root size ladder (2026-08-13, $0.09 of inference, no GPU)
+
+Phase 2 localized the bottleneck to **stage-1 plan validity**. That check needs only root
+inference plus local Lean — no leaf prover — so the question "how small a root still clears it"
+is answerable for pennies, and it is the question that sets Phase 3's budget: a 9B LoRA is one
+H100, a 30B MoE is a multi-node job, and that is 1–2 orders of magnitude.
+
+n=20, case_tree k=2, the frozen `decomp_env.build_prompt` + rung-1.5 exemplar — the identical
+prompt Phase 2 measured, so these numbers are comparable rather than merely similar.
+
+| root | stage-1 valid | parsed | emitted the right lemma count (k=2) |
+|---|---|---|---|
+| Qwen3.5-0.8B | **0/20** | 18/20 | 13/18 |
+| Qwen3.5-2B | **0/20** | 18/20 | 15/18 |
+| Qwen3.5-4B | 1/20 (5%) | 15/20 | 12/15 |
+| **Qwen3.5-9B** | **3/20 (15%)** | 7/20 | **7/7** |
+| qwen3-30b-a3b | **14/20 (70%)** | 20/20 | **20/20** |
+
+**The wire format is not the barrier.** 0.8B and 2B *parse* 18/20 — they emit well-formed plans
+that are simply wrong. Format compliance is nearly free; producing a decomposition whose assembly
+actually closes the goal is what scales with size. That matters because it means the rung-1.5
+exemplar has done its job and further prompt work is not the lever.
+
+**The jump is between 9B and 30B, and it is not gradual**: 0%, 0%, 5%, 15%, 70%. Note also that
+9B is the only model that always gets the *lemma count* right when it parses (7/7) while parsing
+least often (7/20) — it fails verbosely rather than confidently, which is a different and more
+recoverable failure than the small models' fluent-but-wrong plans.
+
+**Trainability.** GRPO needs within-group variance; with group size 8:
+
+| root | stage-1 valid | P(≥1 success in a group of 8) | |
+|---|---|---|---|
+| 0.8B / 2B | 0% | 0.00 | no signal — untrainable |
+| 4B | 5% | 0.34 | too sparse |
+| **9B** | **15%** | **0.73** | **usable** |
+| 30B-A3B | 70% | 1.00 | usable, and expensive |
+
+**So Phase 3 has an affordable form: train Qwen3.5-9B, single H100, LoRA.** 9B in bf16 is ~18 GB,
+so LoRA plus rollouts fits one card with room to spare. And the cheapest scientifically honest
+version rewards **stage-1 plan validity alone** — no leaf prover on the GPU, ~1 s of Lean per
+episode instead of up to 16 leaf attempts, and it targets exactly the measured bottleneck.
+Train at k=2 where signal exists; evaluate validity transfer at k=4 and k=8, where the untrained
+9B and 30B both fall off (30B: 70% → 15% → 0%). That is the train-short-test-long design the
+whole direction rests on, at a scale the project can actually pay for.
