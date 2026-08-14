@@ -825,3 +825,33 @@ more groups carry reward variance for GRPO.
 **Registered baseline expectation, updated:** with prefill the untrained k=2 **parse** rate should
 be ~60% (not 35%). The §7.3 predictions for *validity* are unchanged — parsing is necessary but
 not sufficient, and the k=2 valid band stays 35–55%, with k=4 15–30% and k=8 5–15% directional.
+
+### §7.5 Preflight interaction: prefill saturates the format tier (2026-08-14, before the run)
+
+Full-path preflight (1 step, n=4 eval): baseline **k=2 parsed 4/4**, and reward stats
+`parse_fail: 0, invalid: 4, valid: 0` — every completion reached the 0.3 tier.
+
+**So prefill solved the format problem so completely that the format tier now contributes no
+gradient.** §7.3 justified the graded reward because 65% of this model's failures were
+`format_error`; with `PREFILL` those are gone, and the only varying tier is 1.0 (validity) at the
+ladder's ~15%. The reward is effectively binary again — the thing grading existed to prevent.
+
+That is acceptable, and the arithmetic says why. Fraction of groups carrying reward variance
+(≥1 valid and not all valid):
+
+| G | validity 10% | 15% | 25% |
+|---|---|---|---|
+| 4 | 34% | 48% | 68% |
+| **8** | 57% | **73%** | 90% |
+| 16 | 81% | 93% | 99% |
+
+At the registered **G=8**, ~73% of groups produce a gradient. The preflight's uniform 0.3 was an
+n=4 artifact — P(0 valid in 4 at 15%) = 0.52. **Keeping G=8 as registered** rather than raising it
+after seeing preflight data, which would be post-hoc tuning of a pre-registered design for a
+marginal gain.
+
+**Two consequences for reading the result.** (a) §7.3's prediction "k=2 parse 35% → >85%" is now
+**void as a test** — prefill pre-satisfies it at baseline, so it can no longer indicate whether
+the reward plumbing worked. The plumbing check becomes the `reward stats` counters instead
+(`valid` must become non-zero as training proceeds). (b) The validity predictions are untouched
+and remain the real test: k=2 35–55%, k=4 15–30%, k=8 5–15% directional.
