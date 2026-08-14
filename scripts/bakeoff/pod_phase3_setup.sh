@@ -13,6 +13,10 @@
 # Success marker: PHASE3_POD_READY
 set -euo pipefail
 
+# NOTE (2026-08-14): this script pip-installs into the image's SYSTEM python, which is 3.10.12
+# on cuda_12_6_pytorch_2_7 — and rlmath requires >=3.12 (StrEnum). Use
+# `pod_phase3_fix.sh` after this one; it rebuilds the Python side under uv's 3.12 and reuses
+# the Lean/Mathlib work below. Kept as-is because the Lean half is correct and slow.
 echo "== training stack"
 # transformers must be recent: Qwen3.5 ships arch `qwen3_5`, which the 4.53 pin used for the
 # vLLM measurement pods does not know. Nothing here talks to vLLM, so that pin does not apply.
