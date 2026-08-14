@@ -79,7 +79,7 @@ def main(argv=None) -> int:
         per_device_train_batch_size=a.completions, num_generations=a.group_size,
         gradient_accumulation_steps=1, max_completion_length=a.tokens,
         logging_steps=1, report_to=[], bf16=True, gradient_checkpointing=True,
-        temperature=0.7, generation_kwargs={"stop_strings": ["#end"]},
+        temperature=0.7,
     )
     t0 = time.time()
     trainer = GRPOTrainer(

@@ -195,9 +195,14 @@ def main(argv=None) -> int:
         # cap. Passing the old kwarg was a TypeError caught by the setup's API gate.
         logging_steps=1, save_steps=a.eval_every, report_to=[], bf16=True,
         gradient_checkpointing=True, temperature=0.7, seed=a.seed,
-        # Stop as soon as the plan is closed. The parser needs `#end` and tolerates anything
-        # after it, so continuing past it buys nothing and costs the rest of the token budget.
-        generation_kwargs={"stop_strings": ["#end"]},
+        # NO stop_strings here, deliberately. transformers requires the tokenizer be passed
+        # to `generate` alongside stop strings, and TRL's internal generate call does not
+        # forward it — failure #8 was:
+        #   ValueError: There are one or more stop strings ... we could not locate a tokenizer
+        # The 384-token cap is where the saving actually came from (a k=2 plan is ~150 tokens),
+        # and once the format reward teaches the model to close and emit EOS, generation stops
+        # on its own. The eval path DOES use stop_strings, because there we call generate
+        # ourselves and can pass tokenizer=.
     )
     peft_cfg = LoraConfig(r=32, lora_alpha=64, lora_dropout=0.05, bias="none",
                           task_type="CAUSAL_LM",
