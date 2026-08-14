@@ -78,7 +78,13 @@ def main(argv=None) -> int:
     ap.add_argument("--grad-accum", type=int, default=4,
                     help="prompts per optimizer step = completions-per-step*grad-accum/G")
     ap.add_argument("--lr", type=float, default=1e-5)
-    ap.add_argument("--max-completion-tokens", type=int, default=640)
+    # 384 not 640: a k=2 plan is ~150 tokens (two #lemma lines, a short assembly, #end). The
+    # preflight measured 88s/completion because generation ran the FULL budget every time --
+    # the base model rambles and never emits #end, so nothing stopped it early. Halving the
+    # cap halves the worst case, and `stop_strings` below ends the ones that do finish.
+    ap.add_argument("--max-completion-tokens", type=int, default=384)
+    ap.add_argument("--eval-max-tokens", type=int, default=640,
+                    help="eval needs more room: a k=8 plan is 8 lemma lines, ~250+ tokens")
     ap.add_argument("--lean-workers", type=int, default=12)
     ap.add_argument("--eval-every", type=int, default=25)
     ap.add_argument("--eval-n", type=int, default=30)
@@ -158,8 +164,8 @@ def main(argv=None) -> int:
                 ids = tokenizer(text, return_tensors="pt").to(model.device)
                 with torch.no_grad():
                     o = model.generate(**ids, generation_config=GenerationConfig(
-                        max_new_tokens=a.max_completion_tokens, do_sample=True,
-                        temperature=0.7, top_p=0.95,
+                        max_new_tokens=a.eval_max_tokens, do_sample=True, stop_strings=["#end"],
+                        temperature=0.7, top_p=0.95, tokenizer=tokenizer,
                         pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id))
                 comp = tokenizer.decode(o[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
                 try:
@@ -189,6 +195,9 @@ def main(argv=None) -> int:
         # cap. Passing the old kwarg was a TypeError caught by the setup's API gate.
         logging_steps=1, save_steps=a.eval_every, report_to=[], bf16=True,
         gradient_checkpointing=True, temperature=0.7, seed=a.seed,
+        # Stop as soon as the plan is closed. The parser needs `#end` and tolerates anything
+        # after it, so continuing past it buys nothing and costs the rest of the token budget.
+        generation_kwargs={"stop_strings": ["#end"]},
     )
     peft_cfg = LoraConfig(r=32, lora_alpha=64, lora_dropout=0.05, bias="none",
                           task_type="CAUSAL_LM",
