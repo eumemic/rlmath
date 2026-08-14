@@ -66,7 +66,7 @@ import inspect
 from trl import GRPOConfig, GRPOTrainer
 cfg = set(inspect.signature(GRPOConfig.__init__).parameters)
 need = {"learning_rate", "max_steps", "per_device_train_batch_size", "num_generations",
-        "max_completion_length", "max_prompt_length", "bf16", "temperature"}
+        "max_completion_length", "bf16", "temperature"}
 missing = need - cfg
 print("GRPOConfig missing:", missing or "none")
 tr = set(inspect.signature(GRPOTrainer.__init__).parameters)

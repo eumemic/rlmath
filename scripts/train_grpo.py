@@ -161,7 +161,12 @@ def main(argv=None) -> int:
     cfg = GRPOConfig(
         output_dir=str(a.out), learning_rate=a.lr, max_steps=a.steps,
         per_device_train_batch_size=a.batch_prompts, num_generations=a.group_size,
-        max_completion_length=a.max_completion_tokens, max_prompt_length=2048,
+        max_completion_length=a.max_completion_tokens,
+        # NOTE: trl 1.10's GRPOConfig has NO `max_prompt_length` (checked on the pod:
+        # the length-ish params are max_completion_length / vllm_max_model_length /
+        # generation_batch_size). Prompts here are ~1k tokens — system 2.2k chars plus the
+        # rung-1.5 exemplar — comfortably inside the model's window, so there is nothing to
+        # cap. Passing the old kwarg was a TypeError caught by the setup's API gate.
         logging_steps=1, save_steps=a.eval_every, report_to=[], bf16=True,
         gradient_checkpointing=True, temperature=0.7, seed=a.seed,
     )
