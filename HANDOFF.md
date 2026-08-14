@@ -77,8 +77,21 @@ uv run python scripts/analyze_phase3.py         # applies §7.3's registered rul
 
 **The run:** Qwen3.5-9B + LoRA r=32, 200 steps, G=8, 4 prompts/optimizer step, 384-token
 completions, reward = graded stage-1 plan validity (0.0 unparseable / 0.3 parses / 1.0 valid in
-Lean). Trained **only at k=2**; eval n=40 at k=2/4/8 at baseline, step 100, step 200. Projected
-~8 h / ~$25 from a MEASURED 16 s/step preflight.
+Lean). Trained **only at k=2**; eval n=40 at k=2/4/8 at baseline, step 100, step 200.
+**~2 h / ~$6** from measured timings.
+
+**The two changes that made it viable** (DIRECTION §7.4/§7.5, both measured):
+- `PREFILL = "#lemma hb1 : "` on the assistant turn. Unprompted the model burns ~680 tokens of
+  preamble and needs 1024 to reach `#end`; a 384-token cap therefore made EVERY reward 0.0 —
+  caught only because the baseline eval exists. Prefilled it parses 62.5% at 384 in 13 s.
+  A bare `#lemma ` makes it WORSE (invites a numeric name, not a Lean identifier).
+- Batched eval with left padding. Single-sequence generation made eval a 13-hour job against a
+  2-hour training run.
+
+**Known interaction:** prefill saturates the 0.3 format tier, so the reward is effectively binary
+validity at ~15%; ~73% of groups still carry variance at G=8. The "parse → >85%" prediction is
+therefore VOID as a plumbing check — watch the `reward stats` counters for `valid` going
+non-zero instead.
 
 **Read it with `scripts/analyze_phase3.py`, not by eye** — predictions are registered in
 DIRECTION §7.3 and the analyzer applies them, including the correction that k=8 at n=40 is
