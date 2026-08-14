@@ -53,22 +53,32 @@ def main(argv=None) -> int:
     ex = build_exemplar(load_exemplar_problem("case_tree", k=2, seed=999), "decomp")
     rows = [json.loads(l) for l in a.problems.open()][: a.n]
 
+    # BATCHED. One sequence at a time measured ~2.2 min/completion, which made this probe a
+    # 1-hour job and (worse) made the trainer's eval a 13-hour job — 2.5x the training itself.
+    # Decode is memory-bandwidth-bound, so a batch of 8-16 costs barely more than a batch of 1.
+    # Left padding is required: for a decoder-only model, right padding puts pad tokens between
+    # the prompt and the first generated token.
+    tok.padding_side = "left"
+
     def run(budget: int, prefill: str = "") -> tuple[int, float, int]:
         """(parsed, mean completion tokens, mean tokens-to-#end where present)"""
-        parsed, toks, to_end = 0, [], []
+        texts = []
         for r in rows:
             g = GoalSpec(id=r["goal"]["id"], prop=r["goal"]["prop"], name="goal")
-            text = tok.apply_chat_template(with_exemplar(build_prompt(g), ex),
-                                           tokenize=False, add_generation_prompt=True)
-            text += prefill
-            ids = tok(text, return_tensors="pt").to(model.device)
-            with torch.no_grad():
-                o = model.generate(**ids, max_new_tokens=budget, do_sample=True,
-                                   temperature=0.7, top_p=0.95,
-                                   pad_token_id=tok.pad_token_id or tok.eos_token_id)
-            new = o[0][ids["input_ids"].shape[1]:]
+            texts.append(tok.apply_chat_template(with_exemplar(build_prompt(g), ex),
+                                                 tokenize=False, add_generation_prompt=True)
+                         + prefill)
+        enc = tok(texts, return_tensors="pt", padding=True).to(model.device)
+        with torch.no_grad():
+            o = model.generate(**enc, max_new_tokens=budget, do_sample=True,
+                               temperature=0.7, top_p=0.95,
+                               pad_token_id=tok.pad_token_id or tok.eos_token_id)
+        parsed, toks, to_end = 0, [], []
+        plen = enc["input_ids"].shape[1]
+        for i in range(len(texts)):
+            new = o[i][plen:]
             comp = prefill + tok.decode(new, skip_special_tokens=True)
-            toks.append(len(new))
+            toks.append(int((new != (tok.pad_token_id or tok.eos_token_id)).sum()))
             if "#end" in comp:
                 to_end.append(len(tok(comp[: comp.index("#end") + 4]).input_ids))
             try:
@@ -77,19 +87,19 @@ def main(argv=None) -> int:
                 pass
         return parsed, sum(toks) / len(toks), (sum(to_end) // len(to_end)) if to_end else -1
 
-    print(f"n={len(rows)} k=2 problems, {a.model}\n")
-    print(f"{'budget':>8} {'prefill':>9} {'parsed':>8} {'mean gen tok':>13} {'tok to #end':>12}")
+    print(f"n={len(rows)} k=2 problems, {a.model}\n", flush=True)
+    print(f"{'budget':>8} {'prefill':>9} {'parsed':>8} {'mean gen tok':>13} {'tok to #end':>12}", flush=True)
     for b in [int(x) for x in a.budgets.split(",")]:
         t0 = time.time()
         p, mt, te = run(b)
         print(f"{b:>8} {'no':>9} {p}/{len(rows):<6} {mt:>13.0f} {te if te>0 else '(never)':>12}"
-              f"   [{time.time()-t0:.0f}s]")
+              f"   [{time.time()-t0:.0f}s]", flush=True)
     # The cheap fix: force the format from the first token.
     for b in (384, 640):
         t0 = time.time()
         p, mt, te = run(b, prefill="#lemma ")
         print(f"{b:>8} {'#lemma ':>9} {p}/{len(rows):<6} {mt:>13.0f} {te if te>0 else '(never)':>12}"
-              f"   [{time.time()-t0:.0f}s]")
+              f"   [{time.time()-t0:.0f}s]", flush=True)
     print("\nRead: if parsing needs >=1024 tokens WITHOUT prefill but works at 384 WITH it,"
           "\nprefill is the fix — it costs nothing and removes the preamble that eats the budget.")
     return 0
