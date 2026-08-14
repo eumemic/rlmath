@@ -163,16 +163,15 @@ def main(argv=None) -> int:
                                                      add_generation_prompt=True)
                 ids = tokenizer(text, return_tensors="pt").to(model.device)
                 with torch.no_grad():
-                    # `tokenizer=` must be a kwarg to generate(), NOT a field of
-                    # GenerationConfig — the config silently accepts and ignores it, and
-                    # transformers then refuses the stop strings:
-                    #   ValueError: ... we could not locate a tokenizer
-                    # That is failure #8 recurring in the eval path, because an earlier edit
-                    # added stop_strings here while its companion edit (moving tokenizer out)
-                    # silently failed to match. Verified by grep this time, not assumed.
-                    o = model.generate(**ids, tokenizer=tokenizer,
-                                       generation_config=GenerationConfig(
-                        max_new_tokens=a.eval_max_tokens, do_sample=True, stop_strings=["#end"],
+                    # NO stop_strings anywhere, in training or eval. transformers wants the
+                    # tokenizer passed to generate() alongside them; passing it there DID work
+                    # in an isolated check and then failed again inside the trainer, and I have
+                    # spent four cycles on it for a marginal saving. It is not load-bearing:
+                    # `--eval-max-tokens` caps the cost, and a model that learns to close the
+                    # plan and emit EOS terminates on its own — which is the behaviour worth
+                    # training rather than masking. Deleted rather than debugged further.
+                    o = model.generate(**ids, generation_config=GenerationConfig(
+                        max_new_tokens=a.eval_max_tokens, do_sample=True,
                         temperature=0.7, top_p=0.95,
                         pad_token_id=tokenizer.pad_token_id or tokenizer.eos_token_id))
                 comp = tokenizer.decode(o[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
