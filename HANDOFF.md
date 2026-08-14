@@ -53,6 +53,60 @@ authorization was $12 and $6.52 of it is spent. Ask before the next pod. `CREDIT
 
 ---
 
+## 1b. PHASE 3 IS RUNNING — how to check on it and harvest it (2026-08-14)
+
+A GRPO run is live on pod **`ct-p3b`** (lambdalabs H100 PCIe). If this session is gone, that pod
+may still be training or may have finished; **check before launching anything new**.
+
+```bash
+prime switch cmsp77l44000710s4dghtmtss        # pods live in the team wallet
+prime pods list --plain                        # is ct-p3b alive? how long?
+prime wallet | head -6                         # the invoice, never an estimate
+# ssh alias may need re-adding: Host rlmath-p3b / HostName <ip> / Port 1234 / User root
+ssh rlmath-p3b 'cat /root/train.done 2>/dev/null || echo RUNNING'
+ssh rlmath-p3b 'grep "^  \[" /root/rlmath/logs/../train.log; grep -c TRAIN_DONE /root/train.log'
+```
+
+**Harvest, then terminate, then read the invoice:**
+```bash
+scp -O rlmath-p3b:/root/rlmath/runs/grpo9b/eval.jsonl runs/grpo9b/
+scp -O rlmath-p3b:/root/train.log logs/phase3_train.log
+printf 'y\n' | prime pods terminate <id>       # retry; if HTTP 500, `poweroff -f` from inside
+uv run python scripts/analyze_phase3.py         # applies §7.3's registered rule mechanically
+```
+
+**The run:** Qwen3.5-9B + LoRA r=32, 200 steps, G=8, 4 prompts/optimizer step, 384-token
+completions, reward = graded stage-1 plan validity (0.0 unparseable / 0.3 parses / 1.0 valid in
+Lean). Trained **only at k=2**; eval n=40 at k=2/4/8 at baseline, step 100, step 200. Projected
+~8 h / ~$25 from a MEASURED 16 s/step preflight.
+
+**Read it with `scripts/analyze_phase3.py`, not by eye** — predictions are registered in
+DIRECTION §7.3 and the analyzer applies them, including the correction that k=8 at n=40 is
+**underpowered** (so k=8 is directional only and **k=4 carries the verdict**).
+
+### The nine setup failures, so a future Phase-3 pod pays none of them
+All fixed and consolidated in `scripts/bakeoff/pod_phase3_all.sh`; each is commented at its site.
+1. image python is 3.10.12, `rlmath` needs ≥3.12 (StrEnum) → `uv venv --python 3.12`
+2. `uv pip install -U trl transformers` replaced pinned cu126 torch with cu130 on a 12.8 driver
+   → frameworks first, **torch last** from PyTorch's own `--index-url`, then a real bf16 matmul gate
+3. `pkill -f fix.sh` matched its own launching shell → never pattern-match your own cmdline;
+   use a done-file sentinel (a `pgrep -f` liveness check also reported ALIVE against a dead pod
+   for 25 min because the pattern matched the monitor's own ssh command)
+4. trl 1.10 `GRPOConfig` has no `max_prompt_length`
+5. `per_device_train_batch_size` counts **completions**, not prompts, and must divide by
+   `num_generations` — the error it raises names `generation_batch_size`, which is neither flag
+6. Qwen3.5 is a **VL** model → needs `torchvision`
+7. …and TRL's `AutoProcessor` builds Qwen3VL **video** processors, which raises a transformers
+   docstring error → pass `processing_class=tokenizer` explicitly
+8. `stop_strings` requires a tokenizer TRL will not forward → **deleted**, not worked around
+9. a string-replacement "fix" silently did not match and I did not verify → assert the fixed
+   state, never trust a replace
+
+**Method lesson, which cost more than any single item:** the trainer was written against
+remembered API shapes and validated in layers too thin to catch the next problem. The gate that
+finally worked is `scripts/preflight_trainer.py` — it *constructs* the real trainer and takes one
+real step. Write that gate first next time.
+
 ## 2. Operational runbook (hard-won; each line cost time)
 
 ### Prime CLI
